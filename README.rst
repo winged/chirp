@@ -41,7 +41,14 @@ Unix
 
    cd build
    ../configure --dev
+   make test
+
+In development mode the make file has a help:
+
+.. code-block:: bash
+
    make
+
 
 Windows
 -------
