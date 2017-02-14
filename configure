@@ -14,6 +14,8 @@ import os
 import itertools
 from os import path
 import re
+import shutil
+from tempfile import mkdtemp
 
 _project = "chirp"
 
@@ -85,6 +87,21 @@ def replace_base(file_):
         return file_
 
 
+def test_depends():
+    """Test for dependencies."""
+    if os.system("make -C '%s' testlibuv" % _base):
+        print("""libuv is was not found. For details see config.log
+
+Please install libuv:
+
+Alpine:         apk add libuv-dev
+Debian-based:   apt install libuv1-dev (may require backports)
+Redhat-based:   yum install libuv-devel
+Arch:           pacman -S libuv
+OSX:            brew install libuv
+""")
+
+
 def write_makefile():
     """Parse arguments and write makefile accordingly."""
     parser = argparse.ArgumentParser(
@@ -102,6 +119,7 @@ def write_makefile():
     args = parser.parse_args()
     with codecs.open("Makefile", "w", "UTF-8") as f:
         f.write("BASE := %s\n\n" % _base)
+        f.write("DTMP := %s\n\n" % mkdtemp())
         f.write("include $(BASE)/mk/base.mk\n")
         if args.dev:
             f.write("include $(BASE)/mk/dev.mk\n\n")
@@ -120,6 +138,16 @@ def write_makefile():
                 for depend in dep[:-1]:
                     f.write("\t\t%s \\\n" % replace_base(depend))
                 f.write("\t\t%s \n\n" % replace_base(dep[-1]))
+    try:
+        os.unlink(path.join(_base, "config.h"))
+    except Exception:
+        pass
+    print("Created Makefile. It contains sensible defaults.")
+    shutil.copy(
+        path.join(_base, "mk", "config.defs.h"),
+        path.join(_base, "config.h")
+    )
+    print("Created config.h. It contains sensible defaults.")
 
 
 write_makefile()
