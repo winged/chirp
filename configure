@@ -17,7 +17,8 @@ import re
 import shutil
 from tempfile import mkdtemp
 
-_project = "chirp"
+_project = "libchirp"
+_version = "0.1.0"
 
 _base = path.dirname(path.realpath(__file__))
 _baselen = len(_base)
@@ -39,12 +40,18 @@ def parse_depends(file_, h_files):
         for line in f:
             match = _include.match(line)
             if match:
+                header = match[1]
                 base = path.dirname(
                     path.realpath(file_)
                 )
-                depend = path.realpath(
-                    path.join(base, match[1])
-                )
+                if _project in header:
+                    depend = path.realpath(
+                        path.join(_base, "include", header)
+                    )
+                else:
+                    depend = path.realpath(
+                        path.join(base, header)
+                    )
                 if depend in h_files:
                     yield depend
 
@@ -126,17 +133,47 @@ def write_makefile():
             "Includes all development make targets."
         )
     )
+    parser.add_argument(
+        '--prefix',
+        help="Install prefix. Default: /usr/local"
+    )
 
     args = parser.parse_args()
+    prefix = "/usr/local"
+    if args.prefix:
+        prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
-        f.write("BASE := %s\n\n" % _base)
+        f.write("BASE := %s\n" % _base)
+        f.write("PREFIX := %s\n" % prefix)
         f.write("DTMP := %s\n\n" % mkdtemp())
+        f.write("PROJECT := %s\n" % _project)
+        f.write("VERSION := %s\n\n" % _version)
         f.write("include $(BASE)/mk/base.mk\n")
         if args.dev:
             f.write("include $(BASE)/mk/dev.mk\n\n")
         else:
             f.write("include $(BASE)/mk/rel.mk\n\n")
-        depends = list(read_depends().items())
+        if args.dev:
+            depends = list(read_depends().items())
+        else:
+            depends = [
+                (
+                    key, value
+                ) for key, value in read_depends().items()
+                if not key.endswith("test.c")
+            ]
+        f.write("libraries: {0}.a {0}.so\n\n".format(_project))
+        if args.dev:
+            f.write("executables: \\\n")
+            executables = [
+                (
+                    key, value
+                ) for key, value in depends
+                if key.endswith("_etest.c")
+            ]
+            for executable, _ in executables[:-1]:
+                f.write("\t\t%s \\\n" % replace_base(executable[:-2]))
+            f.write("\t\t%s \n\n" % replace_base(executables[-1][0][:-2]))
         f.write("objects: \\\n")
         for file_, _ in depends[:-1]:
             f.write("\t\t%so \\\n" % replace_base(file_[:-1]))
