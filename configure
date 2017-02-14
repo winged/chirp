@@ -90,7 +90,7 @@ def replace_base(file_):
 def test_depends():
     """Test for dependencies."""
     if os.system("make testlibuv"):
-        print("""libuv is was not found. For details see config.log
+        print("""libuv was not found. For details see config.log
 
 Please install libuv:
 
@@ -99,6 +99,17 @@ Debian-based:   apt install libuv1-dev (may require backports)
 Redhat-based:   yum install libuv-devel
 Arch:           pacman -S libuv
 OSX:            brew install libuv
+""")
+    if os.system("make testopenssl"):
+        print("""openssl was not found. For details see config.log
+
+Please install openssl:
+
+Alpine:         apk add openssl-dev
+Debian-based:   apt install libssl-dev
+Redhat-based:   yum install openssl-devel
+Arch:           pacman -S openssl
+OSX:            brew install openssl
 """)
 
 
