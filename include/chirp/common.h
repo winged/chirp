@@ -11,7 +11,6 @@
 
 #include "error.h"
 #include "const.h"
-#include "../config.h"
 
 #include <uv.h>
 
