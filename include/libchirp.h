@@ -4,8 +4,8 @@
 // 
 // .. code-block:: cpp
 
-#ifndef ch_inc_chirp_h
-#define ch_inc_chirp_h
+#ifndef ch_libchirp_h
+#define ch_libchirp_h
 
 #include "libchirp/message.h"
 #include "libchirp/chirp.h"
@@ -36,4 +36,4 @@ ch_set_alloc_funcs(
 // .. code-block:: cpp
 //
 
-#endif //ch_inc_chirp_h
+#endif //ch_libchirp_h
