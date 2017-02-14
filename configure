@@ -15,6 +15,7 @@ import itertools
 from os import path
 import re
 import shutil
+import sys
 from tempfile import mkdtemp
 
 _project = "libchirp"
@@ -96,6 +97,7 @@ def replace_base(file_):
 
 def test_depends():
     """Test for dependencies."""
+    sys.stdout.write("Checking for libuv: ")
     if os.system("make testlibuv"):
         print("""libuv was not found. For details see config.log
 
@@ -107,6 +109,9 @@ Redhat-based:   yum install libuv-devel
 Arch:           pacman -S libuv
 OSX:            brew install libuv
 """)
+    else:
+        print("ok")
+    sys.stdout.write("Checking for openssl: ")
     if os.system("make testopenssl"):
         print("""openssl was not found. For details see config.log
 
@@ -118,6 +123,8 @@ Redhat-based:   yum install openssl-devel
 Arch:           pacman -S openssl
 OSX:            brew install openssl
 """)
+    else:
+        print("ok")
 
 
 def write_makefile():
