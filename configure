@@ -147,7 +147,8 @@ def write_makefile():
         f.write("PREFIX := %s\n" % prefix)
         f.write("DTMP := %s\n\n" % mkdtemp())
         f.write("PROJECT := %s\n" % _project)
-        f.write("VERSION := %s\n\n" % _version)
+        f.write("VERSION := %s\n" % _version)
+        f.write("MAJOR := %s\n\n" % _version.split('.')[0])
         f.write("include $(BASE)/mk/base.mk\n")
         if args.dev:
             f.write("include $(BASE)/mk/dev.mk\n\n")
