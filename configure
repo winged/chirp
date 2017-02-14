@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+
+"""Configure the project for building.
+
+Supports Linux, BSD, Mac, Windows and try to be POSIX compliant (except on
+Windows)
+"""
+
+import argparse
+import collections
+import codecs
+import fnmatch
+import os
+import itertools
+from os import path
+import re
+
+_project = "chirp"
+
+_base = path.dirname(path.realpath(__file__))
+_baselen = len(_base)
+_include = re.compile('^\s*#\s*include\s*"\s*([^"]+\s*).*$')
+
+
+def match_files(base, pattern):
+    """Match files in a base path."""
+    for root, dirnames, filenames in os.walk(
+            path.join(_base, base)
+    ):
+        for filename in fnmatch.filter(filenames, pattern):
+            yield path.join(root, filename)
+
+
+def parse_depends(file_, h_files):
+    """Find all header depends in this files."""
+    with codecs.open(file_, 'r', "UTF-8") as f:
+        for line in f:
+            match = _include.match(line)
+            if match:
+                base = path.dirname(
+                    path.realpath(file_)
+                )
+                depend = path.realpath(
+                    path.join(base, match[1])
+                )
+                if depend in h_files:
+                    yield depend
+
+
+def flat_depends(file_, depends, flat):
+    """Create a flat depends list of recursive dependencies."""
+    if file_  not in flat:
+        dep = depends[file_]
+        if not dep:
+            return flat
+        for rec in dep:
+            flat.add(rec)
+            flat_depends(rec, depends, flat)
+    return flat
+
+
+def read_depends():
+    """Read header dependencies into a dict to generate the makefile."""
+    depends = collections.defaultdict(set)
+    c_files = set(match_files("src", "*.c"))
+    h_files = set()
+    h_files.update(match_files("src", "*.h"))
+    h_files.update(match_files("include", "*.h"))
+    for file_ in itertools.chain(c_files, h_files):
+        for depend in parse_depends(file_, h_files):
+            depends[file_].add(depend)
+    dependency_list = {file_: flat_depends(
+        file_,
+        depends,
+        set()
+    ) for file_ in c_files}
+    return dependency_list
+
+
+def replace_base(file_):
+    """Replace the base path with $(BASE)."""
+    if file_.startswith(_base):
+        return "$(BASE)%s" % file_[_baselen:]
+    else:
+        return file_
+
+
+def write_makefile():
+    """Parse arguments and write makefile accordingly."""
+    parser = argparse.ArgumentParser(
+        description='Configure %s' % _project
+    )
+    parser.add_argument(
+        '--dev',
+        action="store_true",
+        help=(
+            "Build for development. Enables debug build flags and coverage. "
+            "Includes all development make targets."
+        )
+    )
+
+    args = parser.parse_args()
+    with codecs.open("Makefile", "w", "UTF-8") as f:
+        f.write("BASE := %s\n\n" % _base)
+        f.write("include $(BASE)/mk/base.mk\n")
+        if args.dev:
+            f.write("include $(BASE)/mk/dev.mk\n\n")
+        else:
+            f.write("include $(BASE)/mk/rel.mk\n\n")
+        depends = list(read_depends().items())
+        f.write("all: \\\n")
+        for file_, _ in depends[:-1]:
+            f.write("\t\t%so \\\n" % replace_base(file_[:-1]))
+        f.write("\t\t%so \n\n" % replace_base(depends[-1][0][:-1]))
+
+        for file_, dep in depends:
+            if dep:
+                dep = list(dep)
+                f.write("%s: \\\n" % replace_base(file_))
+                for depend in dep[:-1]:
+                    f.write("\t\t%s \\\n" % replace_base(depend))
+                f.write("\t\t%s \n\n" % replace_base(dep[-1]))
+
+
+write_makefile()
