@@ -90,5 +90,5 @@ Windows
 
 .. code-block:: bash
 
-   ./configure
+   python configure
    make.cmd
