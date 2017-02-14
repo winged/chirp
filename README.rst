@@ -88,5 +88,7 @@ In-source build is also possible.
 Windows
 -------
 
+.. code-block:: bash
+
    ./configure
    make.cmd
