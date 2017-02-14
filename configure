@@ -89,7 +89,7 @@ def replace_base(file_):
 
 def test_depends():
     """Test for dependencies."""
-    if os.system("make -C '%s' testlibuv" % _base):
+    if os.system("make testlibuv"):
         print("""libuv is was not found. For details see config.log
 
 Please install libuv:
@@ -145,9 +145,10 @@ def write_makefile():
     print("Created Makefile. It contains sensible defaults.")
     shutil.copy(
         path.join(_base, "mk", "config.defs.h"),
-        path.join(_base, "config.h")
+        "config.h"
     )
     print("Created config.h. It contains sensible defaults.")
 
 
 write_makefile()
+test_depends()
