@@ -1,13 +1,13 @@
 // =============
-// Common Header
+// Common header
 // =============
 //
 // I know common headers aren't good style but Windows is forcing me.
 //
 // .. code-block:: cpp
 //
-#ifndef ch_common_h
-#define ch_common_h
+#ifndef ch_libchirp_common_h
+#define ch_libchirp_common_h
 
 #include "error.h"
 #include "const.h"
@@ -312,4 +312,4 @@ min_##type(type a, type b) { \
 }
 
 
-#endif //ch_common_h
+#endif //ch_libchirp_common_h

@@ -1,5 +1,5 @@
 // =================
-// Connection Header
+// Connection header
 // =================
 //
 // .. code-block:: cpp
@@ -9,7 +9,7 @@
 
 // Project includes
 // ================
-#include "../include/chirp_obj.h"
+#include "libchirp/chirp.h"
 #include "message.h"
 #include "reader.h"
 #include "writer.h"

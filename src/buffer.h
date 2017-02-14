@@ -1,5 +1,5 @@
 // =============
-// Buffer Header
+// Buffer header
 // =============
 //
 // Implements a buffer pool. There is header, actor and data buffer per chrip
@@ -11,6 +11,7 @@
 #define ch_buffer_h
 
 #include "util.h"
+#include "config.h"
 
 // .. c:type:: ch_bf_handler_t
 //

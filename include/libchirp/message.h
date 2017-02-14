@@ -1,11 +1,11 @@
-// ===========
-// Message API
-// ===========
+// =======
+// Message
+// =======
 // 
 // .. code-block:: cpp
 
-#ifndef ch_inc_message_h
-#define ch_inc_message_h
+#ifndef ch_libchirp_message_h
+#define ch_libchirp_message_h
 
 #include "common.h"
 
@@ -144,4 +144,4 @@ ch_msg_set_address(
 //
 // .. code-block:: cpp
 
-#endif //ch_inc_message_h
+#endif //ch_libchirp_message_h

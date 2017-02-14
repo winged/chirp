@@ -1,11 +1,11 @@
-// ================
-// Chirp Obj Header
-// ================
+// =====
+// Chirp
+// =====
 //
 // .. code-block:: cpp
 
-#ifndef ch_inc_chirp_obj_h
-#define ch_inc_chirp_obj_h
+#ifndef ch_libchirp_chirp_h
+#define ch_libchirp_chirp_h
 
 #include "common.h"
 #include "callbacks.h"
@@ -275,4 +275,4 @@ ch_chirp_set_auto_stop(ch_chirp_t* chirp);
 //
 // .. code-block:: cpp
 
-#endif //ch_inc_chirp_obj_h
+#endif //ch_libchirp_chirp_h

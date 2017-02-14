@@ -7,9 +7,9 @@
 #ifndef ch_inc_chirp_h
 #define ch_inc_chirp_h
 
-#include "chirp/message.h"
-#include "chirp/chirp_obj.h"
-#include "chirp/encryption.h"
+#include "libchirp/message.h"
+#include "libchirp/chirp.h"
+#include "libchirp/encryption.h"
 
 // .. c:function::
 void

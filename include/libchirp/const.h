@@ -4,8 +4,8 @@
 //
 // .. code-block:: cpp
 
-#ifndef ch_inc_const_h
-#define ch_inc_const_h
+#ifndef ch_libchirp_const_h
+#define ch_libchirp_const_h
 
 // .. c:type:: ch_ip_protocol_t
 //
@@ -26,4 +26,4 @@ typedef enum {
     CH_IPV6     = 1
 } ch_ip_protocol_t;
 
-#endif //ch_inc_const_h
+#endif //ch_libchirp_const_h

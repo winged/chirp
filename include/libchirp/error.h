@@ -4,8 +4,8 @@
 //
 // .. code-block:: cpp
 
-#ifndef ch_inc_error_h
-#define ch_inc_error_h
+#ifndef ch_libchirp_error_h
+#define ch_libchirp_error_h
 
 // .. c:type:: ch_error_t
 //
@@ -64,4 +64,4 @@ typedef enum {
     CH_TIMEOUT        = 9,
 } ch_error_t;
 
-#endif //ch_inc_error_h
+#endif //ch_libchirp_error_h

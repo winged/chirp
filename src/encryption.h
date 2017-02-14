@@ -1,5 +1,5 @@
 // =================
-// Encryption Header
+// Encryption header
 // =================
 //
 // .. code-block:: cpp
@@ -7,7 +7,7 @@
 #ifndef ch_encryption_h
 #define ch_encryption_h
 
-#include "../include/chirp_obj.h"
+#include "libchirp/chirp.h"
 
 #include <openssl/ssl.h>
 

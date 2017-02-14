@@ -1,5 +1,5 @@
 // ============
-// Chirp Header
+// Chirp header
 // ============
 //
 // .. code-block:: cpp
@@ -7,7 +7,7 @@
 #ifndef ch_chirp_h
 #define ch_chirp_h
 
-#include "../include/chirp.h"
+#include "libchirp.h"
 #include "protocol.h"
 #include "encryption.h"
 

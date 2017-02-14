@@ -7,7 +7,7 @@
 #ifndef ch_reader_h
 #define ch_reader_h
 
-#include "chirp/common.h"
+#include "libchirp/common.h"
 #include "message.h"
 #include "buffer.h"
 

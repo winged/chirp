@@ -7,7 +7,7 @@
 #ifndef ch_protocol_h
 #define ch_protocol_h
 
-#include "../include/chirp_obj.h"
+#include "libchirp/chirp.h"
 #include "connection.h"
 #include "sglib.h"
 

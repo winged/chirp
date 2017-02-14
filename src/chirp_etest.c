@@ -4,7 +4,7 @@
 //
 // .. code-block:: cpp
 
-#include "../include/chirp.h"
+#include "libchirp.h"
 
 
 // .. c:function::

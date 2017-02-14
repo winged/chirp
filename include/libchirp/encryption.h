@@ -1,13 +1,11 @@
-// ==============
-// Encryption API
-// ==============
+// ==========
+// Encryption
+// ==========
 // 
 // .. code-block:: cpp
 
-#ifndef ch_inc_encryption_h
-#define ch_inc_encryption_h
-
-#include "encryption.h"
+#ifndef ch_libchirp_encryption_h
+#define ch_libchirp_encryption_h
 
 // .. c:function::
 extern
@@ -41,4 +39,4 @@ ch_en_set_manual_openssl_init(void);
 //
 
 
-#endif //ch_inc_encryption_h
+#endif //ch_libchirp_encryption_h

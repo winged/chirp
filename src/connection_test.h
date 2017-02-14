@@ -1,5 +1,5 @@
 // ======================
-// Connection test Header
+// Connection test header
 // ======================
 //
 // .. code-block:: cpp

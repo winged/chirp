@@ -8,6 +8,7 @@ CFLAGS  := \
 	-O3 \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
+	-I. \
 	$(CFLAGS)
 
 %.o: %.c

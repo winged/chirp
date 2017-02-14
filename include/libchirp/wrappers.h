@@ -4,8 +4,8 @@
 // 
 // .. code-block:: cpp
 
-#ifndef ch_inc_wrappers_h
-#define ch_inc_wrappers_h
+#ifndef ch_libchirp_wrappers_h
+#define ch_libchirp_wrappers_h
 
 #include "common.h"
 
@@ -85,4 +85,4 @@ ch_run(uv_loop_t* loop)
     }
     return tmp_err;
 }
-#endif //ch_inc_wrappers_h
+#endif //ch_libchirp_wrappers_h

@@ -9,9 +9,9 @@
 #ifndef ch_writer_h
 #define ch_writer_h
 
-#include "../include/common.h"
-#include "../include/callbacks.h"
-#include "../include/message.h"
+#include "libchirp/common.h"
+#include "libchirp/callbacks.h"
+#include "libchirp/message.h"
 
 struct ch_connection_s;
 

@@ -9,8 +9,8 @@
 #ifndef ch_util_h
 #define ch_util_h
 
-#include "../include/callbacks.h"
-#include "../include/common.h"
+#include "libchirp/callbacks.h"
+#include "libchirp/common.h"
 
 // .. c:function::
 void*
