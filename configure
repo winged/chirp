@@ -2,7 +2,7 @@
 
 """Configure the project for building.
 
-Supports Linux, BSD, Mac, Windows and try to be POSIX compliant (except on
+Supports Linux, BSD, Mac, Windows and tries to be POSIX compliant (except on
 Windows)
 """
 
