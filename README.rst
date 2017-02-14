@@ -31,32 +31,11 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 WORK IN PROGRESS
 ================
 
-Development
-===========
+Install
+=======
 
 Unix
 ----
-
-.. code-block:: bash
-
-   cd build
-   ../configure --dev
-   make test
-
-In development mode the make file has a help:
-
-.. code-block:: bash
-
-   make
-
-
-Windows
--------
-
-No development build available.
-
-Install
-=======
 
 
 Install to prefix /usr/local.
@@ -92,3 +71,27 @@ Windows
 
    python configure
    make.cmd
+
+Development
+===========
+
+Unix
+----
+
+.. code-block:: bash
+
+   cd build
+   ../configure --dev
+   make test
+
+In development mode the make file has a help:
+
+.. code-block:: bash
+
+   make
+
+
+Windows
+-------
+
+No development build available.
