@@ -97,6 +97,7 @@ def replace_base(file_):
 
 def test_depends():
     """Test for dependencies."""
+    failure = False
     sys.stdout.write("Checking for libuv: ")
     if os.system("make testlibuv"):
         print("""libuv was not found. For details see config.log
@@ -109,6 +110,7 @@ Redhat-based:   yum install libuv-devel
 Arch:           pacman -S libuv
 OSX:            brew install libuv
 """)
+        failure = True
     else:
         print("ok")
     sys.stdout.write("Checking for openssl: ")
@@ -123,14 +125,25 @@ Redhat-based:   yum install openssl-devel
 Arch:           pacman -S openssl
 OSX:            brew install openssl
 """)
+        failure = True
     else:
         print("ok")
+    if failure:
+        print(
+            """\nIf a library is installed in a non-default path please use:
+
+    -L in LDFLAGS
+
+and
+
+    -I in CFLAGS
+""")
 
 
 def write_makefile():
     """Parse arguments and write makefile accordingly."""
     parser = argparse.ArgumentParser(
-        description='Configure %s' % _project
+        description='Configure %s. Respects CFLAGS and LDFLAGS' % _project
     )
     parser.add_argument(
         '--dev',
