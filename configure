@@ -108,7 +108,7 @@ def write_makefile():
         else:
             f.write("include $(BASE)/mk/rel.mk\n\n")
         depends = list(read_depends().items())
-        f.write("all: \\\n")
+        f.write("objects: \\\n")
         for file_, _ in depends[:-1]:
             f.write("\t\t%so \\\n" % replace_base(file_[:-1]))
         f.write("\t\t%so \n\n" % replace_base(depends[-1][0][:-1]))
