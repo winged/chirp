@@ -127,6 +127,7 @@ _ch_wr_check_send_error(
 //    see: :c:func:`_ch_wr_check_send_error`
 //
 // .. code-block:: cpp
+//
 {
     if(status != CH_SUCCESS) {
         L(

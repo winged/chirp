@@ -283,8 +283,8 @@ def write_makefile(args):
         if args.doc:
             f.write("DOC_FILES := \\\n")
             for file_ in files[:-1]:
-                f.write("\t\t%srst \\\n" % replace_base_build(file_[:-1]))
-            f.write("\t\t%srst \n\n" % replace_base_build(files[-1][:-1]))
+                f.write("\t\t%s.rst \\\n" % replace_base_build(file_))
+            f.write("\t\t%s.rst \n\n" % replace_base_build(files[-1]))
             f.write("doc_files: $(DOC_FILES) \n\n")
 
         for file_, dep in depends:
@@ -312,4 +312,4 @@ if __name__ == "__main__":
     args = parse()
     write_makefile(args)
     write_config()
-test_depends(args)
+    test_depends(args)

@@ -3,6 +3,16 @@ UNAME_S   := $(shell uname -s)
 
 ifeq ($(DOC),True)
 doc: doc_files
+	@rm -f $(BASE)/doc/inc
+	@rm -f $(BASE)/doc/src
+	@ln -s $(BUILD)/include $(BASE)/doc/inc
+	@ln -s $(BUILD)/src $(BASE)/doc/src
+ifeq ($(VERBOSE),True)
+	make -C $(BASE)/doc html
+else
+	@echo DOC
+	@make -C $(BASE)/doc html > /dev/null
+endif
 else
 doc:
 	@echo Please reconfigure with ./configure --doc.; false
@@ -32,7 +42,7 @@ else
 	@$(CC) -c -o "$@" "$<" $(CFLAGS)
 endif
 
-$(BUILD)/%.rst: $(BASE)/%.c
+$(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
 	$(BASE)/mk/c2rst $< $@
@@ -42,7 +52,7 @@ else
 
 endif
 
-$(BUILD)/%.rst: $(BASE)/%.h
+$(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
 	$(BASE)/mk/c2rst $< $@

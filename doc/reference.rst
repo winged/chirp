@@ -13,15 +13,15 @@ Public C API
 .. toctree::
    :maxdepth: 2
 
-   inc/callbacks.h.rst
-   inc/chirp.h.rst
-   inc/chirp_obj.h.rst
-   inc/const.h.rst
-   inc/common.h.rst
-   inc/encryption.h.rst
-   inc/error.h.rst
-   inc/message.h.rst
-   inc/wrappers.h.rst
+   inc/libchirp.h.rst
+   inc/libchirp/callbacks.h.rst
+   inc/libchirp/chirp.h.rst
+   inc/libchirp/const.h.rst
+   inc/libchirp/common.h.rst
+   inc/libchirp/encryption.h.rst
+   inc/libchirp/error.h.rst
+   inc/libchirp/message.h.rst
+   inc/libchirp/wrappers.h.rst
 
 Internal C API
 ==============

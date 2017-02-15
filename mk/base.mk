@@ -9,4 +9,5 @@ testopenssl:
 clean:
 	rm -rf "$(DTMP)"/*
 	rm -rf "$(BUILD)/src"
+	rm -rf "$(BUILD)/doc/_build/*"
 	cd "$(BUILD)" && rm -f $(LIBRARIES)

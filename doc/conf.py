@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# C4irp documentation build configuration file, created by
+# Chirp documentation build configuration file, created by
 # sphinx-quickstart on Sun Mar 20 15:45:31 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -13,12 +13,16 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+"""Config for documentation."""
+
 import datetime
 from os import path
 import sphinx_rtd_theme
 
 
-_base = path.dirname(path.realpath(__file__))
+_base = path.dirname(
+    path.dirname(path.realpath(__file__))
+)
 version_file = path.join(_base, "configure")
 with open(version_file) as f:
     code = compile(f.read(), version_file, 'exec')
@@ -38,7 +42,6 @@ with open(version_file) as f:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -65,7 +68,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Chirp'
-copyright = '%s, Jean-Louis Fuchs' % datetime.datetime.now().year()
+copyright = (
+    '%s, Jean-Louis Fuchs, Sven Osterwalder, '
+    'Adfinis SyGroup' % datetime.datetime.now().year
+)
+
 author = 'Jean-Louis Fuchs'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -143,7 +150,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+# html_short_title = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -180,7 +187,7 @@ html_static_path = ['_static']
 # html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_domain_indices = True
+# html_domain_indices = True
 
 # If false, no index is generated.
 # html_use_index = True
@@ -220,29 +227,29 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'C4irpdoc'
+htmlhelp_basename = 'Chirpdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-# 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-# 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-# 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 
-# Latex figure (float) alignment
-# 'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'C4irp.tex', 'C4irp Documentation',
+    (master_doc, 'Chirp.tex', 'Chirp Documentation',
      'Jean-Louis Fuchs', 'manual'),
 ]
 
@@ -272,7 +279,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'c4irp', 'C4irp Documentation',
+    (master_doc, 'chirp', 'Chirp Documentation',
      [author], 1)
 ]
 
@@ -286,8 +293,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'C4irp', 'C4irp Documentation',
-     author, 'C4irp', 'One line description of project.',
+    (master_doc, 'Chirp', 'Chirp Documentation',
+     author, 'Chirp', 'One line description of project.',
      'Miscellaneous'),
 ]
 
