@@ -192,11 +192,11 @@ and
 
 Please install sphinx:
 
-Alpine:         apk add py-sphinx py-sphinx_rtd_theme
-Debian-based:   apt install python-sphinx py-sphinx_rtd_theme
-Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme
-Arch:           pacman -S python-sphinx python-sphinx_rtd_theme
-OSX:            brew install sphinx-doc
+Alpine:         apk add py-sphinx py-sphinx_rtd_theme graphviz
+Debian-based:   apt install python-sphinx py-sphinx_rtd_theme graphviz
+Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme graphviz
+Arch:           pacman -S python-sphinx python-sphinx_rtd_theme graphviz
+OSX:            brew install sphinx-doc graphviz
 """)
 
 

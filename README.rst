@@ -49,6 +49,8 @@ Documentation build dependencies:
 
 * sphinx
 
+* graphviz
+
 Dependencies:
 
 * libuv
