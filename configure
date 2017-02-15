@@ -167,6 +167,11 @@ def write_makefile():
         )
     )
     parser.add_argument(
+        '--verbose',
+        action="store_true",
+        help="Verbose build: display commands"
+    )
+    parser.add_argument(
         '--prefix',
         help="Install prefix. Default: /usr/local"
     )
@@ -184,6 +189,8 @@ def write_makefile():
         f.write("PROJECT := %s\n" % _project)
         f.write("VERSION := %s\n" % _version)
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
+        if args.verbose:
+            f.write("VERBOSE := True\n\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
         if args.dev:
             depends = list(read_depends().items())
