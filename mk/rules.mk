@@ -9,17 +9,17 @@ doc:
 endif
 
 ifeq ($(UNAME_S),Darwin)
-	STRIPCMD := strip -S
+STRPCMD := strip -S
 else
-	STRIPCMD := strip --strip-debug
+STRPCMD:= strip --strip-debug
 endif
 
 ifneq ($(UNAME_S),Darwin)
-	CFLAGS += -pthread
+CFLAGS += -pthread
 else
-	CFLAGS += -I/usr/local/opt/openssl/include
-	LDFLAGS += -L/usr/local/opt/openssl/lib
-	LDFLAGS += -lrt
+CFLAGS += -I/usr/local/opt/openssl/include
+LDFLAGS += -L/usr/local/opt/openssl/lib
+LDFLAGS += -lrt
 endif
 
 
@@ -55,14 +55,14 @@ $(BUILD)/libchirp.a: $(LIB_OBJECTS)
 ifeq ($(VERBOSE),True)
 	ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
 ifeq ($(STRIP),True)
-	$(STRIPCMD) $@
+	$(STRPCMD) $@
 endif
 else
 	@echo AR $@
 	@ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
 ifeq ($(STRIP),True)
 	@echo STRIP $@
-	@$(STRIPCMD) $@
+	@$(STRPCMD) $@
 endif
 endif
 
@@ -70,13 +70,13 @@ $(BUILD)/libchirp.so: $(LIB_OBJECTS)
 ifeq ($(VERBOSE),True)
 	$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
 ifeq ($(STRIP),True)
-	$(STRIPCMD) $@
+	$(STRPCMD) $@
 endif
 else
 	@echo LD $@
 	@$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
 ifeq ($(STRIP),True)
 	@echo STRIP $@
-	@$(STRIPCMD) $@
+	@$(STRPCMD) $@
 endif
 endif

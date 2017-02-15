@@ -183,8 +183,10 @@ and
     -I in CFLAGS
 """)
     if args.doc:
+        sys.stdout.write("Checking for sphinx: ")
         try:
             import sphinx  # noqa
+            print("ok")
         except ImportError:
             print("""sphinx was not found.
 
