@@ -206,6 +206,8 @@ def write_makefile():
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
         if args.verbose:
             f.write("VERBOSE := True\n\n")
+        if not args.dev:
+            f.write("STRIP := True\n\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
         if args.dev:
             depends = list(read_depends().items())
