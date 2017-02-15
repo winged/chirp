@@ -132,6 +132,7 @@ typedef struct ch_chirp_s {
 //    Struct containing the chirp identity.
 //
 // .. code-block:: cpp
+//
 typedef struct ch_identity_s {
     unsigned char data[16];
 } ch_identity_t;

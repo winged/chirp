@@ -8,10 +8,12 @@ doc: doc_files
 	@ln -s $(BUILD)/include $(BASE)/doc/inc
 	@ln -s $(BUILD)/src $(BASE)/doc/src
 ifeq ($(VERBOSE),True)
-	make -C $(BASE)/doc html
+	make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out
+	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
 else
 	@echo DOC
-	@make -C $(BASE)/doc html > /dev/null
+	@make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out > /dev/null
+	@! grep -E "WARNING|ERROR" $(DTMP)/doc.out
 endif
 else
 doc:

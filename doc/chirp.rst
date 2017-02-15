@@ -1,6 +1,0 @@
-=====
-Chirp
-=====
-
-.. automodule:: chirp
-   :members:

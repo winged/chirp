@@ -57,6 +57,8 @@ Tests in C
 
    src/connection_test.h.rst
    src/connection_test.c.rst
+   src/pool_test.h.rst
+   src/pool_test.c.rst
 
 Test binaries
 =============
