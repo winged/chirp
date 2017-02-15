@@ -153,7 +153,7 @@ and
 def write_makefile():
     """Parse arguments and write makefile accordingly."""
     parser = argparse.ArgumentParser(
-        description="Configure %s. Respects CC, CFLAGS , LDFLAGS and"
+        description="Configure %s. Respects CC, CFLAGS , LDFLAGS and "
         "ARFLAGS environment variables. If you intend to build bindings, "
         "please use the same compiler that was used to build "
         "the host language (ie. python, node, php)." % _project
@@ -169,7 +169,7 @@ def write_makefile():
     parser.add_argument(
         '--verbose',
         action="store_true",
-        help="Verbose build: display commands"
+        help="Verbose build: display commands. Also: Env-Var VERBOSE=True."
     )
     parser.add_argument(
         '--prefix',
