@@ -1,30 +1,15 @@
-=============
-API Reference
-=============
-
-Public C API
-============
-
-.. note::
-
-   The C API is not thread-safe except where stated: Functions have \*_ts suffix.
-   uv_async_send() can be used.
+==========================
+Developement and internals
+==========================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   inc/libchirp.h.rst
-   inc/libchirp/callbacks.h.rst
-   inc/libchirp/chirp.h.rst
-   inc/libchirp/const.h.rst
-   inc/libchirp/common.h.rst
-   inc/libchirp/encryption.h.rst
-   inc/libchirp/error.h.rst
-   inc/libchirp/message.h.rst
-   inc/libchirp/wrappers.h.rst
+   RULES.rst
+   rfcs.rst
 
-Internal C API
-==============
+Internal API
+============
 
 .. toctree::
    :maxdepth: 2
@@ -33,6 +18,7 @@ Internal C API
    src/buffer.h.rst
    src/chirp.h.rst
    src/chirp.c.rst
+   inc/libchirp/common.h.rst
    src/connection.h.rst
    src/connection.c.rst
    src/encryption.h.rst
@@ -48,8 +34,8 @@ Internal C API
    src/writer.h.rst
    src/writer.c.rst
 
-Tests in C
-==========
+Tests
+=====
 
 .. toctree::
    :maxdepth: 2
