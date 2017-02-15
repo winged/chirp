@@ -1,3 +1,5 @@
+.PHONY: install uninstall
+
 CFLAGS := \
 	-std=gnu99 \
 	-fPIC \
@@ -22,3 +24,16 @@ LDFLAGS := \
 	-lcrypto
 
 include $(BASE)/mk/rules.mk
+
+install: all
+	mkdir -p $(PREFIX)/usr/lib
+	cp -f $(BUILD)/libchirp.a $(PREFIX)/usr/lib
+	cp -f $(BUILD)/libchirp.so $(PREFIX)/usr/lib/libchirp.so.$(VERSION)
+	cd $(PREFIX)/usr/lib && ln -sf libchirp.so.$(VERSION) libchirp.so
+	cd $(PREFIX)/usr/lib && ln -sf libchirp.so.$(VERSION) libchirp.so.$(MAJOR)
+
+uninstall:
+	rm -f $(PREFIX)/usr/lib/libchirp.a
+	rm -f $(PREFIX)/usr/lib/libchirp.so.$(VERSION)
+	rm -f $(PREFIX)/usr/lib/libchirp.so
+	rm -f $(PREFIX)/usr/lib/libchirp.so.$(MAJOR)
