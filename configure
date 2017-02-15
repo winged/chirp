@@ -75,7 +75,8 @@ def read_depends():
     h_files = set()
     h_files.update(match_files("src", "*.h"))
     h_files.update(match_files("include", "*.h"))
-    for file_ in itertools.chain(c_files, h_files):
+    files = list(itertools.chain(c_files, h_files))
+    for file_ in files:
         for depend in parse_depends(file_, h_files):
             depends[file_].add(depend)
     dependency_list = {file_: flat_depends(
@@ -83,7 +84,7 @@ def read_depends():
         depends,
         set()
     ) for file_ in c_files}
-    return dependency_list
+    return dependency_list, files
 
 
 def replace_base(file_, repl):
@@ -228,17 +229,21 @@ def write_makefile(args):
         f.write("VERSION := %s\n" % _version)
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
         if args.verbose:
-            f.write("VERBOSE := True\n\n")
+            f.write("VERBOSE := True\n")
         if not args.dev:
-            f.write("STRIP := True\n\n")
+            f.write("STRIP := True\n")
+        if args.doc:
+            f.write("DOC := True\n")
+        f.write("\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
+        depends, files = read_depends()
         if args.dev:
-            depends = list(read_depends().items())
+            depends = list(depends.items())
         else:
             depends = [
                 (
                     key, value
-                ) for key, value in read_depends().items()
+                ) for key, value in depends.items()
                 if not key.endswith("test.c")
             ]
         f.write(
@@ -273,6 +278,13 @@ def write_makefile(args):
             f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
         f.write("\t\t%so \n\n" % replace_base_build(lib_objs[-1][:-1]))
 
+        if args.doc:
+            f.write("DOC_FILES := \\\n")
+            for file_ in files[:-1]:
+                f.write("\t\t%srst \\\n" % replace_base_build(file_[:-1]))
+            f.write("\t\t%srst \n\n" % replace_base_build(files[-1][:-1]))
+            f.write("doc_files: $(DOC_FILES) \n\n")
+
         for file_, dep in depends:
             if dep:
                 dep = list(dep)
@@ -294,7 +306,8 @@ def write_makefile(args):
     print("Created Makefile. It contains sensible defaults.")
 
 
-args = parse()
-write_makefile(args)
-write_config()
+if __name__ == "__main__":
+    args = parse()
+    write_makefile(args)
+    write_config()
 test_depends(args)
