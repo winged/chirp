@@ -104,12 +104,46 @@ def replace_base_build(file_):
     return replace_base(file_, "$(BUILD)")
 
 
-def test_depends():
+def parse():
+    """Parse the argumentgs."""
+    parser = argparse.ArgumentParser(
+        description="Configure %s. Respects CC, CFLAGS , LDFLAGS and "
+        "ARFLAGS environment variables. If you intend to build bindings, "
+        "please use the same compiler that was used to build "
+        "the host language (ie. python, node, php)." % _project
+    )
+    parser.add_argument(
+        '--dev',
+        action="store_true",
+        help=(
+            "Build for development. Enables debug build flags and coverage. "
+            "Includes all development make targets."
+        )
+    )
+    parser.add_argument(
+        '--verbose',
+        action="store_true",
+        help="Verbose build: display commands. Also: Env-Var VERBOSE=True."
+    )
+    parser.add_argument(
+        '--doc',
+        action="store_true",
+        help="Generate documentation. Sphinx has to be installed."
+    )
+    parser.add_argument(
+        '--prefix',
+        help="Install prefix. Default: /usr/local"
+    )
+
+    return parser.parse_args()
+
+
+def test_depends(args):
     """Test for dependencies."""
     failure = False
     sys.stdout.write("Checking for libuv: ")
     if os.system("make testlibuv"):
-        print("""libuv was not found. For details see config.log
+        print("""libuv was not found. For details see config.log.
 
 Please install libuv:
 
@@ -124,7 +158,7 @@ OSX:            brew install libuv
         print("ok")
     sys.stdout.write("Checking for openssl: ")
     if os.system("make testopenssl"):
-        print("""openssl was not found. For details see config.log
+        print("""openssl was not found. For details see config.log.
 
 Please install openssl:
 
@@ -147,6 +181,20 @@ and
 
     -I in CFLAGS
 """)
+    if args.doc:
+        try:
+            import sphinx  # noqa
+        except ImportError:
+            print("""sphinx was not found.
+
+Please install sphinx:
+
+Alpine:         apk add py-sphinx py-sphinx_rtd_theme
+Debian-based:   apt install python-sphinx py-sphinx_rtd_theme
+Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme
+Arch:           pacman -S python-sphinx python-sphinx_rtd_theme
+OSX:            brew install sphinx-doc
+""")
 
 
 def write_config():
@@ -165,33 +213,8 @@ def write_config():
     print("Created config.h. It contains sensible defaults.")
 
 
-def write_makefile():
+def write_makefile(args):
     """Parse arguments and write makefile accordingly."""
-    parser = argparse.ArgumentParser(
-        description="Configure %s. Respects CC, CFLAGS , LDFLAGS and "
-        "ARFLAGS environment variables. If you intend to build bindings, "
-        "please use the same compiler that was used to build "
-        "the host language (ie. python, node, php)." % _project
-    )
-    parser.add_argument(
-        '--dev',
-        action="store_true",
-        help=(
-            "Build for development. Enables debug build flags and coverage. "
-            "Includes all development make targets."
-        )
-    )
-    parser.add_argument(
-        '--verbose',
-        action="store_true",
-        help="Verbose build: display commands. Also: Env-Var VERBOSE=True."
-    )
-    parser.add_argument(
-        '--prefix',
-        help="Install prefix. Default: /usr/local"
-    )
-
-    args = parser.parse_args()
     prefix = "/usr/local"
     if args.prefix:
         prefix = args.prefix
@@ -271,6 +294,7 @@ def write_makefile():
     print("Created Makefile. It contains sensible defaults.")
 
 
-write_makefile()
+args = parse()
+write_makefile(args)
 write_config()
-test_depends()
+test_depends(args)

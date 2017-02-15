@@ -45,6 +45,10 @@ Build dependencies:
 
 * gcc or clang
 
+Documentation build dependencies:
+
+* sphinx
+
 Dependencies:
 
 * libuv
