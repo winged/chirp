@@ -87,12 +87,22 @@ def read_depends():
     return dependency_list
 
 
-def replace_base(file_):
-    """Replace the base path with $(BASE)."""
+def replace_base(file_, repl):
+    """Replace the base path."""
     if file_.startswith(_base):
-        return "$(BASE)%s" % file_[_baselen:]
+        return "%s%s" % (repl, file_[_baselen:])
     else:
         return file_
+
+
+def replace_base_base(file_):
+    """Replace the base path with $(BASE)."""
+    return replace_base(file_, "$(BASE)")
+
+
+def replace_base_build(file_):
+    """Replace the base path with $(BASE)."""
+    return replace_base(file_, "$(BUILD)")
 
 
 def test_depends():
@@ -143,7 +153,10 @@ and
 def write_makefile():
     """Parse arguments and write makefile accordingly."""
     parser = argparse.ArgumentParser(
-        description='Configure %s. Respects CFLAGS and LDFLAGS' % _project
+        description="Configure %s. Respects CC, CFLAGS , LDFLAGS and"
+        "ARFLAGS environment variables. If you intend to build bindings, "
+        "please use the same compiler that was used to build "
+        "the host language (ie. python, node, php)." % _project
     )
     parser.add_argument(
         '--dev',
@@ -163,17 +176,15 @@ def write_makefile():
     if args.prefix:
         prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
+        f.write(".PHONY: libraries executables objects\n")
         f.write("BASE := %s\n" % _base)
+        f.write("BUILD := %s\n" % path.realpath(os.curdir))
         f.write("PREFIX := %s\n" % prefix)
         f.write("DTMP := %s\n\n" % mkdtemp())
         f.write("PROJECT := %s\n" % _project)
         f.write("VERSION := %s\n" % _version)
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
-        f.write("include $(BASE)/mk/base.mk\n")
-        if args.dev:
-            f.write("include $(BASE)/mk/dev.mk\n\n")
-        else:
-            f.write("include $(BASE)/mk/rel.mk\n\n")
+        f.write("include $(BASE)/mk/base.mk\n\n")
         if args.dev:
             depends = list(read_depends().items())
         else:
@@ -183,9 +194,10 @@ def write_makefile():
                 ) for key, value in read_depends().items()
                 if not key.endswith("test.c")
             ]
-        f.write("libraries: {0}.a {0}.so\n\n".format(_project))
+        f.write("LIBRARIES := {0}.a {0}.so\n\n".format(_project))
+        f.write("libraries: $(LIBRARIES)\n\n")
         if args.dev:
-            f.write("executables: \\\n")
+            f.write("EXECUTABLES := \\\n")
             executables = [
                 (
                     key, value
@@ -193,20 +205,38 @@ def write_makefile():
                 if key.endswith("_etest.c")
             ]
             for executable, _ in executables[:-1]:
-                f.write("\t\t%s \\\n" % replace_base(executable[:-2]))
-            f.write("\t\t%s \n\n" % replace_base(executables[-1][0][:-2]))
-        f.write("objects: \\\n")
+                f.write("\t\t%s \\\n" % replace_base_build(executable[:-2]))
+            f.write(
+                "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
+            )
+            f.write("executables: $(EXECUTABLES)\n\n")
+        f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
-            f.write("\t\t%so \\\n" % replace_base(file_[:-1]))
-        f.write("\t\t%so \n\n" % replace_base(depends[-1][0][:-1]))
+            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
+        f.write("\t\t%so \n\n" % replace_base_build(depends[-1][0][:-1]))
+        f.write("objects: $(OBJECTS) \n\n")
+        f.write("LIB_OBJECTS := \\\n")
+        lib_objs = [
+            file_ for file_, _ in depends
+            if not file_.endswith("_etest.c")
+        ]
+        for file_ in lib_objs[:-1]:
+            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
+        f.write("\t\t%so \n\n" % replace_base_build(lib_objs[-1][:-1]))
 
         for file_, dep in depends:
             if dep:
                 dep = list(dep)
-                f.write("%s: \\\n" % replace_base(file_))
-                for depend in dep[:-1]:
-                    f.write("\t\t%s \\\n" % replace_base(depend))
-                f.write("\t\t%s \n\n" % replace_base(dep[-1]))
+                bfile = replace_base_base(file_)
+                f.write("%s: \\\n" % bfile)
+                for depend in dep:
+                    f.write("\t\t%s \\\n" % replace_base_base(depend))
+                f.write("\t\tconfig.h \\\n")
+                f.write("\t\tMakefile\n\n")
+        if args.dev:
+            f.write("\ninclude $(BASE)/mk/dev.mk")
+        else:
+            f.write("\ninclude $(BASE)/mk/rel.mk")
     try:
         os.unlink(path.join(_base, "config.h"))
     except Exception:

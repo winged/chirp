@@ -5,13 +5,22 @@ CFLAGS  := \
 	-Wextra \
 	-pedantic \
 	-Wno-unused-function \
-	-O3 \
+	-O2 \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
 	-I. \
 	$(CFLAGS)
 
-%.o: %.c
-	@echo CC $(subst $(BASE)/,,$<)
-	@mkdir -p "$(dir $(subst $(BASE)/,,$<))"
-	@$(CC) -c -o "$(subst $(BASE)/,,$@)" "$<" $(CFLAGS)
+include $(BASE)/mk/rules.mk
+
+
+$(BUILD)/%.o: $(BASE)/%.c
+	@echo CC $<
+	@mkdir -p "$(dir $@)"
+	@$(CC) -c -o "$@" "$<" $(CFLAGS)
+
+libchirp.a: $(LIB_OBJECTS)
+	@echo AR $@
+	@ar $(ARFLAGS) $@ $(LIB_OBJECTS)
+	@echo STRIP $@
+	@$(STRIP) $@

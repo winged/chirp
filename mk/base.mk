@@ -1,4 +1,4 @@
-all: objects
+all: libchirp.a
 
 testlibuv:
 	@gcc -c -o "$(DTMP)/uv.o" $(CFLAGS) "$(BASE)/mk/testlibuv.c" >> config.log 2>> config.log
@@ -9,3 +9,4 @@ testopenssl:
 clean:
 	rm -rf "$(DTMP)"/*
 	rm -rf src
+	rm -f $(LIBRARIES)
