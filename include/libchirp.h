@@ -11,6 +11,14 @@
 #include "libchirp/chirp.h"
 #include "libchirp/encryption.h"
 
+// .. c:var:: extern char* ch_version
+//
+//    Version of chirp.
+//
+// .. code-block:: cpp
+//
+extern char* ch_version;
+
 // .. c:function::
 void
 ch_set_alloc_funcs(

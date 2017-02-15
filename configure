@@ -14,7 +14,6 @@ import os
 import itertools
 from os import path
 import re
-import shutil
 import sys
 from tempfile import mkdtemp
 
@@ -64,8 +63,8 @@ def flat_depends(file_, depends, flat):
         if not dep:
             return flat
         for rec in dep:
-            flat.add(rec)
             flat_depends(rec, depends, flat)
+            flat.add(rec)
     return flat
 
 
@@ -148,6 +147,22 @@ and
 
     -I in CFLAGS
 """)
+
+
+def write_config():
+    """"Write config.h file with version."""
+    with codecs.open(
+            path.join(_base, "mk", "config.defs.h"),
+            "r",
+            "UTF-8"
+    ) as infile:
+        with codecs.open("config.h", "w", "UTF-8") as outfile:
+            for line in infile:
+                if line.startswith('#define CH_VERSION "XVERSIONX"'):
+                    outfile.write('#define CH_VERSION "%s"\n' % _version)
+                else:
+                    outfile.write(line)
+    print("Created config.h. It contains sensible defaults.")
 
 
 def write_makefile():
@@ -241,7 +256,8 @@ def write_makefile():
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/config.h \\\n")
-                f.write("\t\t$(BUILD)/Makefile\n\n")
+                f.write("\t\t$(BUILD)/Makefile\n")
+                f.write("\t@touch $@\n\n")
         if args.dev:
             f.write("\ninclude $(BASE)/mk/dev.mk")
         else:
@@ -251,12 +267,8 @@ def write_makefile():
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")
-    shutil.copy(
-        path.join(_base, "mk", "config.defs.h"),
-        "config.h"
-    )
-    print("Created config.h. It contains sensible defaults.")
 
 
 write_makefile()
+write_config()
 test_depends()

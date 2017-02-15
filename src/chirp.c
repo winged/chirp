@@ -135,7 +135,16 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp);
 //
 //   :return: A chirp error. see: :c:type:`ch_error_t`
 //   :rtype:  ch_error_t
+
+
+// .. c:var:: extern char* ch_version
+//    :noindex:
 //
+//    Version of chirp.
+//
+// .. code-block:: cpp
+//
+char* ch_version = CH_VERSION;
 
 // Definitions
 // ===========

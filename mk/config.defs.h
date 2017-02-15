@@ -1,6 +1,12 @@
 #ifndef ch_global_config_h
 #define ch_global_config_h
 
+// Version of chirp
+//
+// .. code-block:: cpp
+//
+#define CH_VERSION "XVERSIONX"
+
 // Minimal buffersize we require when allocating for libuv
 //
 // .. code-block:: cpp
