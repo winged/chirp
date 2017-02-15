@@ -10,7 +10,7 @@ CFLAGS := \
 	-O2 \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
-	-I. \
+	-I"$(BUILD)" \
 	$(CFLAGS)
 
 LDFLAGS := \
@@ -29,13 +29,13 @@ $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 	@$(CC) -c -o "$@" "$<" $(CFLAGS)
 
-libchirp.a: $(LIB_OBJECTS)
+$(BUILD)/libchirp.a: $(LIB_OBJECTS)
 	@echo AR $@
 	@ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
 	@echo STRIP $@
 	@$(STRIP) $@
 
-libchirp.so: $(LIB_OBJECTS)
+$(BUILD)/libchirp.so: $(LIB_OBJECTS)
 	@echo LD $@
 	@$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
 	@echo STRIP $@

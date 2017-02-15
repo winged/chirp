@@ -194,7 +194,9 @@ def write_makefile():
                 ) for key, value in read_depends().items()
                 if not key.endswith("test.c")
             ]
-        f.write("LIBRARIES := {0}.a {0}.so\n\n".format(_project))
+        f.write(
+            "LIBRARIES := $(BUILD)/{0}.a $(BUILD)/{0}.so\n\n".format(_project)
+        )
         f.write("libraries: $(LIBRARIES)\n\n")
         if args.dev:
             f.write("EXECUTABLES := \\\n")
@@ -231,8 +233,8 @@ def write_makefile():
                 f.write("%s: \\\n" % bfile)
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
-                f.write("\t\tconfig.h \\\n")
-                f.write("\t\tMakefile\n\n")
+                f.write("\t\t$(BUILD)/config.h \\\n")
+                f.write("\t\t$(BUILD)/Makefile\n\n")
         if args.dev:
             f.write("\ninclude $(BASE)/mk/dev.mk")
         else:
