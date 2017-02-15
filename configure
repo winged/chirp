@@ -40,7 +40,7 @@ def parse_depends(file_, h_files):
         for line in f:
             match = _include.match(line)
             if match:
-                header = match[1]
+                header = match.group(1)
                 base = path.dirname(
                     path.realpath(file_)
                 )
