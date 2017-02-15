@@ -1,4 +1,4 @@
-all: libchirp.a
+all: libraries
 
 testlibuv:
 	@gcc -c -o "$(DTMP)/uv.o" $(CFLAGS) "$(BASE)/mk/testlibuv.c" >> config.log 2>> config.log

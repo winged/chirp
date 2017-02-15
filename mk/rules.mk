@@ -11,4 +11,5 @@ ifneq ($(UNAME_S),Darwin)
 else
 	CFLAGS += -I/usr/local/opt/openssl/include
 	LDFLAGS += -L/usr/local/opt/openssl/lib
+	LDFLAGS += -lrt
 endif

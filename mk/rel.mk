@@ -1,15 +1,25 @@
-CFLAGS  := \
+CFLAGS := \
 	-std=gnu99 \
 	-fPIC \
 	-Wall \
 	-Wextra \
 	-pedantic \
+	-ffunction-sections \
+	-fdata-sections \
 	-Wno-unused-function \
 	-O2 \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
 	-I. \
 	$(CFLAGS)
+
+LDFLAGS := \
+	-Wl,--gc-sections \
+	-luv \
+	-lssl \
+	-lm \
+	-lpthread \
+	-lcrypto
 
 include $(BASE)/mk/rules.mk
 
@@ -21,6 +31,12 @@ $(BUILD)/%.o: $(BASE)/%.c
 
 libchirp.a: $(LIB_OBJECTS)
 	@echo AR $@
-	@ar $(ARFLAGS) $@ $(LIB_OBJECTS)
+	@ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
+	@echo STRIP $@
+	@$(STRIP) $@
+
+libchirp.so: $(LIB_OBJECTS)
+	@echo LD $@
+	@$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
 	@echo STRIP $@
 	@$(STRIP) $@
