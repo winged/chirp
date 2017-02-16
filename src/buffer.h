@@ -6,31 +6,42 @@
 // handler.
 //
 // .. code-block:: cpp
-
+//
 #ifndef ch_buffer_h
 #define ch_buffer_h
 
 #include "util.h"
 #include "config.h"
 
+// Declarations
+// ============
+
 // .. c:type:: ch_bf_handler_t
 //
-//    Preallocated buffer for a chirp handler
+//    Preallocated buffer for a chirp handler.
 //
-//    .. c:member:: void* header
+//    .. c:member:: ch_buf* header
 //
-//    Preallocated buffer for the chirp header
+//       Preallocated buffer for the chirp header.
 //
 //    .. c:member:: char* actor
 //
-//    Preallocated buffer for the actor
+//       Preallocated buffer for the actor.
 //
-//    .. c:member:: void* data
+//    .. c:member:: ch_buf* data
 //
-//    Preallocated buffer for the data
+//       Preallocated buffer for the data.
+//
+//    .. c:member:: uint8_t id
+//
+//       Identifier of the buffer.
+//
+//    .. c:member:: uint8_t used
+//
+//       Indicates how many times the buffer is/was used.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_bf_handler_s {
     ch_buf* header[CH_BF_PREALLOC_HEADER];
     char*   actor[CH_BF_PREALLOC_ACTOR];
@@ -41,12 +52,28 @@ typedef struct ch_bf_handler_s {
 
 // .. c:type:: ch_buffer_pool_t
 //
-//    Contains the preallocated buffers for the chirp handlers
+//    Contains the preallocated buffers for the chirp handlers.
 //
-//    .. c:member:: unsinged char state
+//    .. c:member:: uint8_t max_buffers
+//
+//       Defines the maximum number of buffers.
+//
+//    .. c:member:: uint8_t used_buffers
+//
+//       Defines how many buffers are currently used.
+//
+//    .. c:member:: uint32_t free_buffers
+//
+//       Defeines how many buffers are currently free (and therefore may be
+//       used).
+//
+//    .. c:member:: ch_bf_handler_t* handlers
+//
+//       Pointer of type ch_bf_handler_t to the actual handlers. See
+//       :c:type:`ch_bf_handler_t`.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_buffer_pool_s {
     uint8_t  max_buffers;
     uint8_t  used_buffers;
@@ -54,16 +81,18 @@ typedef struct ch_buffer_pool_s {
     ch_bf_handler_t* handlers;
 } ch_buffer_pool_t;
 
+// Definitions
+// ===========
+
 // .. c:function::
 static
 ch_inline
 void
 ch_bf_free(ch_buffer_pool_t* pool)
 //
-//    Free the buffer structure
+//    Free the given buffer structure.
 //
-//    :param ch_buffer_pool_t* pool: The buffer pool structure
-//    :param max_buffers: Buffers to allocate
+//    :param ch_buffer_pool_t* pool: The buffer pool structure to free
 //
 // .. code-block:: cpp
 //
@@ -77,9 +106,9 @@ ch_inline
 void
 ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 //
-//    Initialize the buffer pool structure
+//    Initialize the given buffer pool structure using given max. buffers.
 //
-//    :param ch_buffer_pool_t* pool: The buffer object
+//    :param ch_buffer_pool_t* pool: The buffer pool object
 //    :param max_buffers: Buffers to allocate
 //
 // .. code-block:: cpp
@@ -104,9 +133,15 @@ ch_inline
 ch_bf_handler_t*
 ch_bf_reserve(ch_buffer_pool_t* pool)
 //
-//    Reserve and get a handler buffer from the pool
+//    Reserve and return a new handler buffer from the pool. If no handler can
+//    be reserved NULL is returned.
 //
-//    :param ch_buffer_pool_t* pool: The buffer pool structure
+//    :param ch_buffer_pool_t* pool: The buffer pool structure which the
+//                                   reservation shall be made from.
+//
+//   :return: a pointer to a reserved handler buffer from the given buffer
+//            pool. See :c:type:`ch_bf_handler_t`
+//   :rtype:  ch_bf_handler_t
 //
 // .. code-block:: cpp
 //
@@ -133,14 +168,22 @@ ch_inline
 void
 ch_bf_return(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 //
-//    Reserve and get a handler buffer from the pool
+//    Set given handler buffer as unused in the buffer pool structure and
+//    (re-)add it to the list of free buffers.
 //
-//    :param ch_buffer_pool_t* pool: The buffer pool structure
-//    :param ch_bf_handler_t* handler_buf: The buffer pool structure
+//    TODO: Maybe use another name for this method as it does not seem to
+//          return something?
+//
+//    :param ch_buffer_pool_t* pool: The buffer pool structure containing the
+//                                   handler buffer
+//    :param ch_bf_handler_t* handler_buf: The handler buffer which shall be
+//                                         marked as free
 //
 // .. code-block:: cpp
 //
 {
+    // TODO: Should we not assert first, that the given handler buffer actually
+    //       IS not in the pool as free buffer?
     A(handler_buf->used == 1, "Double return of buffer.");
     handler_buf->used = 0;
     A(handler_buf->used == 0, "Buffer pool inconsistent.");

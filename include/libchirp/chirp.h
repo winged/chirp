@@ -14,26 +14,24 @@
 
 // .. c:type:: ch_config_t
 //
-//   TODO fix types
-//
 //    Chirp configuration.
 //
-//    .. c:member:: int REUSE_TIME
+//    .. c:member:: float REUSE_TIME
 //
-//       Time till a connection gets garbage collected during this time the
+//       Time until a connection gets garbage collected. After this the
 //       connection will be reused.
 //
-//    .. c:member:: int TIMEOUT
+//    .. c:member:: float TIMEOUT
 //
 //       General IO related timeout.
 //
-//    .. c:member:: int PORT
+//    .. c:member:: uint16_t PORT
 //
-//       Listen-port.
+//       Port for listening to connections.
 //
-//    .. c:member:: int BACKLOG
+//    .. c:member:: uint8_t BACKLOG
 //
-//       TCP-Listen socket backlog.
+//       TCP-listen socket backlog.
 //
 //    .. c:member:: uint8_t RETRIES
 //
@@ -41,13 +39,8 @@
 //
 //    .. c:member:: uint8_t MAX_HANDLERS
 //
-//       Count of handlers used. Allowed values between 1 and 32. Default: 16.
-//       If FLOW_CONTROL is on it must be >= 16.
-//
-//    .. c:member:: char FLOW_CONTROL
-//
-//       Flow control prevents overload of one node in chain for workers.
-//       Default: 1.
+//       Count of handlers used. Allowed values are values between 1 and 32.
+//       The default value is 16. If FLOW_CONTROL is on, it must be >= 16.
 //
 //    .. c:member:: char ACKNOWLEDGE
 //
@@ -56,31 +49,43 @@
 //       the risk of overloading the remote and the local machine. You have to
 //       set RETRIES and FLOW_CONTROL to 0 or chirp won't accept the config.
 //
+//    .. c:member:: char FLOW_CONTROL
+//
+//       Flow control prevents overloading of a node in a chain for workers.
+//       Default: 1.
+//
 //    .. c:member:: char CLOSE_ON_SIGINT
 //
-//       By default chirp closes on SIGINT (Ctrl-C)
+//       By default chirp closes on SIGINT (Ctrl-C).
 //
 //    .. c:member:: uint32_t BUFFER_SIZE
 //
 //       Size of the buffer used for a connection. Defaults to 0, which means
 //       use the size requested by libuv. Should not be set below 1024.
 //
-//    .. c:member:: char[16] BIND_V6
+//    .. c:member:: uint8_t[16] BIND_V6
 //
 //       Override IPv6 bind address.
 //
-//    .. c:member:: char[4] BIND_V4
+//    .. c:member:: uint8_t[4] BIND_V4
 //
 //       Override IPv4 bind address.
 //
-//    .. c:member:: unsigned char[16] IDENTITY
+//    .. c:member:: uint8_t[16] IDENTITY
 //
 //       Override the IDENTITY. By default all chars are 0, which means chirp
 //       will generate a IDENTITY.
 //
+//    .. c:member:: char* CERT_CHAIN_PEM
+//
+//       Holds the verification certificate.
+//
+//    .. c:member:: char* DH_PARAMS_PEM
+//
+//       Holds the path to the file containing DH parameters.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_config_s {
     float           REUSE_TIME;
     float           TIMEOUT;
@@ -99,7 +104,6 @@ typedef struct ch_config_s {
     char*           DH_PARAMS_PEM;
 } ch_config_t;
 
-
 // .. c:type:: ch_chirp_int_t
 //    :noindex:
 //
@@ -117,7 +121,7 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 //    internal data structures.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_chirp_s {
     ch_chirp_int_t*    _;
     ch_log_cb_t        _log;
@@ -184,7 +188,8 @@ ch_chirp_get_loop(ch_chirp_t* chirp);
 //
 //    :param ch_chirp_t chirp: Chirp object
 //
-//    TODO: Document return value
+//    :return: a libuv event loop object.
+//    :rtype:  uv_loop_t*
 //
 
 // .. c:function::
@@ -205,7 +210,8 @@ ch_chirp_init(
 //    :param uv_loop_t* loop: Reference to a libuv loop
 //    :param ch_log_cb_t log_cb: Callback to logging facility, can be NULL
 //
-//    TODO: Document return value
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype: ch_error_t
 //
 
 // .. c:function::
@@ -245,6 +251,9 @@ ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp);
 //    :param ch_config_t* config: Chirp config
 //    :param ch_chirp_t** chirp: Out: Pointer to chirp object pointer. Ca be
 //                               NULL
+//
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype: ch_error_t
 //
 // .. c:function::
 extern

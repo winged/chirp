@@ -24,21 +24,33 @@
 //
 //    Represents connection flags.
 //
-//    .. c:member:: CH_CN_BUF_USED
-//
-//       The connections buffer is currently used by libuv
-//
 //    .. c:member:: CH_CN_SHUTTING_DOWN
 //
-//       The connection is shutting down
+//       Indicates that the connection is shutting down.
 //
 //    .. c:member:: CH_CN_WRITE_PENDING
 //
-//       There is a write pending.
+//       Indicates that There is a write pending.
 //
 //    .. c:member:: CH_CN_TLS_HANDSHAKE
 //
-//       Handshake is running.
+//      Indicates that a handshake is running.
+//
+//    .. c:member:: CH_CN_ENCRYPTED
+//
+//       Indicates whether the connection is encrypted or not.
+//
+//    .. c:member:: CH_CN_BUF_WTLS_USED
+//
+//       Indicates if TLS for writing is used.
+//
+//    .. c:member:: CH_CN_BUF_RTLS_USED
+//
+//       Indicates if TLS for reading is used.
+//
+//    .. c:member:: CH_CN_BUF_UV_USED
+//
+//       Indicates that the connection buffer is currently used by libuv.
 //
 // .. code-block:: cpp
 //
@@ -55,12 +67,88 @@ typedef enum {
 
 // .. c:type:: ch_connection_t
 //
-//    Connection dictionary implemented as rbtree.
+//    Connection dictionary implemented as red-black tree.
+//
+//    .. c:member:: uint8_t ip_protocol
+//
+//       What IP protocol (IPv4 or IPv6) shall be used for connections.
 //
 //    .. c:member:: uint8_t[16] address
 //
 //       IPv4/6 address of the sender if the message was received.  IPv4/6
 //       address of the recipient if the message is going to be sent.
+//
+//    .. c:member:: int32_t port
+//
+//       The port that shall be used for connections.
+//
+//    .. c:member:: uint8_t[16] remote_identity
+//
+//       The identity of the remote target. This is used for getting the remote
+//       address.
+//
+//    .. c:member:: float max_timeout
+//
+//       The maximum amount of time in seconds that making a connection is
+//       being tried.
+//
+//    .. c:member:: uv_tcp_t client
+//
+//       The TCP handle (TCP stream) of the client, which is used to get the
+//       address of the peer connected to the handle.
+//
+//    .. c:member:: uv_buf* buffer_uv
+//
+//       Pointer to the libuv (data-) buffer data type.
+//
+//    .. c:member:: uv_buf* buffer_wtls
+//
+//       Pointer to the libuv buffer data type for writing data over TLS.
+//
+//    .. c:member:: uv_buf* buffer_rtls
+//
+//       Pointer to the libuv buffer data type for reading data over TLS.
+//
+//    .. c:member:: uv_buf_t buffer_uv_uv
+//
+//       The actual libuv (data-) buffer (using the buffer_uv data type).
+//
+//    .. c:member:: uv_buf_t buffer_wtls_uv
+//
+//       The actual libuv buffer for writing data over TLS (using the
+//       buffer_wtls data type).
+//
+//    .. c:member:: uv_buf_t buffer_any_uv
+//
+//       Generic libuv (data-) buffer used for writing over a connection. The
+//       data type of the buffer must be provided when writing.
+//
+//    .. c:member:: size_t buffer_size
+//
+//       The size that shall be used for initializing the libuv (data-)
+//       buffers.
+//
+//    .. c:member:: uv_write_cb write_callback
+//
+//       A callback which will be called after a sucessful write over a
+//       connection.
+//
+//    .. c:member:: size_t write_written
+//
+//       Holds how many bytes have been written over a connection. This is
+//       typically zero at first and gets increased with each partial write.
+//
+//    .. c:member:: size_t write_size
+//
+//       Indicates how many bytes shall in total be written over a connection.
+//
+//    .. c:member:: ch_buf* write_buffer
+//
+//       Pointer to the write buffer. The buffer that will be written to.
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
 //
 // TODO Complete
 //

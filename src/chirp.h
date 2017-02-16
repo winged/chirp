@@ -3,7 +3,7 @@
 // ============
 //
 // .. code-block:: cpp
-
+//
 #ifndef ch_chirp_h
 #define ch_chirp_h
 
@@ -13,13 +13,21 @@
 
 #include "sglib.h"
 
-SGLIB_DEFINE_RBTREE_PROTOTYPES(
+// Sglib Prototypes
+// ================
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
     ch_chirp_t,
     _left,
     _right,
     _color_field,
     SGLIB_NUMERIC_COMPARATOR
 )
+
+// Declarations
+// ============
 
 // .. c:type:: ch_chirp_flags_t
 //
@@ -34,6 +42,10 @@ SGLIB_DEFINE_RBTREE_PROTOTYPES(
 //
 //       Chirp is closed.
 //
+//    .. c:member:: CH_CHIRP_CLOSING
+//
+//       Chirp is being closed.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -46,14 +58,53 @@ typedef enum {
 //
 //    Chirp object.
 //
+//    .. c:member:: ch_config_t config
+//
+//       The current chirp configuration.
+//
+//    .. c:member:: int closing_tasks
+//
+//       Counter for the number of tasks when closing a connection (e.g.
+//       shutdown). This acts as semaphore.
+//
+//    .. c:member:: uint8_t flags
+//
+//       Holds the flags from :c:type:`ch_chirp_flags_t`, hence indicates
+//       whether chirp is closing, already closed and if the loop shall be
+//       stopped when closing.
+//
 //    .. c:member:: uv_async_t close
 //
-//       async handler to close chirp on the main-loop
+//       Asynchronous handler to close chirp on the main-loop.
 //
-//    .. c:member:: int auto_start
+//    .. c:member:: uv_prepare_t close_check
 //
-//       true if we have to close the libuv loop, otherwise the loop was
-//       supplied by the user
+//       Handle which will run the given callback (close callback, closes chirp
+//       when the closing semaphore reaches zero) once per loop iteration.
+//
+//    .. c:member:: ch_protocol_t protocol
+//
+//       Reference to protocol object. Provides access to connection and data
+//       specific functions.
+//
+//    .. c:member:: ch_encryption_t encryption
+//
+//       Reference to encryption object. Is used when a encrypted connection is
+//       used.
+//
+//    .. c:member:: uv_loop_t* loop
+//
+//       Pointer to the libuv (main) event loop. The event loop is the central
+//       part of libuv’s functionality. It takes care of polling for i/o and
+//       scheduling callbacks to be run based on different sources of events.
+//
+//    .. c:member:: uint8_t identity[16]
+//
+//       Array holding the identity of this chirp configuration.
+//
+//    .. c:member:: uint16_t public_port
+//
+//       The public port which this chirp configuration uses for connections.
 //
 // .. code-block:: cpp
 //
@@ -74,9 +125,9 @@ struct ch_chirp_int_s {
 void
 ch_chirp_close_cb(uv_handle_t* handle);
 //
-//    Reduce callback semaphore.
+//    Reduce closing callback semaphore.
 //
-//    TODO params
+//    :param uv_handle_t* handle: A libuv handle containing the chirp object
 //
 // .. code-block:: cpp
 //

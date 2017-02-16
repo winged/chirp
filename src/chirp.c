@@ -123,6 +123,9 @@ _ch_chirp_sig_handler(int);
 //
 //    Closes all chirp instances on sig int.
 //
+//    :param int signo: The signal number, that tells which signal should be
+//                      handled.
+//
 
 // .. c:function::
 static
@@ -378,7 +381,7 @@ ch_identity_t
 ch_chirp_get_identity(ch_chirp_t* chirp)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_closing_down_cb`
+//    see: :c:func:`ch_chirp_get_identity`
 //
 // .. code-block:: cpp
 //
@@ -394,7 +397,7 @@ uv_loop_t*
 ch_chirp_get_loop(ch_chirp_t* chirp)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_closing_down_cb`
+//    see: :c:func:`ch_chirp_get_loop`
 //
 // .. code-block:: cpp
 //
@@ -646,7 +649,7 @@ ch_error_t
 _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_sig_handler`
+//    see: :c:func:`_ch_chirp_verify_cfg`
 //
 // .. code-block:: cpp
 //
