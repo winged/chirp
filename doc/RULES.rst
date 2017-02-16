@@ -64,7 +64,7 @@ RULES
    #endif //_WIN32
 
 * Always unpack handles in functions and callbacks till you can verify the chirp magic
-* C4irp and C3irp are only used to disambiguate the python-only and the C based
+* Chirp and C3irp are only used to disambiguate the python-only and the C based
   version of chirp, everywhere else chirp is used
 * Embeddable: allocate memory via user callback
 * Every function returns ch_error_t
@@ -75,10 +75,10 @@ RULES
   - Use pointer if it has to be modified (also out params)
   - Use pointer where you have to because of forward declarations
 
-* Embrace libuv styles and use it for c4irp API
+* Embrace libuv styles and use it for chirp API
 * Literate programming
 * Local messages are sent to scheduler directly
-  - Binding will send local messages to scheduler directly (not using c4irp)
+  - Binding will send local messages to scheduler directly (not using chirp)
 * Localhost connections bypass TLS
 * Use C99 plus the extension used by libuv
 * PEP8 style in C is ok

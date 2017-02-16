@@ -4,7 +4,7 @@ RFC 01 - New Actor API
 
 .. note::
 
-   Since Python (CPython 2, 3 AND PyPy) is the primary target for C4irp we
+   Since Python (CPython 2, 3 AND PyPy) is the primary target for Chirp we
    define the this API for Python. I'm pretty sure I can create some C-Macros to
    make the API as secure as the Python version, but I don't invest any time
    into this matter at the moment. If the C API isn't as secure as the Python
@@ -229,7 +229,7 @@ based code.
 Level three: actor global state
 ===============================
 
-The actor model is now complete. One can always use C4irp as messaging layer for
+The actor model is now complete. One can always use Chirp as messaging layer for
 RPC, but of course with the given API it is up to the user to implement that.
 With another simple and clean extension to the model. RPC will be possible.
 

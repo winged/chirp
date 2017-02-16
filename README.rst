@@ -1,5 +1,5 @@
 =====
-C4irp
+Chirp
 =====
 
 Message-passing and actor-based programming for everyone
@@ -39,7 +39,7 @@ Unix
 
 Build dependencies:
 
-* python
+* python3 [2]_
 
 * make
 
@@ -83,6 +83,9 @@ In-source build is also possible.
    ./configure
    make
    sudo make install
+
+.. [2] Scripts can be patched to work with python2. It also possible to generate
+   the makefile on a different system (for example in a embedded scenario)
 
 Windows
 -------
@@ -134,3 +137,8 @@ Windows
 -------
 
 No development build available.
+
+License
+=======
+
+LGPL 3.0
