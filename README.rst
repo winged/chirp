@@ -10,23 +10,23 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 
 .. _pychirp: https://github.com/concretecloud/pychirp
 
-|floobits| |travis| |appveyor| |rtd| |coverage| [1]_
+|travis| [1]_ |rtd| |coverage| [2]_
 
-.. |floobits|  image:: https://floobits.com/ganwell/chirp.svg
-   :target: https://floobits.com/ganwell/chirp/redirect
-.. |travis|  image:: https://travis-ci.org/concretecloud/chirp-py.svg?branch=master
-   :target: https://travis-ci.org/concretecloud/chirp-py
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/l8rw8oiv64ledar6?svg=true
-   :target: https://ci.appveyor.com/project/ganwell/chirp
+.. |travis|  image:: https://travis-ci.org/concretecloud/chirp.svg?branch=master
+   :target: https://travis-ci.org/concretecloud/chirp
 .. |rtd| image:: https://img.shields.io/badge/docs-master-brightgreen.svg
-   :target: https://docs.adfinis-sygroup.ch/public/chirp/
+   :target: http://1042.ch/chirp/
 .. |coverage| image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
 
 `Read the Docs`_
 
-.. _`Read the Docs`: https://docs.adfinis-sygroup.ch/public/chirp/
+.. _`Read the Docs`: http://1042.ch/chirp/
 
-.. [1] Coverage enforced by tests (on travis)
+.. [1] Python/hypothesis based test-suite in external project seecc_.
+
+.. [2] Coverage enforced by tests (on travis, after 1.0 release)
+
+.. _seecc: https://github.com/concretecloud
 
 WORK IN PROGRESS
 ================
@@ -39,7 +39,7 @@ Unix
 
 Build dependencies:
 
-* python3 [2]_
+* python3 [3]_
 
 * make
 
@@ -84,7 +84,7 @@ In-source build is also possible.
    make
    sudo make install
 
-.. [2] Script-headers can be patched to work with python2. It also possible to generate
+.. [3] Script-headers can be patched to work with python2. It also possible to generate
    the makefile on a different system (for example in a embedded scenario)
 
 Windows
