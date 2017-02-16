@@ -84,7 +84,7 @@ In-source build is also possible.
    make
    sudo make install
 
-.. [2] Scripts can be patched to work with python2. It also possible to generate
+.. [2] Script-headers can be patched to work with python2. It also possible to generate
    the makefile on a different system (for example in a embedded scenario)
 
 Windows
