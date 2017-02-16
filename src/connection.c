@@ -42,7 +42,7 @@ ch_inline
 void
 _ch_cn_partial_write(ch_connection_t* conn);
 //
-//    Called by libuv when pending data has been sent
+//    Called by libuv when pending data has been sent.
 //
 //    :param ch_connection_t* conn: Connection
 //
@@ -162,7 +162,7 @@ void
 _ch_cn_partial_write(ch_connection_t* conn)
 //    :noindex:
 //
-//    see: :c:func:`_ch_cn_partial_write`
+//    See: :c:func:`_ch_cn_partial_write`
 //
 // .. code-block:: cpp
 //

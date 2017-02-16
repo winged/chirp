@@ -3,7 +3,7 @@
 // ============
 //
 // .. code-block:: cpp
-
+//
 #ifndef ch_chirp_h
 #define ch_chirp_h
 
@@ -28,7 +28,6 @@ SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
 
 // Declarations
 // ============
-
 
 // .. c:type:: ch_chirp_flags_t
 //

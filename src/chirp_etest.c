@@ -3,7 +3,7 @@
 // ===================
 //
 // .. code-block:: cpp
-
+//
 #include "libchirp.h"
 
 
@@ -18,7 +18,7 @@ main(
 //    Run chirp
 //
 // .. code-block:: cpp
-
+//
 {
     (void)(argc); // I hate incomplete main headers;
     (void)(argv); // I hate incomplete main headers;
