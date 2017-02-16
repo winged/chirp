@@ -58,16 +58,16 @@ Dependencies:
 * openssl
 
 
-Install to prefix /usr/local.
+Install to prefix /usr/local. (with docs)
 
 .. code-block:: bash
 
    cd build
-   ../configure
+   ../configure --doc
    make
    sudo make install
 
-Install to prefix /usr.
+Install to prefix /usr. (without docs)
 
 .. code-block:: bash
 
