@@ -222,6 +222,11 @@ def write_makefile(args):
     if args.prefix:
         prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
+        if args.dev:
+            f.write("all: libraries executables  ## Build everything\n\n")
+        else:
+            f.write("all: libraries\n\n")
+
         f.write(".PHONY: libraries executables objects\n")
         f.write("BASE := %s\n" % _base)
         f.write("BUILD := %s\n" % path.realpath(os.curdir))
@@ -266,6 +271,12 @@ def write_makefile(args):
                 "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
             )
             f.write("executables: $(EXECUTABLES)\n\n")
+            f.write("COV_FILES := \\\n")
+            for file_, _ in depends[:-1]:
+                f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
+            f.write("\t\t%s.gcov \n\n" % replace_base_build(depends[-1][0]))
+            f.write("coverage: $(COV_FILES)  ## Analyze coverage\n\n")
+
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
             f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
