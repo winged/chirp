@@ -28,10 +28,12 @@ endif
 
 ifneq ($(UNAME_S),Darwin)
 CFLAGS += -pthread
+LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -lrt
 else
 CFLAGS += -I/usr/local/opt/openssl/include
+LDFLAGS += -Wl,-dead_strip
 LDFLAGS += -L/usr/local/opt/openssl/lib
-LDFLAGS += -lrt
 endif
 
 
