@@ -16,11 +16,13 @@ from os import path
 import re
 import sys
 from tempfile import mkdtemp
+import shutil
 
 _project = "libchirp"
 _version = "0.1.0"
 
 _base = path.dirname(path.realpath(__file__))
+_build = path.realpath(os.curdir)
 _baselen = len(_base)
 _include = re.compile('^\s*#\s*include\s*"\s*([^"]+\s*).*$')
 
@@ -200,6 +202,19 @@ OSX:            brew install sphinx-doc graphviz
 """)
 
 
+def copy_files(args):
+    """Copy to build directory."""
+    if args.dev:
+        shutil.copy(
+            path.join(_base, "mk", "dh.pem"),
+            path.join(_build, "dh.pem")
+        )
+        shutil.copy(
+            path.join(_base, "mk", "cert.pem"),
+            path.join(_build, "cert.pem")
+        )
+
+
 def write_config():
     """"Write config.h file with version."""
     with codecs.open(
@@ -229,7 +244,7 @@ def write_makefile(args):
 
         f.write(".PHONY: libraries executables objects\n")
         f.write("BASE := %s\n" % _base)
-        f.write("BUILD := %s\n" % path.realpath(os.curdir))
+        f.write("BUILD := %s\n" % _build)
         f.write("PREFIX := %s\n" % prefix)
         f.write("DTMP := %s\n\n" % mkdtemp())
         f.write("PROJECT := %s\n" % _project)
@@ -301,13 +316,12 @@ def write_makefile(args):
         for file_, dep in depends:
             if dep:
                 dep = list(dep)
-                bfile = replace_base_base(file_)
+                bfile = "%so" % replace_base_build(file_[:-1])
                 f.write("%s: \\\n" % bfile)
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/config.h \\\n")
                 f.write("\t\t$(BUILD)/Makefile\n")
-                f.write("\t@touch $@\n\n")
         if args.dev:
             f.write("\ninclude $(BASE)/mk/dev.mk")
         else:
@@ -323,4 +337,5 @@ if __name__ == "__main__":
     args = parse()
     write_makefile(args)
     write_config()
+    copy_files(args)
     test_depends(args)

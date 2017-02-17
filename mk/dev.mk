@@ -30,30 +30,29 @@ help:  ## Display this help
 
 include $(BASE)/mk/rules.mk
 
-$(BUILD)/%_etest: $(BUILD)/%_etest.o
+$(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp.a
 ifeq ($(VERBOSE),True)
-	$(CC) -o $@ $< $(LDFLAGS) -lchirp
+	$(CC) -o $@ $< $(BUILD)/libchirp.a $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 else
 	@echo LD $@
-	@$(CC) -o $@ $< $(LDFLAGS) -lchirp
+	@$(CC) -o $@ $< $(BUILD)/libchirp.a $(LDFLAGS)
 ifeq ($(STRIP),True)
 	@echo STRIP $@
 	@$(STRPCMD) $@
 endif
 endif
 
-$(BUILD)/%.c.gcov: $(BASE)/%.c
+$(BUILD)/%.c.gcov: $(BUILD)/%.o
 ifeq ($(CC),clang)
 	xcrun llvm-cov gcov $<
 else
 	gcov $<
 endif
-# 	mv *.c.gcov src/; true
-# ifeq ($(IGNORE_COV),True)
-# 	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:"); true
-# else
-# 	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:")
-# endif
+ifeq ($(IGNORE_COV),True)
+	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:"); true
+else
+	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:")
+endif

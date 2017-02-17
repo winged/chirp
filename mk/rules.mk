@@ -1,6 +1,9 @@
 .PHONY: doc
 UNAME_S   := $(shell uname -s)
 
+libchirp.a: $(BUILD)/libchirp.a
+libchirp.so: $(BUILD)/libchirp.so
+
 ifeq ($(DOC),True)
 doc: doc_files
 	@rm -f $(BASE)/doc/inc
