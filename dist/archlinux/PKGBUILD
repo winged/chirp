@@ -1,0 +1,33 @@
+# Contributor: Jean-Louis Fuchs <ganwell@fangorn.ch>
+# Maintainer: Jean-Louis Fuchs <ganwell@fangorn.ch>
+pkgname=chirp
+pkgver=0.1.41564
+pkgrel=0
+pkgdesc="Message-passing and actor-based programming for everyone"
+url="https://github.com/concretecloud/chirp"
+arch=("i686" "x86_64")
+license=("AGPL")
+provides=('chirp')
+makedepends=("libuv"
+             "openssl"
+	     "python-sphinx"
+	     "python-sphinx_rtd_theme"
+	     "graphviz")
+source=("https://github.com/concretecloud/chirp/archive/$pkgver.tar.gz")
+sha512sums=("8dbeb85630e3bac4e3beb8760b38ff0f44f25a6914023d70a662e4d13d73c812ceeb8ee761fd6995ec49bd375ef37553ae4a955b091c9420793eff798322396a")
+
+build() {
+	cd "$pkgname-$pkgver"
+	./configure \
+		--doc \
+		--prefix "$pkgdir" \
+		|| return 1
+	make || return 1
+	make doc || return 1
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+	make install
+}
+
