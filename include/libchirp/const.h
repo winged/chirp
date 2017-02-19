@@ -9,8 +9,8 @@
 
 // .. c:type:: ch_ip_protocol_t
 //
-//    Select IPV4 or IPV6
-//  
+//    IP protocol definition. This is either IPV4 or IPV6.
+//
 //    .. c:member:: CH_IPV4
 //
 //       IPV4

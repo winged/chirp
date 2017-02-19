@@ -2,10 +2,16 @@
 // Testing basic chirp
 // ===================
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "libchirp.h"
-
 
 // .. c:function::
 int

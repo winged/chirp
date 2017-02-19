@@ -55,22 +55,6 @@ typedef void (*ch_free_cb_t)(void* buf);
 
 typedef void (*ch_log_cb_t)(char msg[], char error);
 
-// .. c:type:: ch_realloc_cb_t
-//
-//    Callback used by chirp to request memory reallocation.
-//
-//    .. c:member:: void* buf
-//
-//       The Buffer to reallocate
-//
-//    .. c:member:: size_t new_size
-//
-//       The requested new size
-//
-// .. code-block:: cpp
-//
-typedef void (*ch_send_cb_t)(int status, float load);
-
 // .. c:type:: ch_send_cb_t
 //
 //    Called by chirp when message is sent and can be freed.
@@ -85,6 +69,22 @@ typedef void (*ch_send_cb_t)(int status, float load);
 //       handlers are blocked. Use this for load balancing between multiple
 //       nodes. If flow control is not active or the remote node is completely
 //       blocked, you are likely to see timeouts on high load.
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_send_cb_t)(int status, float load);
+
+// .. c:type:: ch_realloc_cb_t
+//
+//    Callback used by chirp to request memory reallocation.
+//
+//    .. c:member:: void* buf
+//
+//       The Buffer to reallocate
+//
+//    .. c:member:: size_t new_size
+//
+//       The requested new size
 //
 // .. code-block:: cpp
 //

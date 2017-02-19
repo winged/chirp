@@ -2,6 +2,8 @@
 // Connection header
 // =================
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 //
 #ifndef ch_connection_h
@@ -9,6 +11,9 @@
 
 // Project includes
 // ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/chirp.h"
 #include "message.h"
 #include "reader.h"
@@ -16,9 +21,42 @@
 
 // System includes
 // ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include "sglib.h"
+
+// Sglib Prototypes
+// ================
+//
+// .. code-block:: cpp
+//
+#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_t,
+    left,
+    right,
+    color_field,
+    CH_CONNECTION_CMP
+)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_set_t,
+    left,
+    right,
+    color_field,
+    SGLIB_NUMERIC_COMPARATOR
+)
+
+// Declarations
+// ============
 
 // .. c:type:: ch_cn_flags_t
 //
@@ -63,7 +101,6 @@ typedef enum {
     CH_CN_BUF_RTLS_USED  = 1 << 5,
     CH_CN_BUF_UV_USED    = 1 << 6,
 } ch_cn_flags_t;
-
 
 // .. c:type:: ch_connection_t
 //
@@ -150,10 +187,88 @@ typedef enum {
 //
 //       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
 //
-// TODO Complete
+//    .. c:member:: uv_shutdown_t shutdown_req
+//
+//       Shutdown request object of type uv_shutdown_t. It is used to shutdown
+//       the outgoing (write) side of a duplex stream.
+//
+//    .. c:member:: uv_write_t write_req
+//
+//       Write request objet, which is used to write data on a handle.
+//
+//    .. c:member:: uv_timer_t shutdown_timeout
+//
+//       Timer handle used when shutting down a connection. This is used to set
+//       timer which will fire a set callback on the next event loop iteration.
+//       The time is specified in milliseconds and provided by
+//       :c:type:`ch_config_t`.
+//
+//    .. c:member:: int8_t shutdown_tasks
+//
+//       Counter for tasks that need to be done when shutting down a connection.
+//       Tasks may be calling closing-callbacks for example, on a request handle
+//       or the shutdown timer handle. This acts as semaphore.
+//
+//    .. c:member:: uint8_t flags
+//
+//       Flags indicating the state of a connection, e.g. shutting down, write
+//       pending, TLS handshake, whether the connection is encrypted or not and
+//       so on, see :c:type:`ch_cn_flags_t`.
+//
+//    .. c:member:: SSL* ssl
+//
+//       Pointer to a SSL (data-) structure. This is used when using an
+//       encrypted connection over SSL.
+//
+//    .. c:member:: BIO* bio_ssl
+//
+//       Pointer to the BIO structure of SSL. BIO is an I/O stream abstraction
+//       and essentially OpenSSL's answer to the C library's FILE pointer. This
+//       is used to create a connected BIO pair alongside with
+//       :c:member:`bio_app` and is only used for the SSL connection.
+//
+//    .. c:member:: BIO* bio_app
+//
+//       Pointer to the applications BIO structure. This is used to read and
+//       write (partial) data over TLS.
+//
+//    .. c:member:: int tls_handshake_state
+//
+//       Holds the current state of the SSL handshake when using an encrypted
+//       connection and TLS handshakes. This is used within the protocol, see
+//       :c:func:`_ch_pr_do_handshake`.
+//
+//    .. c:member:: float load
+//
+//       The load of the remote peer. This is used when a protocol error or an
+//       timeout happens when writing. See :c:member:`ch_send_cb_t.load`.
+//
+//    .. c:member:: ch_reader_t reader
+//
+//       Handle to a chirp reader, handles handshakes and reads (buffers) on a
+//       connection.
+//
+//    .. c:member:: ch_writer_t writer
+//
+//       Handle to a chirp writer, handles sending and writing on a connection.
+//
+//    .. c:member:: char color_field
+//
+//       The color of the current (connection-) node. This may either be red or
+//       black, as connections are built as a red-black tree.
+//
+//    .. c:member:: struct ch_connection_s* left
+//
+//       (Struct-) Pointer to the left child of the current connection (node)
+//       in the red-black tree.
+//
+//    .. c:member:: struct ch_connection_s* right
+//
+//       (Struct-) Pointer to the right child of the current connection (node)
+//       in the red-black tree.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_connection_s {
     uint8_t                 ip_protocol;
     uint8_t                 address[16];
@@ -192,29 +307,6 @@ typedef struct ch_connection_s {
 
 typedef ch_connection_t ch_connection_set_t;
 
-// Sglib Prototypes
-// ================
-//
-// .. code-block:: cpp
-//
-#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
-
-SGLIB_DEFINE_RBTREE_PROTOTYPES(
-    ch_connection_t,
-    left,
-    right,
-    color_field,
-    CH_CONNECTION_CMP
-)
-
-SGLIB_DEFINE_RBTREE_PROTOTYPES(
-    ch_connection_set_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
-
 // .. c:function::
 void
 ch_cn_close_cb(uv_handle_t* handle);
@@ -223,7 +315,6 @@ ch_cn_close_cb(uv_handle_t* handle);
 //
 //    :param uv_handle_t* handle: The libuv handle holding the
 //                                connection
-
 
 // .. c:function::
 void
@@ -250,41 +341,6 @@ ch_cn_shutdown(ch_connection_t* conn);
 //                                  chirp instance.
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype: ch_error_t
-
-// .. c:function::
-static
-ch_inline
-int
-ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
-//
-//    Compare operator for connections.
-//
-//    :param ch_connection_t* x: First connection instance to compare
-//    :param ch_connection_t* y: Second connection instance to compare
-//    :return: the comparision between
-//                 - the IP protocols, if they are not the same, or
-//                 - the addresses, if they are not the same, or
-//                 - the ports
-//    :rtype: int
-//
-// .. code-block:: cpp
-//
-{
-    if(x->ip_protocol != y->ip_protocol) {
-        return x->ip_protocol - y->ip_protocol;
-    } else {
-        int tmp_cmp = memcmp(
-            x->address,
-            y->address,
-            x->ip_protocol == CH_IPV6 ? 16 : 4
-        );
-        if(tmp_cmp != 0) {
-            return tmp_cmp;
-        } else {
-            return x->port - y->port;
-        }
-    }
-}
 
 // .. c:function::
 ch_error_t
@@ -336,5 +392,44 @@ ch_cn_write(
 //
 //
 // .. code-block:: cpp
+
+// Definitions
+// ===========
+
+// .. c:function::
+static
+ch_inline
+int
+ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
+//
+//    Compare operator for connections.
+//
+//    :param ch_connection_t* x: First connection instance to compare
+//    :param ch_connection_t* y: Second connection instance to compare
+//
+//    :return: the comparision between
+//                 - the IP protocols, if they are not the same, or
+//                 - the addresses, if they are not the same, or
+//                 - the ports
+//    :rtype: int
+//
+// .. code-block:: cpp
+//
+{
+  if(x->ip_protocol != y->ip_protocol) {
+    return x->ip_protocol - y->ip_protocol;
+  } else {
+    int tmp_cmp = memcmp(
+                         x->address,
+                         y->address,
+                         x->ip_protocol == CH_IPV6 ? 16 : 4
+                         );
+    if(tmp_cmp != 0) {
+      return tmp_cmp;
+    } else {
+      return x->port - y->port;
+    }
+  }
+}
 
 #endif //ch_connection_h

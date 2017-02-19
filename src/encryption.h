@@ -2,18 +2,33 @@
 // Encryption header
 // =================
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 
 #ifndef ch_encryption_h
 #define ch_encryption_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/chirp.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/ssl.h>
+
+// Declarations
+// ============
 
 // .. c:type:: ch_en_tls_ops_t
 //
-//    Represents tls operations
+//    Represents TLS operations.
 //
 //    .. c:member:: CH_EN_OP_HANDSHAKE
 //
@@ -49,7 +64,7 @@ typedef enum {
 //       reference back to chirp
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_encryption_s {
     ch_chirp_t* chirp;
     SSL_CTX*    ssl_ctx;
@@ -65,24 +80,6 @@ _cn_en_free(void* buf, const char* file, int line);
 //    :param void* buf: Buffer to free
 //    :param const char* file: File the allocation came from
 //    :param int line: The line the allocation came from
-
-// .. c:function::
-static
-ch_inline
-void
-ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
-//
-//    Initialize the encryption struct.
-//
-//    :param ch_chirp_t* chirp: Chirp instance
-//    :param ch_encryption_t* enc: Encryption to initialize
-//
-// .. code-block:: cpp
-//
-{
-    memset(enc, 0, sizeof(ch_encryption_t));
-    enc->chirp = chirp;
-}
 
 // .. c:function::
 static
@@ -111,18 +108,45 @@ _cn_en_realloc(void* buf, size_t new_size, const char* file, int line);
 ch_error_t
 ch_en_start(ch_encryption_t* enc);
 //
-//    Start the encryption
+//    Start the encryption.
 //
-//    TODO params
+//    :param ch_encryption_t* enc: Pointer to a encryption object (holding chirp
+//                                 and OpenSSL context)
 //
+//   :return: A chirp error. see: :c:type:`ch_error_t`
+//   :rtype:  ch_error_t
+
 // .. c:function::
 ch_error_t
 ch_en_stop(ch_encryption_t* enc);
 //
-//    Stop the encryption
+//    Stop the encryption.
 //
-//    TODO params
+//    :param ch_encryption_t* enc: pointer to a encryption object (holding chirp
+//                                 and openssl context)
+//
+//   :return: A chirp error. see: :c:type:`ch_error_t`
+//   :rtype:  ch_error_t
+
+// Definitions
+// ===========
+
+// .. c:function::
+static
+ch_inline
+void
+ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
+//
+//    Initialize the encryption struct.
+//
+//    :param ch_chirp_t* chirp: Chirp instance
+//    :param ch_encryption_t* enc: Encryption to initialize
 //
 // .. code-block:: cpp
 //
+{
+  memset(enc, 0, sizeof(ch_encryption_t));
+  enc->chirp = chirp;
+}
+
 #endif //ch_encryption_h

@@ -2,14 +2,29 @@
 // Encryption
 // ==========
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "encryption.h"
 #include "chirp.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/crypto.h>
 #include <openssl/engine.h>
 #include <openssl/conf.h>
+
+// Declarations
+// ============
 
 // .. c:var:: _ch_en_manual_openssl
 //
@@ -27,6 +42,9 @@ static char _ch_en_manual_openssl = 0;
 // .. code-block:: cpp
 //
 static int _ch_en_openssl_ref_count = 0;
+
+// Definitions
+// ===========
 
 // .. c:function::
 ch_error_t

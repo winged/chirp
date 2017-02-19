@@ -2,12 +2,25 @@
 // Connection
 // ==========
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "connection.h"
 #include "chirp.h"
 #include "util.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/err.h>
 
 // Sglib Prototypes
@@ -776,7 +789,8 @@ ch_cn_read_alloc_cb(
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    // ichirp->config.BUFFER_SIZE = 40; // TODO remove
+    // .. todo:: Remove
+    //    ichirp->config.BUFFER_SIZE = 40; // TODO remove
     A(!(conn->flags & CH_CN_BUF_UV_USED), "UV buffer still used");
 #   ifndef NDEBUG
         conn->flags |= CH_CN_BUF_UV_USED;
