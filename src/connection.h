@@ -150,10 +150,87 @@ typedef enum {
 //
 //       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
 //
-// TODO Complete
+//    .. c:member:: uv_shutdown_t shutdown_req
+//
+//       Shutdown request object of type uv_shutdown_t. It is used to shutdown
+//       the outgoing (write) side of a duplex stream.
+//
+//    .. c:member:: uv_write_t write_req
+//
+//       Write request objet, which is used to write data on a handle.
+//
+//    .. c:member:: uv_timer_t shutdown_timeout
+//
+//       Timer handle used when shutting down a connection. This is used to set
+//       timer which will fire a set callback on the next event loop iteration.
+//       The time is specified in milliseconds and provided by
+//       :c:type:`ch_config_t`.
+//
+//    .. c:member:: int8_t shutdown_tasks
+//
+//       Counter for tasks that need to be done when shutting down a connection.
+//       Tasks may be calling closing-callbacks for example, on a request handle
+//       or the shutdown timer handle. This acts as semaphore.
+//
+//    .. c:member:: uint8_t flags
+//
+//       Flags indicating the state of a connection, e.g. shutting down, write
+//       pending, TLS handshake, whether the connection is encrypted or not and
+//       so on, see :c:type:`ch_cn_flags_t`.
+//
+//    .. c:member:: SSL* ssl
+//
+//       Pointer to a SSL (data-) structure. This is used when using an
+//       encrypted connection over SSL.
+//
+//    .. c:member:: BIO* bio_ssl
+//
+//       Pointer to the BIO structure of SSL. BIO is an I/O stream abstraction
+//       and essentially OpenSSL's answer to the C library's FILE pointer. This
+//       is used to create a connected BIO pair alongside with
+//       :c:member:`bio_app` and is only used for the SSL connection.
+//
+//    .. c:member:: BIO* bio_app
+//
+//       Pointer to the applications BIO structure. This is used to read and
+//       write (partial) data over TLS.
+//
+//    .. c:member:: int tls_handshake_state
+//
+//       Holds the current state of the SSL handshake when using an encrypted
+//       connection and TLS handshakes. This is used within the protocol, see
+//       :c:func:`_ch_pr_do_handshake`.
+//
+//    .. c:member:: float load
+//
+//       The load of the remote peer. This is used when a protocol error or an
+//       timeout happens when writing. See :c:type:`ch_send_cb_t.load`.
+//
+//    .. c:member:: ch_reader_t reader
+//
+//       Handle to a chirp reader, handles handshakes and reads (buffers) on a
+//       connection.
+//
+//    .. c:member:: ch_writer_t writer
+//
+//       Handle to a chirp writer, handles sending and writing on a connection.
+//
+//    .. c:member:: char color_field
+//
+//       The color of the current (connection-) node. This may either be red or
+//       black, as connections are built as a red-black tree.
+//
+//    .. c:member:: struct ch_connection_s* left
+//
+//       (Struct-) Pointer to the left child of the current connection (node)
+//       in the red-black tree.
+//
+//    .. c:member:: struct ch_connection_s* right
+//
+//       (Struct-) Pointer to the right child of the current connection (node)
+//       in the red-black tree.
 //
 // .. code-block:: cpp
-
 typedef struct ch_connection_s {
     uint8_t                 ip_protocol;
     uint8_t                 address[16];
@@ -199,6 +276,8 @@ typedef ch_connection_t ch_connection_set_t;
 //
 #define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
 
+// .. code-block:: cpp
+//
 SGLIB_DEFINE_RBTREE_PROTOTYPES(
     ch_connection_t,
     left,
@@ -207,6 +286,8 @@ SGLIB_DEFINE_RBTREE_PROTOTYPES(
     CH_CONNECTION_CMP
 )
 
+// .. code-block:: cpp
+//
 SGLIB_DEFINE_RBTREE_PROTOTYPES(
     ch_connection_set_t,
     left,
