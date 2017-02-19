@@ -64,6 +64,7 @@ typedef enum {
 //       reference back to chirp
 //
 // .. code-block:: cpp
+//
 typedef struct ch_encryption_s {
     ch_chirp_t* chirp;
     SSL_CTX*    ssl_ctx;

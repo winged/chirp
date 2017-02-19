@@ -26,6 +26,9 @@ test_ch_cn_conn_dict(
         int* y_mem
 )
 //    :noindex:
+//
+// .. code-block:: cpp
+//
 {
     ch_connection_t* dict = NULL;
     ch_connection_t* m = NULL;
