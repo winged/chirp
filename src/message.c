@@ -2,8 +2,15 @@
 // Message
 // =======
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "message.h"
 #include "util.h"
 

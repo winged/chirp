@@ -1,14 +1,26 @@
 // =======
 // Message
 // =======
-// 
+//
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
-
+//
 #ifndef ch_libchirp_message_h
 #define ch_libchirp_message_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "common.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -16,18 +28,40 @@
 #include <arpa/inet.h>
 #endif // _WIN32
 
+// Declarations
+// ============
 
-// .. c:type:: ch_message_t
+// .. c:macro:: CH_WIRE_MESSAGE
 //
-//    Represents a message.
-//  
-//    .. c:member:: uint8_t[16] address
+//    Defines a chirp-wire message.
 //
-//       IPv4/6 address of the sender if the message was received.  IPv4/6
-//       address of the recipient if the message is going to be sent.
+//    .. c:member:: uint8_t[16] identity
+//
+//       The identity of the message.
+//
+//    .. c:member:: uint8_t[16] serial
+//
+//       The serial number of the message.
+//
+//    .. c:member:: uint8_t message_type
+//
+//       The type of the message.
+//
+//    .. c:member:: uint16_t header_len
+//
+//       Length of the message header.
+//
+//    .. c:member:: uint16_t actor_len
+//
+//       Length of the actor. Defines the encoding of the actor. The default
+//       actor is encoded as :code:`actor_len = 0`.
+//
+//    .. c:member:: uint32_t data_len
+//
+//       Length of the data the message contains.
 //
 // .. code-block:: cpp
-
+//
 #define CH_WIRE_MESSAGE \
     uint8_t  identity[16]; \
     uint8_t  serial[16]; \
@@ -36,6 +70,62 @@
     uint16_t actor_len; \
     uint32_t data_len \
 
+// .. c:type:: ch_message_t
+//
+//    Represents a message.
+//
+//    .. c:member:: CH_WIRE_MESSAGE
+//
+//       Wire-specific details about the message, such as identity, serial, type
+//       and data length. See :c:macro:`CH_WIRE_MESSAGE`.
+//
+//    .. c:member:: ch_buf* header
+//
+//       Header of the message defined as (char-) buffer.
+//
+//    .. c:member:: char* actor
+//
+//       The actor of the message. The actor is defined by the actor length,
+//       :c:member:`actor_len` and its default encoding is
+//       :code:`actor_len = 0`. An actor is an universal primitive of concurrent
+//       computation.
+//
+//    .. c:member:: ch_buf* data
+//
+//       The data of the message as pointer to a buffer.
+//
+//    .. c:member:: uint8_t ip_protocol
+//
+//       The IP protocol which was / shall be used for this message. This may
+//       either be IPv4 or IPv6. See :c:type:`ch_ip_protocol_t`.
+//
+//    .. c:member:: uint8_t[16] address
+//
+//       IPv4/6 address of the sender if the message was received. IPv4/6
+//       address of the recipient if the message is going to be sent.
+//
+//    .. c:member:: int32_t port
+//
+//       The port that the will be used reading/writing a message over a
+//       connection.
+//
+//    .. c:member:: int8_t free_header
+//
+//       Unused.
+//       .. todo:: Unused.
+//
+//    .. c:member:: int8_t free_actor
+//
+//       Unused.
+//       .. todo:: Unused.
+//
+//    .. c:member:: int8_t free_data
+//
+//       Unused.
+//       .. todo:: Unused.
+//
+// .. code-block:: cpp
+//
 typedef struct ch_message_s {
     // Network data, has to be sent in network order
     CH_WIRE_MESSAGE;
@@ -54,17 +144,18 @@ typedef struct ch_message_s {
 
 // .. c:type:: ch_ms_message_t
 //
-//    Wire message (network endianness)
+//    Wire message (network endianness), see :c:macro:`CH_WIRE_MESSAGE`.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_ms_message_s {
     CH_WIRE_MESSAGE;
 } ch_ms_message_t;
 
 // .. c:type:: ch_text_address_t
 //
-//    Type to be used with :c:func:`ch_msg_get_address`
+//    Type to be used with :c:func:`ch_msg_get_address`. Used for the textual
+//    representation of the IP-address.
 //
 // .. code-block:: cpp
 //

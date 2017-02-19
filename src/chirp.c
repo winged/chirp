@@ -2,13 +2,24 @@
 // Chirp
 // =====
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "chirp.h"
 #include "util.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/err.h>
-
 #include <time.h>
 #include <signal.h>
 #ifdef _WIN32

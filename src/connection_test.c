@@ -2,10 +2,18 @@
 // Connection test
 // ===============
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "connection_test.h"
 
+// .. c:function::
 extern
 void
 test_ch_cn_conn_dict(
@@ -16,7 +24,9 @@ test_ch_cn_conn_dict(
         int* len,
         int* x_mem,
         int* y_mem
-) {
+)
+//    :noindex:
+{
     ch_connection_t* dict = NULL;
     ch_connection_t* m = NULL;
 

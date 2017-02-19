@@ -2,15 +2,27 @@
 // Chirp header
 // ============
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 //
 #ifndef ch_chirp_h
 #define ch_chirp_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp.h"
 #include "protocol.h"
 #include "encryption.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include "sglib.h"
 
 // Sglib Prototypes

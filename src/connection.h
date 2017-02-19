@@ -2,6 +2,8 @@
 // Connection header
 // =================
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 //
 #ifndef ch_connection_h
@@ -9,6 +11,9 @@
 
 // Project includes
 // ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/chirp.h"
 #include "message.h"
 #include "reader.h"
@@ -16,9 +21,42 @@
 
 // System includes
 // ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include "sglib.h"
+
+// Sglib Prototypes
+// ================
+//
+// .. code-block:: cpp
+//
+#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_t,
+    left,
+    right,
+    color_field,
+    CH_CONNECTION_CMP
+)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_set_t,
+    left,
+    right,
+    color_field,
+    SGLIB_NUMERIC_COMPARATOR
+)
+
+// Declarations
+// ============
 
 // .. c:type:: ch_cn_flags_t
 //
@@ -63,7 +101,6 @@ typedef enum {
     CH_CN_BUF_RTLS_USED  = 1 << 5,
     CH_CN_BUF_UV_USED    = 1 << 6,
 } ch_cn_flags_t;
-
 
 // .. c:type:: ch_connection_t
 //
@@ -204,7 +241,7 @@ typedef enum {
 //    .. c:member:: float load
 //
 //       The load of the remote peer. This is used when a protocol error or an
-//       timeout happens when writing. See :c:type:`ch_send_cb_t.load`.
+//       timeout happens when writing. See :c:member:`ch_send_cb_t.load`.
 //
 //    .. c:member:: ch_reader_t reader
 //
@@ -231,6 +268,7 @@ typedef enum {
 //       in the red-black tree.
 //
 // .. code-block:: cpp
+//
 typedef struct ch_connection_s {
     uint8_t                 ip_protocol;
     uint8_t                 address[16];
@@ -269,33 +307,6 @@ typedef struct ch_connection_s {
 
 typedef ch_connection_t ch_connection_set_t;
 
-// Sglib Prototypes
-// ================
-//
-// .. code-block:: cpp
-//
-#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES(
-    ch_connection_t,
-    left,
-    right,
-    color_field,
-    CH_CONNECTION_CMP
-)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES(
-    ch_connection_set_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
-
 // .. c:function::
 void
 ch_cn_close_cb(uv_handle_t* handle);
@@ -304,7 +315,6 @@ ch_cn_close_cb(uv_handle_t* handle);
 //
 //    :param uv_handle_t* handle: The libuv handle holding the
 //                                connection
-
 
 // .. c:function::
 void
@@ -331,41 +341,6 @@ ch_cn_shutdown(ch_connection_t* conn);
 //                                  chirp instance.
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype: ch_error_t
-
-// .. c:function::
-static
-ch_inline
-int
-ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
-//
-//    Compare operator for connections.
-//
-//    :param ch_connection_t* x: First connection instance to compare
-//    :param ch_connection_t* y: Second connection instance to compare
-//    :return: the comparision between
-//                 - the IP protocols, if they are not the same, or
-//                 - the addresses, if they are not the same, or
-//                 - the ports
-//    :rtype: int
-//
-// .. code-block:: cpp
-//
-{
-    if(x->ip_protocol != y->ip_protocol) {
-        return x->ip_protocol - y->ip_protocol;
-    } else {
-        int tmp_cmp = memcmp(
-            x->address,
-            y->address,
-            x->ip_protocol == CH_IPV6 ? 16 : 4
-        );
-        if(tmp_cmp != 0) {
-            return tmp_cmp;
-        } else {
-            return x->port - y->port;
-        }
-    }
-}
 
 // .. c:function::
 ch_error_t
@@ -417,5 +392,44 @@ ch_cn_write(
 //
 //
 // .. code-block:: cpp
+
+// Definitions
+// ===========
+
+// .. c:function::
+static
+ch_inline
+int
+ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
+//
+//    Compare operator for connections.
+//
+//    :param ch_connection_t* x: First connection instance to compare
+//    :param ch_connection_t* y: Second connection instance to compare
+//
+//    :return: the comparision between
+//                 - the IP protocols, if they are not the same, or
+//                 - the addresses, if they are not the same, or
+//                 - the ports
+//    :rtype: int
+//
+// .. code-block:: cpp
+//
+{
+  if(x->ip_protocol != y->ip_protocol) {
+    return x->ip_protocol - y->ip_protocol;
+  } else {
+    int tmp_cmp = memcmp(
+                         x->address,
+                         y->address,
+                         x->ip_protocol == CH_IPV6 ? 16 : 4
+                         );
+    if(tmp_cmp != 0) {
+      return tmp_cmp;
+    } else {
+      return x->port - y->port;
+    }
+  }
+}
 
 #endif //ch_connection_h

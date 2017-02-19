@@ -10,6 +10,11 @@
 #ifndef ch_buffer_h
 #define ch_buffer_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "util.h"
 #include "config.h"
 
@@ -171,8 +176,8 @@ ch_bf_return(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 //    Set given handler buffer as unused in the buffer pool structure and
 //    (re-)add it to the list of free buffers.
 //
-//    TODO: Maybe use another name for this method as it does not seem to
-//          return something?
+//    .. todo:: Maybe use another name for this method as it does not seem to
+//              return something?
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure containing the
 //                                   handler buffer
@@ -182,8 +187,8 @@ ch_bf_return(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 // .. code-block:: cpp
 //
 {
-    // TODO: Should we not assert first, that the given handler buffer actually
-    //       IS not in the pool as free buffer?
+    // .. todo:: Should we not assert first, that the given handler buffer
+    //           actually IS not in the pool as free buffer?
     A(handler_buf->used == 1, "Double return of buffer.");
     handler_buf->used = 0;
     A(handler_buf->used == 0, "Buffer pool inconsistent.");

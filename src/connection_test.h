@@ -2,13 +2,21 @@
 // Connection test header
 // ======================
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
 
 #ifndef ch_connection_test_h
 #define ch_connection_test_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "connection.h"
 
+// .. c:function::
 extern
 void
 test_ch_cn_conn_dict(
@@ -20,5 +28,6 @@ test_ch_cn_conn_dict(
         int* x_mem,
         int* y_mem
 );
+//    :noindex:
 
 #endif //ch_connection_test_h
