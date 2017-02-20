@@ -15,7 +15,7 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 .. |travis|  image:: https://travis-ci.org/concretecloud/chirp.svg?branch=master
    :target: https://travis-ci.org/concretecloud/chirp
 .. |rtd| image:: https://img.shields.io/badge/docs-master-brightgreen.svg
-   :target: http://1042.ch/chirp/
+   :target: https://1042.ch/chirp/
 .. |coverage| image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
 
 `Read the Docs`_
