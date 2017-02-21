@@ -111,15 +111,28 @@ typedef struct ch_receipt_s {
 //
 //    .. c:member:: ch_receipt_t* receipts
 //
-//       Pointer to receipts for the protocol (over the connection). In a
-//       stable case there is one outstanding receipt per protocol (and
-//       therefore per connection).
+//       Pointer to a set of receipts.
+//
+//       A receipt gets added whenever the reader receives a message, that
+//       requires an ACK. In that case, if a connections has a receipt set,
+//       that receipt is removed from the set of (currently valid) receipts and
+//       the serial number (identifier) of the the current message is added as
+//       a new receipt.
+//
+//       A receipt is attached to a connection, whereas a protocol may have
+//       multiple connections.
 //
 //    .. c:member:: ch_receipt_t* late_receipts
 //
-//       Pointer to a set of late receipts. To prevent that a message gets sent
-//       twice, the last receipt on protocol (and therefore connection) is
-//       added as a late receipt.
+//       Pointer to a set of late receipts.
+//
+//       A late receipt gets added when a read on a certain connection was
+//       cancelled. This might happen on events like timeouts, incomplete
+//       reads, resets of the connection, broken pipes, extra data or an
+//       exception when unpacking data.
+//       A late receipt acts as a pending task (a todo-item): Remove the
+//       receipt with the same (message-) identifier after N seconds, if this
+//       specific receipt is still (or again) in the queue of receipts.
 //
 //    .. c:member:: ch_chirp_t* chirp
 //
