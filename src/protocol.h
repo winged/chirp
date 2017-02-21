@@ -111,16 +111,15 @@ typedef struct ch_receipt_s {
 //
 //    .. c:member:: ch_receipt_t* receipts
 //
-//       .. todo:: Check if the following is correct.
-//
-//       Pointer to receipts for this protocol.
+//       Pointer to receipts for the protocol (over the connection). In a
+//       stable case there is one outstanding receipt per protocol (and
+//       therefore per connection).
 //
 //    .. c:member:: ch_receipt_t* late_receipts
 //
-//       .. todo:: Check if the following is correct.
-//
-//       Pointer to a set of receipts for this protocol that experience (too)
-//       late delivery.
+//       Pointer to a set of late receipts. To prevent that a message gets sent
+//       twice, the last receipt on protocol (and therefore connection) is
+//       added as a late receipt.
 //
 //    .. c:member:: ch_chirp_t* chirp
 //
