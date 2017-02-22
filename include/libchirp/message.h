@@ -200,22 +200,28 @@ ch_msg_get_address(
     ch_text_address_t* address
 );
 //
-//    Get the messages' address: IP-address. The port and ip_protocol can be
-//    read from the message directly. Address must be of the size
-//    INET(6)_ADDRSTRLEN.
+//    Get the messages' address which is an IP-address. The port and
+//    ip_protocol can be read directly from the message. Address must be of the
+//    size INET(6)_ADDRSTRLEN.
 //
 //    :param ch_message_t* message: Pointer to the message
-//    :param ch_text_address_t* address: Out: Textual representation of IP
+//    :param ch_text_address_t* address: Textual representation of IP-address
 //
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype:  ch_error_t
+
 // .. c:function::
 extern
 ch_error_t
 ch_msg_init(ch_message_t* message);
 //
-//    Intialiaze a message. Memory provided by caller (for performance).
+//    Initialize a message. Memory provided by caller (for performance).
 //
 //    :param ch_message_t* message: Pointer to the message
 //
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype:  ch_error_t
+
 // .. c:function::
 extern
 ch_error_t
@@ -226,13 +232,14 @@ ch_msg_set_address(
     int32_t port
 );
 //
-//    Set the messages' address: IP-address and port
+//    Set the messages' address in terms of IP-address and port.
 //
 //    :param ch_message_t* message: Pointer to the message
 //    :param ch_ip_protocol_t ip_protocol: IP-protocol of the address
 //    :param char* address: Textual representation of IP
 //    :param int32_t port: Port of the remote
 //
-// .. code-block:: cpp
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype:  ch_error_t
 
 #endif //ch_libchirp_message_h

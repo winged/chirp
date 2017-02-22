@@ -2,14 +2,31 @@
 // Protocol
 // ========
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "protocol.h"
 #include "chirp.h"
 #include "util.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <openssl/err.h>
 
+// Sglib Prototypes
+// ================
+
+// .. code-block:: cpp
+//
 SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
     ch_receipt_t,
     left,
@@ -28,58 +45,68 @@ ch_inline
 void
 _ch_pr_close_free_connections(ch_chirp_t* chirp);
 //
-//    Close and free all remaining connections
+//    Close and free all remaining connections.
 //
 //    :param ch_chirpt_t* chirp: Chrip object
-//
+
 // .. c:function::
 static
 ch_inline
 void
 _ch_pr_do_handshake(ch_connection_t* conn);
 //
-//    Doing handshake
+//    Do a handshake on the given connection.
 //
-//    TODO params
-//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
+
 // .. c:function::
 static
 ch_inline
 void
 _ch_pr_free_receipts(ch_receipt_t* receipts);
 //
-//    Free all remaining items in a receipts set
+//    Free all remaining items in a receipts set.
 //
-//    TODO params
-//
+//    :param ch_receipt_t* receipts: Pointer to a set of receipts which shall
+//                                   have its items freed.
+
 // .. c:function::
 static
 void
-_ch_pr_new_connection_cb(uv_stream_t *server, int status);
+_ch_pr_new_connection_cb(uv_stream_t* server, int status);
 //
-//    Callback from libuv on new connection
+//    Callback from libuv when a stream server has received an incoming
+//    connection.
 //
-//    TODO params
-//
+//    :param uv_stream_t* server: Pointer to the stream handle (duplex
+//                                communication channel) of the server,
+//                                containig a chirp object.
+
 // .. c:function::
 static
 ch_inline
 void
 _ch_pr_read(ch_connection_t* conn);
 //
-//    Reading data
+//    Reads data over SSL on the given connection.
 //
-//    TODO params
-//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
+
 // .. c:function::
 static
 void
 _ch_pr_read_data_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
 //
-//    Callback from libuv when data was read
+//    Callback called from libuv when data was read on a stream.
+//    Reads nread bytes on either an encrypted or an unencrypted connection
+//    coming from the given stream handle.
 //
-//    TODO params
-//
+//    :param uv_stream_t* stream: Pointer to the stream that data was read on.
+//    :param ssize_t nread: Number of bytes that were read on the stream.
+//    :param uv_buf_t* buf: Pointer to a libuv (data-) buffer. When nread < 0,
+//                          the buf parameter might not point to a valid
+//                          buffer; in that case buf.len and buf.base are both
+//                          set to 0.
 
 // Definitions
 // ===========
@@ -384,8 +411,6 @@ _ch_pr_read_data_cb(
         ch_rd_read(conn, buf->base, nread);
 }
 
-
-
 // .. c:function::
 ch_error_t
 ch_pr_start(ch_protocol_t* protocol)
@@ -520,5 +545,3 @@ ch_pr_stop(ch_protocol_t* protocol)
     _ch_pr_free_receipts(protocol->late_receipts);
     return CH_SUCCESS;
 }
-//
-
