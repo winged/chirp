@@ -1,0 +1,12 @@
+sudo: required
+
+matrix:
+  include:
+    - os: linux
+      env: CC=gcc
+      services: docker
+      script: ./ci/alpine.sh
+    - os: linux
+      env: CC=clang
+      services: docker
+      script: ./ci/alpine.sh
