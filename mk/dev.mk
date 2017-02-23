@@ -1,5 +1,6 @@
 .PHONY: cppcheck
 .DEFAULT_GOAL := help
+ALPINE := $(shell [ -f /etc/apk/world ] && echo True )
 
 CFLAGS := \
 	-std=gnu99 \
@@ -12,13 +13,11 @@ CFLAGS := \
 	-Wno-unused-function \
 	-O0 \
 	-ggdb3 \
-	--coverage \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)" \
 	$(CFLAGS)
 
 LDFLAGS := \
-	--coverage \
 	-L"$(BUILD)" \
 	-luv \
 	-lssl \
@@ -26,7 +25,21 @@ LDFLAGS := \
 	-lpthread \
 	-lcrypto
 
+ifeq ($(ALPINE),True)
+ifeq ($(CC), clang)
+test: all cppcheck todo  ## Test everything
+else
+CFLAGS += --coverage
+LDFLAGS += --coverage
+
 test: coverage cppcheck todo  ## Test everything
+endif
+else
+CFLAGS += --coverage
+LDFLAGS += --coverage
+
+test: coverage cppcheck todo  ## Test everything
+endif
 
 help:  ## Display this help
 	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -69,7 +82,11 @@ endif
 
 $(BUILD)/%.c.gcov: $(BUILD)/%.o
 ifeq ($(CC),clang)
+ifeq ($(UNAME_S),Darwin)
 	xcrun llvm-cov gcov $<
+else
+	llvm-cov gcov $<
+endif
 else
 	gcov $<
 endif
