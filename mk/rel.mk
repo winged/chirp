@@ -16,7 +16,6 @@ CFLAGS := \
 	$(CFLAGS)
 
 LDFLAGS := \
-	-Wl,--gc-sections \
 	-luv \
 	-lssl \
 	-lm \
