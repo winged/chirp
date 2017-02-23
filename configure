@@ -134,6 +134,11 @@ def parse():
         help="Generate documentation. Sphinx has to be installed."
     )
     parser.add_argument(
+        '--ignore-coverage',
+        action="store_true",
+        help="Ignore the coverage results."
+    )
+    parser.add_argument(
         '--prefix',
         help="Install prefix. Default: /usr/local"
     )
@@ -271,6 +276,8 @@ def write_makefile(args):
             f.write("STRIP := True\n")
         if args.doc:
             f.write("DOC := True\n")
+        if args.ignore_coverage:
+            f.write("IGNORE_COV := True\n")
         f.write("\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
         depends, files = read_depends()
@@ -304,8 +311,16 @@ def write_makefile(args):
             f.write("COV_FILES := \\\n")
             for file_, _ in depends[:-1]:
                 f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
-            f.write("\t\t%s.gcov \n\n" % replace_base_build(depends[-1][0]))
-            f.write("coverage: $(COV_FILES)  ## Analyze coverage\n\n")
+            f.write("\t\t%s.gcov \n" % replace_base_build(depends[-1][0]))
+            f.write("""
+coverage: clean all etests $(COV_FILES)  ## Analyze coverage
+ifeq ($(IGNORE_COV),True)
+\t!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:"); true
+else
+\t!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:")
+endif
+\trm -f *.gcov\n\n
+""")
 
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:

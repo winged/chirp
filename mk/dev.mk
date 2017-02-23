@@ -29,6 +29,12 @@ LDFLAGS := \
 help:  ## Display this help
 	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+etests:
+	$(BUILD)/src/chirp_etest & \
+	PID=$$!; \
+	sleep 1; \
+	kill -2 $$PID
+
 cppcheck:  ## Static analysis
 	cppcheck -v \
 		--error-exitcode=1 \
@@ -37,6 +43,10 @@ cppcheck:  ## Static analysis
 		-I"$(BASE)/include" \
 		-DCH_ACCEPT_STRANGE_PLATFORM \
 		"$(BASE)/src"
+
+todo:  ## Show todos
+	grep -Inrs ".. todo" $(BASE)/src; true
+	grep -Inrs TODO $(BASE)/src; true
 
 include $(BASE)/mk/rules.mk
 
@@ -61,8 +71,6 @@ ifeq ($(CC),clang)
 else
 	gcov $<
 endif
-ifeq ($(IGNORE_COV),True)
-	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:"); true
-else
-	!(grep -v "// NOCOV" $@ | grep -E "\s+#####:")
+ifneq ($(IGNORE_COV),True)
+	[ -f "$(notdir $@)" ]
 endif
