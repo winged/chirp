@@ -200,6 +200,21 @@ Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme graphviz
 Arch:           pacman -S python-sphinx python-sphinx_rtd_theme graphviz
 OSX:            brew install sphinx-doc graphviz
 """)
+    if args.dev:
+        sys.stdout.write("Checking for cppcheck: ")
+        if os.system("command -v cppcheck > /dev/null"):
+            print("""cppcheck was not found.
+
+Please install sphinx:
+
+Alpine:         apk add cppcheck
+Debian-based:   apt install cppcheck
+Redhat-based:   yum install cppcheck
+Arch:           pacman -S cppcheck
+OSX:            brew install cppcheck
+""")
+        else:
+            print("ok")
 
 
 def copy_files(args):
@@ -333,9 +348,21 @@ def write_makefile(args):
     print("Created Makefile. It contains sensible defaults.")
 
 
+def write_ide_files(args):
+    """Write ide files like clang_complete."""
+    if args.dev:
+        print("Creating .clang_complete")
+        with codecs.open(path.join(_base, ".clang_complete"), "w") as f:
+            f.write("-I%s\n-L%s" % (
+                path.join(_base, "include"),
+                _build
+            ))
+
+
 if __name__ == "__main__":
     args = parse()
     write_makefile(args)
     write_config()
     copy_files(args)
     test_depends(args)
+    write_ide_files(args)

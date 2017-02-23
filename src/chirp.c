@@ -563,6 +563,8 @@ ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp_out)
     *chirp_out = NULL;
 
     tmp_err = ch_uv_error_map(ch_loop_init(&loop));
+    chirp._log = NULL; // Bootstrap order problem. E checks _log but
+                       // ch_chirp_init() will initialize it.
     if(tmp_err != CH_SUCCESS) {
         E(
             (&chirp),
@@ -590,7 +592,6 @@ ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp_out)
         (void*) &loop
     );
     /* This works and is not TOO bad because the function blocks. */
-    // cppcheck-suppress unmatchedSuppression
     // cppcheck-suppress autoVariables
     *chirp_out = &chirp;
     tmp_err = ch_run(&loop);

@@ -5,3 +5,4 @@ tags
 /doc/inc
 /doc/src
 /doc/_build
+/.clang_complete

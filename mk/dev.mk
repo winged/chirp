@@ -1,3 +1,4 @@
+.PHONY: cppcheck
 .DEFAULT_GOAL := help
 
 CFLAGS := \
@@ -27,6 +28,15 @@ LDFLAGS := \
 
 help:  ## Display this help
 	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+cppcheck:  ## Static analysis
+	cppcheck -v \
+		--error-exitcode=1 \
+		--std=c99 \
+		--inline-suppr \
+		-I"$(BASE)/include" \
+		-DCH_ACCEPT_STRANGE_PLATFORM \
+		"$(BASE)/src"
 
 include $(BASE)/mk/rules.mk
 
