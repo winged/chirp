@@ -26,6 +26,8 @@ LDFLAGS := \
 	-lpthread \
 	-lcrypto
 
+test: coverage cppcheck todo  ## Test everything
+
 help:  ## Display this help
 	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
@@ -45,8 +47,8 @@ cppcheck:  ## Static analysis
 		"$(BASE)/src"
 
 todo:  ## Show todos
-	grep -Inrs ".. todo" $(BASE)/src; true
-	grep -Inrs TODO $(BASE)/src; true
+	@grep -Inrs ".. todo" $(BASE)/src; true
+	@grep -Inrs TODO $(BASE)/src; true
 
 include $(BASE)/mk/rules.mk
 
