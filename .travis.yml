@@ -12,3 +12,11 @@ matrix:
       env: CC=clang
       services: docker
       script: ./ci/alpine.sh
+    - os: osx
+      env: CC=clang
+      script: ./ci/osx.sh
+  allow_failures:
+    - os: osx
+      language: C
+      env: CC=clang
+      script: ./ci/osx.sh
