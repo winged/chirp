@@ -17,6 +17,5 @@ matrix:
       script: ./ci/osx.sh
   allow_failures:
     - os: osx
-      language: C
       env: CC=clang
       script: ./ci/osx.sh
