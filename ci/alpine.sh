@@ -5,4 +5,8 @@ BASE="${SCRIPT%/*}"
 echo Running alpine docker test at $BASE
 cd "$BASE"
 sudo docker build  -t chirp-alpine alpine
-sudo docker run -e "CC=$CC" -v "$(pwd -P)/..":/outside chirp-alpine
+sudo docker run \
+    -u $(id -u) \
+    -e "CC=$CC" \
+    -v "$(pwd -P)/..":/outside \
+    chirp-alpine
