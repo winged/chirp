@@ -18,32 +18,6 @@
 #include "connection.h"
 #include "sglib.h"
 
-// Sglib Prototypes
-// ================
-
-// .. c:macro:: CH_RECEIPT_CMP
-//
-//    Compares two receipts memorywise as byte strings, assuming that both byte
-//    strings are 16 bytes long.
-//
-//    :param x: First red-black tree node to get receipt (byte string) from.
-//    :param y: Second red-black tree node to get receipt (byte string) from.
-//
-// .. code-block:: cpp
-//
-#define CH_RECEIPT_CMP(x,y) \
-    memcmp(x->receipt, y->receipt, 16)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_receipt_t,
-    left,
-    right,
-    color_field,
-    CH_RECEIPT_CMP
-)
-
 // Declarations
 // ============
 
@@ -151,6 +125,32 @@ typedef struct ch_protocol_s {
     ch_receipt_t*       late_receipts;
     ch_chirp_t*         chirp;
 } ch_protocol_t;
+
+// Sglib Prototypes
+// ----------------
+
+// .. c:macro:: CH_RECEIPT_CMP
+//
+//    Compares two receipts memorywise as byte strings, assuming that both byte
+//    strings are 16 bytes long.
+//
+//    :param x: First red-black tree node to get receipt (byte string) from.
+//    :param y: Second red-black tree node to get receipt (byte string) from.
+//
+// .. code-block:: cpp
+//
+#define CH_RECEIPT_CMP(x,y) \
+    memcmp(x->receipt, y->receipt, 16)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_receipt_t,
+    left,
+    right,
+    color_field,
+    CH_RECEIPT_CMP
+)
 
 // .. c:function::
 ch_error_t

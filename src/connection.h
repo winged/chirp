@@ -28,33 +28,6 @@
 #include <openssl/ssl.h>
 #include "sglib.h"
 
-// Sglib Prototypes
-// ================
-//
-// .. code-block:: cpp
-//
-#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_connection_t,
-    left,
-    right,
-    color_field,
-    CH_CONNECTION_CMP
-)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_connection_set_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
-
 // Declarations
 // ============
 
@@ -306,6 +279,33 @@ typedef struct ch_connection_s {
 } ch_connection_t;
 
 typedef ch_connection_t ch_connection_set_t;
+
+// Sglib Prototypes
+// ----------------
+//
+// .. code-block:: cpp
+//
+#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_t,
+    left,
+    right,
+    color_field,
+    CH_CONNECTION_CMP
+)
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
+    ch_connection_set_t,
+    left,
+    right,
+    color_field,
+    SGLIB_NUMERIC_COMPARATOR
+)
 
 // .. c:function::
 void
