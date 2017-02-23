@@ -366,12 +366,16 @@ endif
 def write_ide_files(args):
     """Write ide files like clang_complete."""
     if args.dev:
-        print("Creating .clang_complete")
-        with codecs.open(path.join(_base, ".clang_complete"), "w") as f:
-            f.write("-I%s\n-L%s" % (
-                path.join(_base, "include"),
-                _build
-            ))
+        sys.stdout.write("Creating .clang_complete: ")
+        try:
+            with codecs.open(path.join(_base, ".clang_complete"), "w") as f:
+                f.write("-I%s\n-L%s" % (
+                    path.join(_base, "include"),
+                    _build
+                ))
+                print("ok")
+        except Exception:
+            print("failed")
 
 
 if __name__ == "__main__":
