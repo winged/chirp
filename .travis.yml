@@ -7,7 +7,7 @@ cache:
     - ci/alpine/.cache/
 
 before_cache:
-    - rm -f ci/alpine/.cache/APKINDEX.*
+    - ./ci/alpine/clean-cache.sh
 
 matrix:
   fast_finish: true
