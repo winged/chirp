@@ -132,6 +132,20 @@ In development mode the make file has a help:
 
    make
 
+Docker
+------
+
+If a tool is not available on your platform or you have a old version of
+cppcheck (cppcheck is known to behave very different across versions), you can
+use the docker based tests.
+
+.. code-block:: bash
+
+   ./ci/alpine.sh
+
+Travis will also run this script, so you can also use it to reproduce errors on
+travis.
+
 
 Windows
 -------
