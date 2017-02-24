@@ -9,8 +9,9 @@ brew install \
     sphinx-doc \
     graphviz \
     openssl \
-    libuv 2>/dev/null
-cd ../build && \
+    libuv \
+    python3 2>/dev/null
+cd build && \
 ../configure \
     --dev \
     --doc \
