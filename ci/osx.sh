@@ -8,8 +8,8 @@ brew install \
     sphinx-doc \
     graphviz \
     openssl \
-    libuv
-cd ../build && \
+    libuv 2>/dev/null
+cd build && \
 ../configure \
     --dev \
     --doc \
