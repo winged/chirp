@@ -37,22 +37,22 @@ test_ch_bf_free(ch_buffer_pool_t* pool)
 
 // .. c:function::
 ch_bf_handler_t*
-test_ch_bf_reserve(ch_buffer_pool_t* pool)
+test_ch_bf_acquire(ch_buffer_pool_t* pool)
 //    :noindex:
 //
 // .. code-block:: cpp
 //
 {
-    return ch_bf_reserve(pool);
+    return ch_bf_acquire(pool);
 }
 
 // .. c:function::
 void
-test_ch_bf_return(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
+test_ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 //    :noindex:
 //
 // .. code-block:: cpp
 //
 {
-    ch_bf_return(pool, handler_buf);
+    ch_bf_release(pool, handler_buf);
 }

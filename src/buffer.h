@@ -136,9 +136,9 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 static
 ch_inline
 ch_bf_handler_t*
-ch_bf_reserve(ch_buffer_pool_t* pool)
+ch_bf_acquire(ch_buffer_pool_t* pool)
 //
-//    Reserve and return a new handler buffer from the pool. If no handler can
+//    Acquire and return a new handler buffer from the pool. If no handler can
 //    be reserved NULL is returned.
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure which the
@@ -171,7 +171,7 @@ ch_bf_reserve(ch_buffer_pool_t* pool)
 static
 ch_inline
 void
-ch_bf_return(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
+ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 //
 //    Set given handler buffer as unused in the buffer pool structure and
 //    (re-)add it to the list of free buffers.
