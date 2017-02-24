@@ -6,6 +6,9 @@ cache:
   directories:
     - ci/alpine/.cache/
 
+before_cache:
+    - rm -f ci/alpine/.cache/APKINDEX.*
+
 matrix:
   fast_finish: true
   include:
