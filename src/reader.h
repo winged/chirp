@@ -2,40 +2,51 @@
 // Reader Header
 // =============
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
-
+//
 #ifndef ch_reader_h
 #define ch_reader_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/common.h"
 #include "message.h"
 #include "buffer.h"
 
+// Declarations
+// ============
+
+// Forward declaration
 struct ch_connection_s;
 
 // .. c:type:: ch_rd_state_t
 //
-//    Represents connection flags.
+//    Possible states of a reader.
 //
 //    .. c:member:: CH_RD_START
 //
-//       Initial state, chirp handshake has to be done
+//       Initial state, chirp handshake has to be done.
 //
 //    .. c:member:: CH_RD_WAIT
 //
-//       Wait for the next message
+//       Wait for the next message.
 //
 //    .. c:member:: CH_RD_HEADER
 //
-//       Read header
+//       Read header.
 //
 //    .. c:member:: CH_RD_ACTOR
 //
-//       Read actor
+//       Read actor.
 //
 //    .. c:member:: CH_RD_DATA
 //
-//       Read data
+//       Read data.
 //
 // .. code-block:: cpp
 //
@@ -50,22 +61,27 @@ typedef enum {
 
 // .. c:type:: ch_rd_handshake_t
 //
-//    Connection handshake data
+//    Handshake data structure.
 //
-//    .. c:member:: port
+//    .. c:member:: uint16_t port
 //
-//    Public port
+//       Public port which is passed to a connection on a successful handshake.
 //
-//    .. c:member:: port
+//    .. c:member:: uint16_t max_timeout
 //
-//    Maximum timeout
+//       The maximum number of seconds to wait when connecting until a timeout
+//       gets triggered. This is passed to a connection upon a successful
+//       handshake. The value gets computed by the configured number of retries
+//       incremented by two times the configured timeout value.
 //
-//    .. c:member:: identity
+//    .. c:member:: unsigned char[16] identity
 //
-//    identity
+//       The identity of the remote target which is passed to a connection upon
+//       a successful handshake. It is used by the connection for getting the
+//       remote address.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_rd_handshake_s {
     uint16_t      port;
     uint16_t      max_timeout;
@@ -74,22 +90,34 @@ typedef struct ch_rd_handshake_s {
 
 // .. c:type:: ch_reader_t
 //
-//    Contains the state of the reader
+//    Defines the state of a reader.
 //
-//    .. c:member:: unsinged char state
+//    .. c:member:: ch_rd_state_t state
 //
-//    Statemachine-state of the reader
+//       Current state of the reader (finite-state machine).
 //
 //    .. c:member:: ch_rd_handshake_t hs
 //
-//    Handshake structure to send over the network
+//       Handshake data structure to send over the network, which is used as
+//       data source.
 //
-//    .. c:member:: ch_rd_message_t msg
+//    .. c:member:: ch_ms_message_t msg
 //
-//    Wire protocol message in network order
+//       Wire protocol message in network order (network endianness).
+//
+//    .. c:member:: ch_buffer_pool_t pool
+//
+//       Data structure containing preallocated buffers for the chirp handlers.
+//
+//    .. c:member:: size_t bytes_read
+//
+//       Counter for how many bytes were already read by the reader. This is
+//       used when :c:func:`ch_rd_read` is called with a buffer of
+//       :c:member:`ch_rd_read.read` bytes to read but not enough bytes are
+//       being delivered over the connection :c:member:`ch_rd_read.conn`.
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_reader_s {
     ch_rd_state_t     state;
     ch_rd_handshake_t hs;
@@ -99,14 +127,28 @@ typedef struct ch_reader_s {
 } ch_reader_t;
 
 // .. c:function::
+void
+ch_rd_read(struct ch_connection_s* conn, void* buf, size_t read);
+//
+//    Implements the wire protocol reader part.
+//
+//    :param ch_connection_t* conn: Connection the data was read from.
+//    :param void* buf:             The buffer containing ``read`` bytes read.
+//    :param size_t read:           The number of bytes read.
+
+// Definitions
+// ===========
+
+// .. c:function::
 static
 ch_inline
 void
 ch_rd_free(ch_reader_t* reader)
 //
-//    Initialize the reader structure
+//    Free the (data-) buffer pool of the given reader instance.
 //
-//    :param ch_reader_t* reader: The reader
+//    :param ch_reader_t* reader: The reader instance whose buffer
+//                                pool shall be freed.
 //
 // .. code-block:: cpp
 //
@@ -122,8 +164,9 @@ ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
 //
 //    Initialize the reader structure
 //
-//    :param ch_reader_t* reader: The reader
-//    :param max_buffers: Buffers to allocate
+//    :param ch_reader_t* reader: The reader instance whose buffer pool shall
+//                                be intialized with ``max_buffers``.
+//    :param uint8_t max_buffers: The number of buffers to allocate.
 //
 // .. code-block:: cpp
 //
@@ -131,17 +174,5 @@ ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
     reader->state = CH_RD_START;
     ch_bf_init(&reader->pool, max_buffers);
 }
-
-// .. c:function::
-void
-ch_rd_read(struct ch_connection_s* conn, void* buf, size_t read);
-//
-//    Implements the wire protocol reader part.
-//
-//    :param ch_connection_t* conn: Connection the data was read from
-//    :param void* buf: Buffer containing bytes read
-//    :param size_t read: Count of bytes read
-//
-// .. code-block:: cpp
 
 #endif //ch_reader_h

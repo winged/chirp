@@ -2,12 +2,18 @@
 // Reader
 // ======
 //
+// .. todo:: Document purpose
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
-#include "reader.h"
-
 #include "chirp.h"
 #include "connection.h"
+#include "reader.h"
 #include "util.h"
 
 // Declarations
@@ -24,36 +30,72 @@ _ch_rd_handshake(
         size_t read
 );
 //
-//    Handle handshake
+//    Handle a handshake on the given connection.
 //
-//    :param ch_connection_t* conn: Connection
-//    :param ch_readert* reader: Reader
-//    :param ch_buf* buf: Buffer containing bytes read
-//    :param size_t read: Count of bytes read
+//    Ensures, that the byte count which shall be read is at least the same as
+//    the handshike size.
 //
+//    The given buffer gets copied into the handshake structure of the reader.
+//    Then the port, the maximum time until a timeout happens and the remote
+//    identity are applied to the given connection coming from the readers
+//    handshake.
+//
+//    It is then ensured, that the address of the peer connected to the TCP
+//    handle (TCP stream) of the connections client can be resolved.
+//
+//    If the latter was successful, the IP protocol and address are then applied
+//    from the resolved address structure to the connection.
+//
+//    The given connection gets then searched on the protocols pool of
+//    connections. If the connection is already known, the found duplicate gets
+//    removed from the pool of connections and gets then added to another pool
+//    (of the protocol), holding only such old connections.
+//
+//    Finally, the given connection is added to the protocols pool of
+//    connections.
+//
+//    :param ch_connection_t* conn: Pointer to a connection instance.
+//    :param ch_readert* reader:    Pointer to a reader instance. Its handshake
+//                                  data structure is the target of this
+//                                  handshake
+//    :param ch_buf* buf:           Buffer containing bytes read, acts as data
+//                                  source
+//    :param size_t read:           Count of bytes read
+
 // .. c:function::
 static
 ch_inline
 int
 _ch_rd_read_buffer(
         ch_connection_t* conn,
-        ch_reader_t* reader,
-        ch_buf* source_buf,
-        size_t read,
-        size_t *bytes_handled,
-        ch_rd_state_t state
-
+        ch_reader_t*     reader,
+        ch_buf*          source_buf,
+        size_t           read,
+        size_t*          bytes_handled,
+        ch_rd_state_t    state
 );
 //
-//    Handle handshake
-//
-//    :param ch_connection_t* conn: Connection
-//    :param ch_readert* reader: Reader
-//    :param ch_buf* buf: Buffer containing bytes read
-//    :param size_t read: Count of bytes read
-//    :param ch_rd_state_t state: Current state of the reader
+//    Reads ``read`` bytes from the given buffer ``source_buf`` over the given
+//    connection with resepect to the current state.
 //
 //
+//    .. todo:: Implement this function.
+//
+//    .. warning:: This function is not yet implemented and will always return
+//                 1.
+//
+//    :param ch_connection_t* conn: Pointer to a connection instance.
+//    :param ch_readert* reader:    Pointer to a reader instance.
+//    :param ch_buf* buf:           Buffer containing ``read`` bytes to be
+//                                  read, acting as data source.
+//    :param size_t read:           Number of bytes to read.
+//    :param size_t* bytes_handled: Bytes handled is used for the case when
+//                                  multiple data streams are coming in and the
+//                                  reader switches between various states as
+//                                  for example CH_RD_HANDSHAKE, CH_RD_WAIT or
+//                                  CH_RD_HEADER.
+//    :param ch_rd_state_t state:   The readers current state (finite-state machine).
+
 // Definitions
 // ===========
 
@@ -208,7 +250,12 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
 {
     ch_ms_message_t* msg;
     ch_buf* buf = buffer; // Don't do pointer arithmetics on void*
+
+    // Bytes handled is used for the case when multiple data streams are coming
+    // in and the reader switches between various states as for example
+    // CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER.
     size_t bytes_handled = 0;
+
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
@@ -352,7 +399,9 @@ _ch_rd_read_buffer(
 )
 //    :noindex:
 //
-//    see: :c:func:`ch_rd_read`
+//    TODO: Implement the function
+//
+//    see: :c:func:`_ch_rd_read_buffer`
 //
 // .. code-block:: cpp
 //
