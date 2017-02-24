@@ -11,7 +11,7 @@ brew install \
     openssl \
     libuv \
     python3 2>/dev/null
-cd build && \
+cd ../build && \
 ../configure \
     --dev \
     --doc \
