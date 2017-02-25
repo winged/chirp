@@ -99,7 +99,7 @@
 // Declarations
 // ============
 
-// .. c:type::
+// .. c:type:: ch_qc_mem_track_t
 //
 //    List to track memory allocations and free them after a test.
 //
@@ -228,7 +228,7 @@ _ch_qc_for_all(
         size_t max_size
 );
 //
-//    Generetes 100 test cases and tests for each case if a property holds.
+//    Generates 100 test cases and tests for each case if a property holds.
 //
 //    In the protocol of quickcheck the generation of data is separated from
 //    the test. If you are using the basic generation functions

@@ -110,6 +110,7 @@ _ch_qc_free_mem(void)
 //    see: :c:func:`_ch_qc_free_mem`
 //
 // .. code-block:: cpp
+//
 {
     ch_qc_mem_track_t* t;
     struct sglib_ch_qc_mem_track_t_iterator it;
