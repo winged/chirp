@@ -1,4 +1,21 @@
+// ==================
+// Testing quickcheck
+// ==================
+//
+// .. todo:: Document purpose
+//
+//
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "quickcheck.h"
+
+// Test functions
+// ==============
+//
+// .. code-block:: cpp
 
 void ch_gen_odd(ch_buf* data) {
   int i;

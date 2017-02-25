@@ -26,118 +26,211 @@
 //
 // .. code-block:: cpp
 //
-
-static bool QC_INITIALIZED = false;
-
-void qc_init(void) {
-    srand((unsigned int) time(NULL));
-}
-
-void gen_bool(/*@out@*/ blob const data) {
-    bool b = rand() % 2 == 0;
-
-    qc_return(bool, b);
-}
-
-void gen_int(/*@out@*/ blob const data) {
-    int i = rand();
-
-    qc_return(int, i);
-}
-
-void gen_char(/*@out@*/ blob const data) {
-    char c = (char)(rand() % 128);
-
-    qc_return(char, c);
-}
-
-void _gen_array(/*@out@*/ blob const data, gen const g, size_t const size) {
-    int len = rand() % 100;
-    
-    blob arr = malloc((size_t) len * size);
-    
-    size_t i;
-    
-    for (i = 0; i < (size_t) len; i++) {
-        g(arr + i * size);
-    }
-    
-    qc_return(blob, arr);
-}
-
-void gen_string(/*@out@*/ blob const data) {
-    char *s;
-    
-    gen_array(&s, gen_char, char);
-    
-    qc_return(char *, s);
-}
-
-void print_bool(blob const data) {
-    bool b = qc_args(bool, 0, bool);
-
-    printf("%s", b ? "true" : "false");
-}
-
-void print_int(blob const data) {
-    int i = qc_args(int, 0, int);
-
-    printf("%d", i);
-}
-
-void print_char(blob const data) {
-    char c = qc_args(char, 0, char);
-
-    printf("\'%c\'", c);
-}
-
-void print_string(blob const data) {
-    char *s = qc_args(char *, 0, char *);
-
-    printf("%s", s);
-}
-
-
-bool _for_all(
-        prop const property,
-        size_t const arglen,
-        gen const gs[],
-        print const ps[],
-        size_t const max_size
-) {
+// .. c:function::
+int
+_ch_qc_for_all(
+        ch_qc_prop property,
+        size_t arglen,
+        ch_qc_gen gs[],
+        ch_qc_print ps[],
+        size_t max_size
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_qc_for_all`
+//
+// .. code-block:: cpp
+//
+{
     size_t i, j;
-    blob values;
-    
-    // Because GC_MALLOC will segfault if GC_INIT() is not called beforehand.
-    if (!QC_INITIALIZED) {
-        printf("*** Error: Run qc_init() before calling for_all().\n");
-        return false;
-    }
-    
+    ch_buf* values;
+
     values = malloc(arglen * max_size);
-    
+
     for (i = 0; i < 100; i++) {
         for (j = 0; j < arglen; j++) {
             gs[j](values + j * max_size);
         }
-        
+
         bool holds = property(values);
-        
+
         if (!holds) {
             printf("*** Failed!\n");
-            
+
             for (j = 0; j < arglen; j++) {
                 ps[j](values + j * max_size);
                 printf("\n");
             }
-            
+
             free(values);
             return false;
         }
     }
-    
+
     printf("+++ OK, passed 100 tests.\n");
-    
+
     free(values);
     return true;
+}
+
+// .. c:function::
+void
+_ch_qc_gen_array(
+        ch_buf* data,
+        ch_qc_gen g,
+        size_t size
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_qc_gen_array`
+//
+// .. code-block:: cpp
+//
+{
+    int len = rand() % 100;
+
+    ch_buf* arr = malloc((size_t) len * size);
+
+    size_t i;
+
+    for (i = 0; i < (size_t) len; i++) {
+        g(arr + i * size);
+    }
+
+    ch_qc_return(ch_buf*, arr);
+}
+
+// .. c:function::
+void
+ch_qc_gen_bool(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_bool`
+//
+// .. code-block:: cpp
+//
+{
+    int b = rand() % 2 == 0;
+
+    ch_qc_return(int, b);
+}
+
+// .. c:function::
+void
+ch_qc_gen_char(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_char`
+//
+// .. code-block:: cpp
+//
+{
+    char c = (char)(rand() % 128);
+
+    ch_qc_return(char, c);
+}
+
+// .. c:function::
+void
+ch_qc_gen_int(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_int`
+//
+// .. code-block:: cpp
+//
+{
+    int i = rand();
+
+    ch_qc_return(int, i);
+}
+
+// .. c:function::
+void
+ch_qc_gen_string(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_string`
+//
+// .. code-block:: cpp
+//
+{
+    char *s;
+
+    ch_qc_gen_array((ch_buf*) &s, ch_qc_gen_char, char);
+
+    ch_qc_return(char *, s);
+}
+
+// .. c:function::
+void
+ch_qc_init(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_init`
+//
+// .. code-block:: cpp
+//
+{
+    srand((unsigned int) time(NULL));
+}
+
+// .. c:function::
+void
+ch_qc_print_bool(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_bool`
+//
+// .. code-block:: cpp
+//
+{
+    int b = ch_qc_args(int, 0, int);
+
+    printf("%s", b ? "true" : "false");
+}
+
+// .. c:function::
+void
+ch_qc_print_char(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_char`
+//
+// .. code-block:: cpp
+//
+{
+    char c = ch_qc_args(char, 0, char);
+
+    printf("\'%c\'", c);
+}
+
+// .. c:function::
+void
+ch_qc_print_int(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_int`
+//
+// .. code-block:: cpp
+//
+{
+    int i = ch_qc_args(int, 0, int);
+
+    printf("%d", i);
+}
+
+// .. c:function::
+void
+ch_qc_print_string(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_string`
+//
+// .. code-block:: cpp
+//
+{
+    char *s = ch_qc_args(char *, 0, char *);
+
+    printf("%s", s);
 }

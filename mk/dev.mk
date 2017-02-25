@@ -32,13 +32,13 @@ else
 CFLAGS += --coverage
 LDFLAGS += --coverage
 
-test: coverage cppcheck todo  ## Test everything
+test: coverage cppcheck todo
 endif
 else
 CFLAGS += --coverage
 LDFLAGS += --coverage
 
-test: coverage cppcheck todo  ## Test everything
+test: coverage cppcheck todo
 endif
 
 help:  ## Display this help
