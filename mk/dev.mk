@@ -49,6 +49,7 @@ etests:
 	PID=$$!; \
 	sleep 1; \
 	kill -2 $$PID
+	$(BUILD)/src/quickcheck_etest
 
 cppcheck:  ## Static analysis
 	cppcheck -v \
