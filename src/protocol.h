@@ -142,8 +142,7 @@ typedef struct ch_protocol_s {
 #define CH_RECEIPT_CMP(x,y) \
     memcmp(x->receipt, y->receipt, 16)
 
-// .. code-block:: cpp
-//
+
 SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
     ch_receipt_t,
     left,

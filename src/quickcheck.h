@@ -86,6 +86,7 @@
 // .. code-block:: cpp
 //
 #include "libchirp/common.h"
+#include "sglib.h"
 
 // System includes
 // ===============
@@ -95,8 +96,45 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// Declarations
+// ============
+
+// .. c:type::
+//
+//    List to track memory allocations and free them after a test.
+//
+//    .. c:member:: void* mem
+//
+//       Pointer to the allocated memory.
+//
+//    .. c:member:: void* mem
+//
+//       Pointer to the next list item.
+//
+// .. code-block:: cpp
+
+typedef struct ch_qc_mem_track_s {
+    void* mem;
+    struct ch_qc_mem_track_s *next;
+} ch_qc_mem_track_t;
+
+// Sglib Prototypes
+// ----------------
+//
+// .. code-block:: cpp
+
+/* Not used -> no doc */
+#define CH_QC_MEM_TRACK_COMPARATOR(e1, e2) \
+    ((int) e1->mem - (int) e2->mem)
+
+SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
+    ch_qc_mem_track_t,
+    CH_QC_MEM_TRACK_COMPARATOR,
+    next
+)
+
 // Macros
-// ======
+// ------
 //
 //
 // .. c:macro:: ch_qc_gen_array
@@ -154,11 +192,6 @@
     ((* (type*) data) = value)
 
 
-
-
-// Declarations
-// ============
-//
 // .. c:type:: ch_qc_gen
 //
 //    Type representing data generator functions
