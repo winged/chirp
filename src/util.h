@@ -9,8 +9,16 @@
 #ifndef ch_util_h
 #define ch_util_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/callbacks.h"
 #include "libchirp/common.h"
+
+// Declarations
+// ============
 
 // .. c:function::
 void*
@@ -19,7 +27,31 @@ ch_alloc(size_t size);
 //    Allocate fixed amount of memory.
 //
 //    :param size_t size: The amount of memory in bytes to allocate
+
+// .. c:function::
+void
+ch_free(
+        void* buf
+);
 //
+//    Free a memory handle.
+//
+//    :param void* buf: The handle to free.
+
+// .. c:function::
+void*
+ch_realloc(
+        void*  buf,
+        size_t size
+);
+//
+//    Resize allocated memory.
+//
+//    :param void* buf:    The handle to resize.
+//    :param size_t size:  The new size of the memory in bytes.
+
+// Definitions
+// ===========
 
 // .. c:function::
 static
@@ -27,12 +59,12 @@ ch_inline
 void
 ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
 //
-//    Convert a bytes array to a hex string
+//    Convert a bytes array to a hex string.
 //
-//    :param uint8_t* bytes: Bytes to convert
-//    :param size_t bytes_size: Length of the bytes to convert
-//    :param char* str: Destination string
-//    :param size_t str_size: Length of the buffer to write the string to
+//    :param uint8_t* bytes:     Bytes to convert.
+//    :param size_t bytes_size:  Length of the bytes to convert.
+//    :param char* str:          Destination string.
+//    :param size_t str_size:    Length of the buffer to write the string to.
 //
 // .. code-block:: cpp
 //
@@ -53,9 +85,12 @@ ch_inline
 int
 ch_msb32(uint32_t x)
 //
-//    Get the most significant bit set
+//    Get the most significant bit set of a set of bits.
 //
-//    :param uint32_t x: The bit set
+//    :param uint32_t x:  The set of bits.
+//
+//    :return:            the most significant bit set.
+//    :rtype:             uint32_t
 //
 // .. code-block:: cpp
 //
@@ -71,28 +106,18 @@ ch_msb32(uint32_t x)
 }
 
 // .. c:function::
-void
-ch_free(
-        void* buf
-);
-//
-//    Free a memory handle.
-//
-//    :param void* buf: The handle to free
-//
-
-// .. c:function::
 static
 ch_inline
 void
 ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
 //
-//    Fill in random ints efficiently len MUST be multiple of four.
+//    Fill in random ints efficiently.
+//    The parameter ``len`` MUST be multiple of four.
 //
-//    Thank you windows for making this really complicated.
+//    Thank you windows, for making this really complicated.
 //
-//    :param uint8_t* bytes: The buffer to fill the bytes into
-//    :param size_t  len: The length of the buffer
+//    :param uint8_t* bytes:  The buffer to fill the bytes into.
+//    :param size_t  len:     The length of the buffer.
 //
 // .. code-block:: cpp
 //
@@ -131,19 +156,6 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
 #   endif // RAND_MAX < 1073741824 || INT_MAX < 1073741824
 #endif // _WIN32
 }
-//
-// .. c:function::
-void*
-ch_realloc(
-        void*  buf,
-        size_t size
-);
-//
-//    Resize allocated memory.
-//
-//    :param void* buf: The handle to resize
-//    :param size_t size: The new size of the memory in bytes
-//
 
 // .. c:function::
 static
@@ -153,8 +165,10 @@ ch_uv_error_map(int error)
 //
 //    Map common libuv errors to chirp errors.
 //
-//    :param int error: Libuv error
-//    :rtype: ch_error_t
+//    :param int error:  Libuv error.
+//
+//    :return:           a chirp error.
+//    :rtype:            ch_error_t
 //
 // .. code-block:: cpp
 //
@@ -171,6 +185,5 @@ ch_uv_error_map(int error)
             return CH_UV_ERROR;
     }
 }
-//
 
 #endif // ch_util_h

@@ -2,13 +2,26 @@
 // Util
 // ====
 //
+// Common utility functions.
+//
+// .. code-block:: cpp
+
+// Project includes
+// ================
+//
 // .. code-block:: cpp
 //
 #include "util.h"
 
+// Declarations
+// ============
+
 ch_free_cb_t _ch_free_cb = free;
 ch_alloc_cb_t _ch_alloc_cb = malloc;
 ch_realloc_cb_t _ch_realloc_cb = realloc;
+
+// Definitions
+// ===========
 
 // .. c:function::
 void*

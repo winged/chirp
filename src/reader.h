@@ -165,7 +165,7 @@ ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
 //    Initialize the reader structure
 //
 //    :param ch_reader_t* reader: The reader instance whose buffer pool shall
-//                                be intialized with ``max_buffers``.
+//                                be initialized with ``max_buffers``.
 //    :param uint8_t max_buffers: The number of buffers to allocate.
 //
 // .. code-block:: cpp

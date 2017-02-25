@@ -95,6 +95,11 @@ _ch_rd_read_buffer(
 //                                  for example CH_RD_HANDSHAKE, CH_RD_WAIT or
 //                                  CH_RD_HEADER.
 //    :param ch_rd_state_t state:   The readers current state (finite-state machine).
+//
+//    :return:                      The state of the reading.
+//                                  0: The reading was not successful.
+//                                  1: The reading was successful.
+//    :rtype:                       int
 
 // Definitions
 // ===========
