@@ -2,8 +2,7 @@
 // Quickcheck header
 // =================
 //
-// Fork of https://github.com/mcandre/qc by Andrew Pennebaker removing gc.h and
-// other evil things.
+// Fork of https://github.com/mcandre/qc by Andrew Pennebaker removing gc.h
 //
 // Forked at commit fc8e7f76af339fdd56546ad46cb9d97cd42ec5cb
 //
@@ -13,111 +12,294 @@
 // Syntax
 // ======
 //
-// For simplicity, _for_all is called using the for_all macro (see qc.h).
+// For simplicity, _for_all is called using the ch_qc_for_all macro (see
+// quickcheck.h).
 //
-// In this example, for_all is testing whether all integers are odd (they are
-// not).
+// In this example, ch_qc_for_all is testing whether all integers are odd (they
+// are not).
 //
-// Every for_all call begins with a property function. For example, is_odd
-// takes an int and returns a bool.
+// Every ch_qc_for_all call begins with a property function. For example,
+// is_odd takes an int and returns a bool.
 //
 // .. code-block:: cpp
 //
-//    bool is_odd(blob data);
+//    bool is_odd(ch_buf data);
 //
 // In order to handle arbitrarily-typed property functions, qc uses a special
-// protocol, qc_args,  to pass test values to the property function.
+// protocol, ch_qc_args,  to pass test values to the property function.
 //
 // .. code-block:: cpp
 //
-//    bool is_odd(blob data) {
-//        int n = qc_args(int, 0, int);
+//    bool is_odd(ch_buf data) {
+//        int n = ch_qc_args(int, 0, int);
 //
 //        return n % 2 == 1;
 //    }
 //
-// qc_args' first argument is a type: int, char, int*, char*, int**, char**,
+// ch_qc_args' first argument is a type: int, char, int*, char*, int**, char**,
 // ...  The second argument is the index (qc internally stores all test cases
 // in a single array).  The final argument is the maximum byte size of the
 // property's input types. For example, is_equal(short, int)'s maximum byte
 // size would be sizeof(int).
 //
 //
-// for_all's first argument is the name of such a property function. The next
-// argument is an array of generator functions. The is_odd property function
-// has a single argument, an integer. Thus each test case consists of a random
-// integer to be passed to the is_odd property function. More complicated
-// property functions (e.g. cmp(int, int)) may have multiple arguments, and
-// therefore require multiple generators.
+// ch_qc_for_all's first argument is the name of such a property function. The
+// next argument is an array of generator functions. The is_odd property
+// function has a single argument, an integer. Thus each test case consists of
+// a random integer to be passed to the is_odd property function. More
+// complicated property functions (e.g. cmp(int, int)) may have multiple
+// arguments, and therefore require multiple generators.
 //
 // .. code-block:: cpp
 //
-//    gen gs[] = { gen_int };
+//    gen gs[] = { ch_qc_gen_int };
 //
 // When a test case fails, the values for which the property returns false will
 // be printed. For each generator, a corresponding printer function is
-// necessary.  for_all is designed to test properties of arbitrary numbers of
-// arbitrary types; because C has no universal print(some_object) function, the
-// framework user must specify printer functions for each generator function.
-// More complicated types, such as trees, graphs, and linked lists require the
-// framework user to write custom printer functions, but the syntax remains the
-// same.
+// necessary.  ch_qc_for_all is designed to test properties of arbitrary
+// numbers of arbitrary types; because C has no universal print(some_object)
+// function, the framework user must specify printer functions for each
+// generator function.  More complicated types, such as trees, graphs, and
+// linked lists require the framework user to write custom printer functions,
+// but the syntax remains the same.
 //
 // .. code-block:: cpp
 //
-//    print ps[] = { print_int };
+//    print ps[] = { ch_qc_print_int };
 //
-// Finally, for_all requires the maximum byte size of the types to be passed to
-// the property function. This information helps for_all hold all test values
-// in a single array, which it passes to the test property.
+// Finally, ch_qc_for_all requires the maximum byte size of the types to be
+// passed to the property function. This information helps ch_qc_for_all hold
+// all test values in a single array, which it passes to the test property.
 //
 // .. code-block:: cpp
 //
-//    for_all(is_odd, 1, gs, ps, int);
+//    ch_qc_for_all(is_odd, 1, gs, ps, int);
 //
 // .. code-block:: cpp
 
 #ifndef ch_quickcheck_h
 #define ch_quickcheck_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
+#include "libchirp/common.h"
+
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <stdlib.h>
 #include <stdbool.h>
 
-void qc_init(void);
+// Macros
+// ======
+//
+//
+// .. c:macro:: ch_qc_gen_array
+//
+//    Helper to access arguments passed to the property functions.
+//
+//    :param type type: The type of the argument.
+//    :param size_t n: The index of the argument.
+//    :param type max_class: The largest type returned by any generator.
+//
+// .. code-block:: cpp
+//
+#define ch_qc_args(type, n, max_class) \
+    ((* (type*) (data + n * sizeof(max_class))))
 
-#define qc_return(type, value) ((* (type*) data) = value)
-#define qc_args(type, n, max_class) ((* (type*) (data + n * sizeof(max_class))))
+// .. c:macro:: ch_qc_for_all
+//
+//   Helper macro instead of max_size you can just pass the biggest type that
+//   is generated.
+//
+//    see: :c:func:`_ch_qc_for_all`
+//
+// .. code-block:: cpp
+//
+#define ch_qc_for_all(property, arglen, gs, ps, max_class) \
+  (_ch_qc_for_all((ch_qc_prop) property, arglen, gs, ps, sizeof(max_class)))
 
-typedef void* blob;
+// .. c:macro:: ch_qc_gen_array
+//
+//    Generate an array of a certain subtype. Quickcheck will track this memory
+//    and free it for you when tests are done.
+//
+//    see: :c:func:`_ch_qc_gen_array`
+//
+//    :param ch_buf* data: Out parameter set to the specified array.
+//    :param ch_qc_gen g: Generator for the subtype.
+//    :param type class: Subtype generated by the generator.
+//
+// .. code-block:: cpp
+//
+#define ch_qc_gen_array(data, g, class) \
+    (_ch_qc_gen_array(data, (ch_qc_gen) g, sizeof(class)))
 
-typedef void (*gen)(blob);
-typedef void (*print)(blob);
-typedef bool (*prop)(blob);
+// .. c:macro:: ch_qc_gen_array
+//
+//    Helper to implement the arguments protocol.
+//
+//    :param type type: The type the generator returns.
+//    :param type value: The value of the type above, returned by the
+//                       generator.
+//
+// .. code-block:: cpp
+//
+#define ch_qc_return(type, value) \
+    ((* (type*) data) = value)
 
-void gen_bool(/*@out@*/ blob const data);
-void gen_int(/*@out@*/ blob const data);
-void gen_char(/*@out@*/ blob const data);
 
-void _gen_array(/*@out@*/ blob const data, gen const g, size_t const size);
 
-#define gen_array(data, g, class) (_gen_array(data, (gen) g, sizeof(class)))
 
-void gen_string(/*@out@*/ blob const data);
+// Declarations
+// ============
+//
+// .. c:type:: ch_qc_gen
+//
+//    Type representing data generator functions
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_qc_gen)(ch_buf*);
 
-void print_bool(blob const data);
-void print_int(blob const data);
-void print_char(blob const data);
-void print_string(blob const data);
+// .. c:type:: ch_qc_print
+//
+//    Type representing data print functions. Each generator must have a
+//    corresponding print function.
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_qc_print)(ch_buf*);
 
-bool _for_all(
-  prop const property,
-  size_t const arglen,
-  gen const gs[],
-  print const ps[],
-  size_t const max_size
+// .. c:type:: ch_qc_prop
+//
+//    Type representing property test functions. In quickcheck the test and
+//    function to check if the property holds are one.
+//
+// .. code-block:: cpp
+//
+typedef bool (*ch_qc_prop)(ch_buf*);
+
+// .. c:function::
+int
+_ch_qc_for_all(
+        ch_qc_prop property,
+        size_t arglen,
+        ch_qc_gen gs[],
+        ch_qc_print ps[],
+        size_t max_size
 );
+//
+//    Generetes 100 test cases and tests for each case if a property holds.
+//
+//    In the protocol of quickcheck the generation of data is separated from
+//    the test. If you are using the basic generation functions
+//    ch_qc_gen[bool|char|int|string|array] quickcheck will track allocated
+//    memory and free it for you.
+//
+//    see: :c:func:`ch_qc_for_all`
+//
+//    :param ch_qc_prop property: Function that runs the test and checks the
+//                                property.
+//    :param size_t arglen: The number of arguments passed to the property,
+//                          also equals the number of generator- and
+//                          print-functions.
+//    :param ch_qc_gen gs[]: List of functions generating the input data.
+//    :param ch_qc_print ps[]: List of functions able to print the associated
+//                             generated data.
+//    :param size_t max_size: The maximum of generated data across all
+//                            generators.
+//
 
-#define for_all(property, arglen, gs, ps, max_class) \
-  (_for_all((prop) property, arglen, gs, ps, sizeof(max_class)))
+// .. c:function::
+void
+_ch_qc_gen_array(
+        ch_buf* data,
+        ch_qc_gen g,
+        size_t size
+);
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_char`
+//
+
+// .. c:function::
+void
+ch_qc_gen_bool(ch_buf* data);
+//
+//    Generetes data of type bool. Has to be copied.
+//
+//    :param ch_buf* data: Out parameter, the bool as an int.
+//
+// .. c:function::
+void
+ch_qc_gen_char(ch_buf* data);
+//
+//    Generetes data of type char. Has to be copied.
+//
+//    :param ch_buf* data: Out parameter, the char.
+//
+// .. c:function::
+void
+ch_qc_gen_int(ch_buf* data);
+//
+//    Generetes data of type int. Has to be copied.
+//
+//    :param ch_buf* data: Out parameter, the int.
+//
+// .. c:function::
+void
+ch_qc_gen_string(ch_buf* data);
+//
+//    Generetes data of type char*. Is allocated and tracked by quickcheck.
+//
+//    :param ch_buf* data: Out parameter, char*.
+//
+
+// .. c:function::
+void
+ch_qc_init(void);
+//
+//    Initializes srand. Can be omitted to initialize srand in different way.
+//
+
+// .. c:function::
+void
+ch_qc_print_bool(ch_buf* data);
+//
+//    Prints data of type bool.
+//
+//    :param ch_buf* data: The data.
+//
+// .. c:function::
+void
+ch_qc_print_char(ch_buf* data);
+//
+//    Prints data of type char.
+//
+//    :param ch_buf* data: The data.
+//
+// .. c:function::
+void
+ch_qc_print_int(ch_buf* data);
+//
+//    Prints data of type int.
+//
+//    :param ch_buf* data: The data.
+//
+// .. c:function::
+void
+ch_qc_print_string(ch_buf* data);
+//
+//    Prints data of type string.
+//
+//    :param ch_buf* data: The data.
+//
+// .. code-block:: cpp
 
 #endif //ch_quickcheck_h

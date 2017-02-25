@@ -10,6 +10,9 @@ doc: doc_files
 	@rm -f $(BASE)/doc/src
 	@ln -s $(BUILD)/include $(BASE)/doc/inc
 	@ln -s $(BUILD)/src $(BASE)/doc/src
+	@mkdir -p $(BASE)/doc/_build/html
+	@cp -f $(BASE)/doc/sglib-1.0.4/doc/index.html \
+		$(BASE)/doc/_build/html/sglib.html
 ifeq ($(VERBOSE),True)
 	make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out
 	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
