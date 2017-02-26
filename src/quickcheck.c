@@ -91,7 +91,7 @@ _ch_qc_for_all(
             printf("*** Failed!\n");
 
             for (j = 0; j < arglen; j++) {
-                printf("Arg %03d: ", (int) j);
+                printf("Arg %02d: ", (int) j);
                 ps[j](values + j * max_size);
                 printf("\n");
             }
