@@ -2,8 +2,7 @@
 // Testing quickcheck
 // ==================
 //
-// .. todo:: Document purpose
-//
+// Test quickcheck with a few simple examples.
 //
 // Project includes
 // ================

@@ -13,7 +13,7 @@
 // Syntax
 // ======
 //
-// For simplicity, _for_all is called using the ch_qc_for_all macro (see
+// For simplicity, _ch_qc_for_all is called using the ch_qc_for_all macro (see
 // quickcheck.h).
 //
 // In this example, ch_qc_for_all is testing whether all integers are odd (they
