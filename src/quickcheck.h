@@ -108,10 +108,6 @@
 //
 //       Pointer to the data.
 //
-//    .. c:member:: struct ch_qc_mem_track_s *next
-//
-//       Pointer to the next list item.
-//
 //    .. c:member:: size_t size
 //
 //       Size of one item of the memory
@@ -120,6 +116,10 @@
 //
 //       Count of items of the memory. size * count equals the total size in
 //       bytes.
+//
+//    .. c:member:: struct ch_qc_mem_track_s *next
+//
+//       Pointer to the next list item.
 //
 // .. code-block:: cpp
 
