@@ -99,11 +99,11 @@ _ch_qc_for_all(
             free(values);
             return 0;
         }
+        _ch_qc_free_mem();
     }
 
     printf("+++ OK, passed 100 tests.\n");
 
-    _ch_qc_free_mem();
     free(values);
     return 1;
 }
@@ -132,6 +132,7 @@ _ch_qc_free_mem(void)
         free(t->data);
         free(t);
     }
+    _ch_qc_mem_track = NULL;
 }
 
 // .. c:function::
