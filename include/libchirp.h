@@ -1,7 +1,7 @@
 // ========
 // Libchirp
 // ========
-// 
+//
 // .. code-block:: cpp
 
 #ifndef ch_libchirp_h
