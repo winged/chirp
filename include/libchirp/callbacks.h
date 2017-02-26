@@ -1,7 +1,7 @@
 // ===============
 // Chirp Callbacks
 // ===============
-// 
+//
 // If you are on embedded platform you have to set the memory functions of
 // chirp, libuv and openssl.
 //

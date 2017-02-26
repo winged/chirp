@@ -1,7 +1,7 @@
 // ==================
 // External functions
 // ==================
-// 
+//
 // .. code-block:: cpp
 
 #ifndef ch_libchirp_wrappers_h

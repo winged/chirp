@@ -54,20 +54,24 @@ endif
 
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
-	@$(BASE)/mk/twsp $<
 ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
 	$(BASE)/mk/c2rst $< $@
 else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
 endif
 
 $(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
-	@$(BASE)/mk/twsp $<
 ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
 	$(BASE)/mk/c2rst $< $@
 else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
 endif
