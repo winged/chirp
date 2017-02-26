@@ -121,6 +121,10 @@ Windows
 Development
 ===========
 
+Test dependencies:
+
+* cppcheck
+
 Unix
 ----
 
