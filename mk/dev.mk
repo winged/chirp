@@ -7,6 +7,7 @@ CFLAGS := \
 	-fPIC \
 	-Wall \
 	-Wextra \
+	-Werror \
 	-pedantic \
 	-ffunction-sections \
 	-fdata-sections \
