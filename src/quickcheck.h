@@ -137,7 +137,7 @@ typedef struct ch_qc_mem_track_s {
 
 /* Not used -> no doc */
 #define CH_QC_MEM_TRACK_COMPARATOR(e1, e2) \
-    ((int) e1->data - (int) e2->data)
+    (e1->data - e2->data)
 
 SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
     ch_qc_mem_track_t,

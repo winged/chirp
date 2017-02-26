@@ -54,22 +54,24 @@ endif
 
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
+	@$(BASE)/mk/twsp $<
 ifeq ($(VERBOSE),True)
 	$(BASE)/mk/c2rst $< $@
 else
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
-
 endif
 
 $(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
+	@$(BASE)/mk/twsp $<
 ifeq ($(VERBOSE),True)
 	$(BASE)/mk/c2rst $< $@
 else
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
 endif
+
 
 $(BUILD)/libchirp.a: $(LIB_OBJECTS)
 ifeq ($(VERBOSE),True)
