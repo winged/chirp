@@ -91,6 +91,7 @@ _ch_qc_for_all(
             printf("*** Failed!\n");
 
             for (j = 0; j < arglen; j++) {
+                printf("Arg %03d: ", (int) j);
                 ps[j](values + j * max_size);
                 printf("\n");
             }
@@ -230,7 +231,7 @@ ch_qc_gen_string(ch_buf* data)
         item->count = 1;
         item->size = sizeof(char);
         sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
-        arr = 0;
+        *arr = 0;
     } else
         item->data[(item->count * item->size) - 1] = 0;
 
@@ -305,7 +306,11 @@ ch_qc_print_string(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    char *s = ch_qc_args(char*, 0, char*);
+     ch_qc_mem_track_t* item = ch_qc_args(
+        ch_qc_mem_track_t*,
+        0,
+        ch_qc_mem_track_t*
+    );
 
-    printf("%s", s);
+    printf("%s", item->data);
 }
