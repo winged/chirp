@@ -3,6 +3,7 @@
 // =================
 //
 // Fork of https://github.com/mcandre/qc by Andrew Pennebaker removing gc.h
+// and changing almost everything.
 //
 // Forked at commit fc8e7f76af339fdd56546ad46cb9d97cd42ec5cb
 //
@@ -103,18 +104,29 @@
 //
 //    List to track memory allocations and free them after a test.
 //
-//    .. c:member:: void* mem
+//    .. c:member:: ch_buf* data
 //
-//       Pointer to the allocated memory.
+//       Pointer to the data.
 //
-//    .. c:member:: void* mem
+//    .. c:member:: struct ch_qc_mem_track_s *next
 //
 //       Pointer to the next list item.
+//
+//    .. c:member:: size_t size
+//
+//       Size of one item of the memory
+//
+//    .. c:member:: unsigned char count
+//
+//       Count of items of the memory. size * count equals the total size in
+//       bytes.
 //
 // .. code-block:: cpp
 
 typedef struct ch_qc_mem_track_s {
-    void* mem;
+    ch_buf* data;
+    size_t size;
+    unsigned char count;
     struct ch_qc_mem_track_s *next;
 } ch_qc_mem_track_t;
 
@@ -125,7 +137,7 @@ typedef struct ch_qc_mem_track_s {
 
 /* Not used -> no doc */
 #define CH_QC_MEM_TRACK_COMPARATOR(e1, e2) \
-    ((int) e1->mem - (int) e2->mem)
+    ((int) e1->data - (int) e2->data)
 
 SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
     ch_qc_mem_track_t,
@@ -164,8 +176,9 @@ SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
 
 // .. c:macro:: ch_qc_gen_array
 //
-//    Generate an array of a certain subtype. Quickcheck will track this memory
-//    and free it for you when tests are done.
+//    Generate an array of a certain subtype. Returns ch_qc_mem_track_t*.
+//    Quickcheck will track this memory and free it for you when tests are
+//    done.
 //
 //    see: :c:func:`_ch_qc_gen_array`
 //
@@ -228,7 +241,7 @@ _ch_qc_for_all(
         size_t max_size
 );
 //
-//    Generates 100 test cases and tests for each case if a property holds.
+//    Generate 100 test-cases and tests for each case if a property holds.
 //
 //    In the protocol of quickcheck the generation of data is separated from
 //    the test. If you are using the basic generation functions
@@ -265,7 +278,7 @@ _ch_qc_gen_array(
 void
 ch_qc_gen_bool(ch_buf* data);
 //
-//    Generetes data of type bool. Has to be copied.
+//    Generate data of type bool. Has to be copied.
 //
 //    :param ch_buf* data: Out parameter, the bool as an int.
 //
@@ -273,7 +286,7 @@ ch_qc_gen_bool(ch_buf* data);
 void
 ch_qc_gen_char(ch_buf* data);
 //
-//    Generetes data of type char. Has to be copied.
+//    Generate an ascii character of type char. Has to be copied.
 //
 //    :param ch_buf* data: Out parameter, the char.
 //
@@ -281,7 +294,7 @@ ch_qc_gen_char(ch_buf* data);
 void
 ch_qc_gen_int(ch_buf* data);
 //
-//    Generetes data of type int. Has to be copied.
+//    Generate data of type int. Has to be copied.
 //
 //    :param ch_buf* data: Out parameter, the int.
 //
@@ -289,7 +302,9 @@ ch_qc_gen_int(ch_buf* data);
 void
 ch_qc_gen_string(ch_buf* data);
 //
-//    Generetes data of type char*. Is allocated and tracked by quickcheck.
+//    Generate a string of ascii characters of type char*. Returns
+//    ch_qc_mem_track_t*. The memoy allocated and tracked and freed by
+//    quickcheck.
 //
 //    :param ch_buf* data: Out parameter, char*.
 //

@@ -2,6 +2,12 @@
 // Quickcheck
 // ==========
 //
+// Fork of https://github.com/mcandre/qc by Andrew Pennebaker removing gc.h
+// and changing almost everything.
+//
+// Forked at commit fc8e7f76af339fdd56546ad46cb9d97cd42ec5cb
+//
+//
 // .. code-block:: cpp
 //
 //
@@ -122,7 +128,7 @@ _ch_qc_free_mem(void)
             t != NULL;
             t = sglib_ch_qc_mem_track_t_it_next(&it)
     ) {
-        free(t->mem);
+        free(t->data);
         free(t);
     }
 }
@@ -145,7 +151,9 @@ _ch_qc_gen_array(
 
     ch_buf* arr = malloc((size_t) len * size);
     ch_qc_mem_track_t* item = malloc(sizeof(ch_qc_mem_track_t));
-    item->mem = arr;
+    item->data = arr;
+    item->count = len;
+    item->size = size;
     sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
 
     size_t i;
@@ -154,7 +162,7 @@ _ch_qc_gen_array(
         g(arr + i * size);
     }
 
-    ch_qc_return(ch_buf*, arr);
+    ch_qc_return(ch_qc_mem_track_t*, item);
 }
 
 // .. c:function::
@@ -182,7 +190,7 @@ ch_qc_gen_char(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    char c = (char)(rand() % 128);
+    char c = (char)((rand() % 127) + 1);
 
     ch_qc_return(char, c);
 }
@@ -212,11 +220,21 @@ ch_qc_gen_string(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    char *s;
+    ch_qc_mem_track_t *item;
 
-    ch_qc_gen_array((ch_buf*) &s, ch_qc_gen_char, char);
+    ch_qc_gen_array((ch_buf*) &item, ch_qc_gen_char, char);
+    if(item->count == 0) {
+        ch_buf* arr = malloc(1);
+        item = malloc(sizeof(ch_qc_mem_track_t));
+        item->data = arr;
+        item->count = 1;
+        item->size = sizeof(char);
+        sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+        arr = 0;
+    } else
+        item->data[(item->count * item->size) - 1] = 0;
 
-    ch_qc_return(char *, s);
+    ch_qc_return(ch_qc_mem_track_t*, item);
 }
 
 // .. c:function::
@@ -259,7 +277,7 @@ ch_qc_print_char(ch_buf* data)
 {
     char c = ch_qc_args(char, 0, char);
 
-    printf("\'%c\'", c);
+    printf("'%c'", c);
 }
 
 // .. c:function::
