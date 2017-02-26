@@ -36,14 +36,22 @@ bool ch_is_odd(ch_buf* data) {
     return n % 2 == 1;
 }
 
-bool ch_is_ascii(ch_buf* data) {
-    char* buf = ch_qc_args(char*, 0, char*);
+bool ch_is_ascii_string(ch_buf* data) {
+     ch_qc_mem_track_t* item = ch_qc_args(
+        ch_qc_mem_track_t*,
+        0,
+        ch_qc_mem_track_t*
+    );
 
-    for(size_t i = 0; i < sizeof(buf); i++) {
-        if(buf[i] > m) // Using global to shutup the compiler
+    for(
+            size_t i = 0;
+            i < (item->count * item->size);
+            i++
+    ) {
+        if(item->data[i] > m) // Using global to shutup the compiler
             return 0;
     }
-    return 1;
+    return item->data[(item->count * item->size) - 1] == 0;
 }
 
 // .. c:function::
@@ -70,6 +78,12 @@ main(
     m = 128;
     ch_qc_gen gs1[] = { ch_qc_gen_string };
     ch_qc_print ps1[] = { ch_qc_print_string };
-    ret |= !ch_qc_for_all(ch_is_ascii, 1, gs1, ps1, int);
+    ret |= !ch_qc_for_all(
+        ch_is_ascii_string,
+        1,
+        gs1,
+        ps1,
+        ch_qc_mem_track_t*
+    );
     return ret;
 }
