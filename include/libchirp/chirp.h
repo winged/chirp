@@ -202,7 +202,7 @@ ch_chirp_init(
         ch_log_cb_t log_cb
 );
 //
-//    Intialiaze a chirp object. Memory is provided by caller. You must call
+//    Initialiaze a chirp object. Memory is provided by caller. You must call
 //    :c:func:`ch_chirp_close` to cleanup the object.
 //
 //    :param ch_chirp_t* chirp: Out: Chirp object
