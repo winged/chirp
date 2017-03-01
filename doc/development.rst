@@ -36,18 +36,6 @@ Internal API
    src/writer.h.rst
    src/writer.c.rst
 
-Tests
-=====
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-
-   src/connection_test.h.rst
-   src/connection_test.c.rst
-   src/pool_test.h.rst
-   src/pool_test.c.rst
-
 Test binaries
 =============
 
