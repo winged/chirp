@@ -1,3 +1,5 @@
+//.. _more-quickcheck-examples:
+//
 // ==================
 // Testing quickcheck
 // ==================
@@ -13,6 +15,8 @@
 
 // Test functions
 // ==============
+//
+// Not documented on purpose.
 //
 // .. code-block:: cpp
 //
@@ -52,6 +56,9 @@ bool ch_is_ascii_string(ch_buf* data) {
     }
     return item->data[(item->count * item->size) - 1] == 0;
 }
+
+// Runner
+// ======
 
 // .. c:function::
 int

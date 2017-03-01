@@ -36,13 +36,13 @@ void
 _ch_qc_free_mem(void);
 //
 //    Free memory allocations made during quickcheck test.
-//
+
 // .. c:var:: ch_qc_mem_track_t* _ch_qc_mem_track
 //
 //    List of memory allocations during current quickcheck test.
 //
 // .. code-block:: cpp
-
+//
 static ch_qc_mem_track_t* _ch_qc_mem_track = NULL;
 
 // Definitions
@@ -52,12 +52,15 @@ static ch_qc_mem_track_t* _ch_qc_mem_track = NULL;
 // ----------------
 //
 // .. code-block:: cpp
-
+//
 SGLIB_DEFINE_LIST_FUNCTIONS( // NOCOV
     ch_qc_mem_track_t,
     CH_QC_MEM_TRACK_COMPARATOR,
     next
 )
+
+// Functions
+// ---------
 //
 // .. c:function::
 int
@@ -107,7 +110,7 @@ _ch_qc_for_all(
     free(values);
     return 1;
 }
-//
+
 // .. c:function::
 static
 void
