@@ -16,11 +16,11 @@
 // For simplicity, :c:func:`_ch_qc_for_all` is called using the
 // :c:macro:`ch_qc_for_all` macro (see quickcheck.h).
 //
-// In this example, :c:macro:`ch_qc_for_all` is testing whether all integers are odd (they
-// are not).
+// In this example, :c:macro:`ch_qc_for_all` is testing whether all integers
+// are odd (they are not).
 //
-// Every :c:macro:`ch_qc_for_all` call begins with a property function. For example,
-// is_odd takes an int and returns a bool.
+// Every :c:macro:`ch_qc_for_all` call begins with a property function. For
+// example, is_odd takes an int and returns a bool.
 //
 // .. code-block:: cpp
 //
