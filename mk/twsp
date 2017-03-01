@@ -8,6 +8,7 @@ import os
 import re
 
 _twsp = re.compile(".*\s$")
+_sphinx_link = re.compile(".. [^:]+: http")
 
 line = 0
 ret = 0
@@ -16,6 +17,16 @@ file_ = os.path.abspath(sys.argv[1])
 with codecs.open(file_, encoding="UTF-8") as in_:
     for i, line in enumerate(in_.readlines()):
         line = line.strip("\n\r")
+        if file_.endswith("sglib.h"):
+            continue
+        if len(line) > 81:
+            if not _sphinx_link.match(line):
+                ret = 1
+                print("%s:%d:%d: error: line longer than 80 characters" % (
+                    file_,
+                    i + 1,
+                    len(line) - 1
+                ))
         if _twsp.match(line):
             ret = 1
             print("%s:%d:%d: error: trailing whitespace" % (
