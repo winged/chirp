@@ -35,7 +35,6 @@
 //
 //    .. c:member:: CH_FATAL
 //
-//       # TODO list cases
 //       .. todo: List all fatal error cases.
 //
 //       * We do not have an entropy source

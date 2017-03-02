@@ -90,7 +90,7 @@
 //
 // .. code-block:: cpp
 //
-#include "libchirp/common.h"
+#include "common.h"
 #include "sglib.h"
 
 // System includes

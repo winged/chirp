@@ -60,13 +60,13 @@ def parse_depends(file_, h_files):
 
 def flat_depends(file_, depends, flat):
     """Create a flat depends list of recursive dependencies."""
+    dep = depends[file_]
     if file_  not in flat:
-        dep = depends[file_]
+        flat.add(file_)
         if not dep:
             return flat
         for rec in dep:
             flat_depends(rec, depends, flat)
-            flat.add(rec)
     return flat
 
 
@@ -351,7 +351,7 @@ endif
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/config.h \\\n")
-                f.write("\t\t$(BUILD)/Makefile\n")
+                f.write("\t\t$(BUILD)/Makefile\n\n")
         if args.dev:
             f.write("\ninclude $(BASE)/mk/dev.mk")
         else:

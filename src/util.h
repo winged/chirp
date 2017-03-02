@@ -14,8 +14,8 @@
 //
 // .. code-block:: cpp
 //
+#include "common.h"
 #include "libchirp/callbacks.h"
-#include "libchirp/common.h"
 
 // Declarations
 // ============

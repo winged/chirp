@@ -14,7 +14,7 @@
 //
 // .. code-block:: cpp
 //
-#include "libchirp/common.h"
+#include "common.h"
 #include "message.h"
 #include "buffer.h"
 
