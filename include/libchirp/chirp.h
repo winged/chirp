@@ -2,15 +2,25 @@
 // Chirp
 // =====
 //
+// .. todo:: Document purpose
+//
 // .. code-block:: cpp
-
+//
 #ifndef ch_libchirp_chirp_h
 #define ch_libchirp_chirp_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "common.h"
 #include "callbacks.h"
 #include "wrappers.h"
 #include "message.h"
+
+// Declarations
+// ============
 
 // .. c:type:: ch_config_t
 //
@@ -112,12 +122,12 @@ typedef struct ch_config_s {
 //    see: :c:type:`ch_chirp_int_t`
 //
 // .. code-block:: cpp
-
+//
 typedef struct ch_chirp_int_s ch_chirp_int_t;
 
 // .. c:type:: ch_chirp_t
 //
-//    Chirp object. It has no public members. And uses an opaque pointer to its
+//    Chirp object. It has no public members and uses an opaque pointer to its
 //    internal data structures.
 //
 // .. code-block:: cpp
@@ -135,6 +145,10 @@ typedef struct ch_chirp_s {
 //
 //    Struct containing the chirp identity.
 //
+//    .. c:member:: unsigned char[16] data
+//
+//       The chrip identity is unsigned char array of length 16.
+//
 // .. code-block:: cpp
 //
 typedef struct ch_identity_s {
@@ -146,51 +160,48 @@ extern
 void
 ch_chirp_config_init(ch_config_t* config);
 //
-//    Initialize chirp config with defaults
+//    Initialize chirp configuration with defaults.
 //
-//    :param ch_config_t config: Chirp config
+//    :param ch_config_t* config: Pointer to a chirp configuration.
 
 // .. c:function::
 extern
 ch_error_t
 ch_chirp_close_ts(ch_chirp_t* chirp);
 //
-//    Cleanup chirp object. Will remove all callbacks. Pending outs will be
-//    ignored after calling free.
+//    Clean up chirp object. This will remove all callbacks. Pending outs will
+//    be ignored after calling free.
 //
-//    This function is thread-safe
+//    This function is thread-safe.
 //
-//    :param ch_chirp_t chirp: Chirp object
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
-//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
-//
 
 // .. c:function::
 extern
 ch_identity_t
 ch_chirp_get_identity(ch_chirp_t* chirp);
 //
-//    Get the identity of this chirp instance.
+//    Get the identity of the given chirp instance.
 //
-//    :param   ch_chirp_t chirp: Chirp object
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
-//    :return: A chirp identity. see: :c:type:`ch_identity_t`
+//    :return: a chirp identity. See: :c:type:`ch_identity_t`.
 //    :rtype:  ch_identity_t
-//
 
 // .. c:function::
 extern
 uv_loop_t*
 ch_chirp_get_loop(ch_chirp_t* chirp);
 //
-//    Get the loop of the chirp object.
+//    Get the loop of the given chirp object.
 //
-//    :param ch_chirp_t chirp: Chirp object
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
-//    :return: a libuv event loop object.
+//    :return: a pointer to a libuv event loop object.
 //    :rtype:  uv_loop_t*
-//
 
 // .. c:function::
 extern
@@ -202,17 +213,19 @@ ch_chirp_init(
         ch_log_cb_t log_cb
 );
 //
-//    Initialiaze a chirp object. Memory is provided by caller. You must call
-//    :c:func:`ch_chirp_close` to cleanup the object.
+//    Initialiaze a chirp object. Memory is provided by the caller. You must call
+//    :c:func:`ch_chirp_close` to cleanup the chirp object.
 //
-//    :param ch_chirp_t* chirp: Out: Chirp object
-//    :param ch_config_t* config: Chirp config
-//    :param uv_loop_t* loop: Reference to a libuv loop
-//    :param ch_log_cb_t log_cb: Callback to logging facility, can be NULL
+//    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
+//    :param ch_config_t* config: Pointer to a chirp configration.
+//    :param uv_loop_t* loop: Reference to a libuv loop.
+//    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //
-//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
-//
+
+// Definitions
+// ===========
 
 // .. c:function::
 static
@@ -222,8 +235,8 @@ ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 //
 //    Register a callback for sending log messages.
 //
-//    :param ch_chirp_t* chirp: Chirp instance
-//    :param ch_log_cb_t   log: Callback to be called on log messages
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_log_cb_t   log: Callback to be called when logging messages.
 //
 // .. code-block:: cpp
 //
@@ -245,43 +258,45 @@ ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp);
 //      * callbacks
 //
 //     The method blocks, but chirp paramenter will be set. Can be used to run
-//     chirp in a user defined thread. Use ch_chirp_close_ts to close chirp
-//     in any other thread.
+//     chirp in a user defined thread. Use :c:func:`ch_chirp_close_ts` to close
+//     chirp in any other thread.
 //
-//    :param ch_config_t* config: Chirp config
-//    :param ch_chirp_t** chirp: Out: Pointer to chirp object pointer. Ca be
-//                               NULL
+//    :param ch_config_t* config: Pointer to a chirp configuration.
+//    :param ch_chirp_t** chirp: Out: Pointer to a chirp object pointer. Can be
+//                               NULL.
 //
-//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
-//
+
 // .. c:function::
 extern
 void
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
-//    Messages to the same node will block, if you don't wait for the callback.
+//    Messages to the same node will block if you don't wait for the callback.
 //
 //    If you don't want to allocate messages on sending, we recommend to use a
 //    pool of messages.
 //
-//    :param ch_chirp_t* chirp: Chirp instance
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_message_t msg: The message to send. The memory of the message
-//                             must stay valid till the callback is called.
-//    :param ch_send_cb_t send_cb: Will be call
-//
+//                             must stay valid until the callback is called.
+//    :param ch_send_cb_t send_cb: The callback, that will be called after
+//                                 sending.
+
 // .. c:function::
 extern
 void
 ch_chirp_set_auto_stop(ch_chirp_t* chirp);
 //
-//    After this function is called :c:func:`ch_chirp_close_ts` will also stop
+//    Tells chirp to stop (by setting the corresponding flag)>
+//    After this function is called, :c:func:`ch_chirp_close_ts` will also stop
 //    the loop.
 //
-//    This function is thread-safe
+//    This function is thread-safe.
 //
-//    :param ch_chirp_t chirp: Chirp object
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
 // .. code-block:: cpp
 
