@@ -8,3 +8,4 @@ tags
 /.clang_complete
 /ci/alpine/.cache
 /Makefile
+/.floo*
