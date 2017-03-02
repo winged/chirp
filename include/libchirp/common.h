@@ -177,8 +177,9 @@
 //    Logs the given message including arbitrary arguments to a custom callback
 //    in debug-/development-mode.
 //
-//    The logging macro L(chirp, message, ...) behaves like printf and allows to
-//    log to a custom callback. Usually used to log into pythons logging facility.
+//    The logging macro L(chirp, message, ...) behaves like printf and allows
+//    to log to a custom callback. Usually used to log into pythons logging
+//    facility.
 //
 //    :param chirp: Pointer to a chirp object.
 //    :param message: Message to print when the condition is not met.
