@@ -88,5 +88,16 @@ main(
         ps1,
         ch_qc_mem_track_t*
     );
+
+    ch_qc_gen gs2[] = { ch_qc_gen_bytes };
+    ch_qc_print ps2[] = { ch_qc_print_bytes };
+    printf("The next test may (should) fail: ");
+    ch_qc_for_all(
+        ch_is_ascii_string,
+        1,
+        gs2,
+        ps2,
+        ch_qc_mem_track_t*
+    ); // Just for memcheck
     return ret;
 }

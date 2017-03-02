@@ -299,6 +299,24 @@ ch_qc_gen_bool(ch_buf* data);
 
 // .. c:function::
 void
+ch_qc_gen_byte(ch_buf* data);
+//
+//    Generate an binary character of type  uint8_t. Has to be copied.
+//
+//    :param ch_buf* data: Out parameter, the char.
+//
+// .. c:function::
+void
+ch_qc_gen_bytes(ch_buf* data);
+//
+//    Generate a string of bytes of type uint8_t*. The memoy allocated
+//    and tracked and freed by quickcheck.
+//
+//    :param ch_buf* data: Out parameter set to :c:type:`ch_qc_mem_track_t`\*
+//                         which contains the requested char* in its data field.
+
+// .. c:function::
+void
 ch_qc_gen_char(ch_buf* data);
 //
 //    Generate an ascii character of type char. Has to be copied.
@@ -335,6 +353,22 @@ void
 ch_qc_print_bool(ch_buf* data);
 //
 //    Prints data of type bool.
+//
+//    :param ch_buf* data: The data.
+
+// .. c:function::
+void
+ch_qc_print_byte(ch_buf* data);
+//
+//    Prints data of type ch_buf.
+//
+//    :param ch_buf* data: The data.
+
+// .. c:function::
+void
+ch_qc_print_bytes(ch_buf* data);
+//
+//    Prints data of type ch_buf*.
 //
 //    :param ch_buf* data: The data.
 

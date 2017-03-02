@@ -17,6 +17,7 @@
 // .. code-block:: cpp
 //
 #include "quickcheck.h"
+#include "util.h"
 
 // System includes
 // ===============
@@ -187,6 +188,39 @@ ch_qc_gen_bool(ch_buf* data)
 
 // .. c:function::
 void
+ch_qc_gen_byte(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_byte`
+//
+// .. code-block:: cpp
+//
+{
+    uint8_t c = rand();  // No need to mod overflow of unsigned char is
+                         // is well defined.
+
+    ch_qc_return(uint8_t, c);
+}
+
+// .. c:function::
+void
+ch_qc_gen_bytes(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_bytes`
+//
+// .. code-block:: cpp
+//
+{
+    ch_qc_mem_track_t *item;
+
+    ch_qc_gen_array((ch_buf*) &item, ch_qc_gen_byte, uint8_t);
+
+    ch_qc_return(ch_qc_mem_track_t*, item);
+}
+
+// .. c:function::
+void
 ch_qc_gen_char(ch_buf* data)
 //    :noindex:
 //
@@ -253,6 +287,52 @@ ch_qc_init(void)
 //
 {
     srand((unsigned int) time(NULL));
+}
+
+// .. c:function::
+void
+ch_qc_print_byte(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_byte`
+//
+// .. code-block:: cpp
+//
+{
+    char out[3];
+    uint8_t b = ch_qc_args(uint8_t, 0, uint8_t);
+    ch_bytes_to_hex(&b, 1, out, 3);
+
+    printf("%s", out);
+}
+
+// .. c:function::
+void
+ch_qc_print_bytes(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_byte`
+//
+// .. code-block:: cpp
+//
+{
+    char* out;
+    ch_qc_mem_track_t* item = ch_qc_args(
+        ch_qc_mem_track_t*,
+        0,
+        ch_qc_mem_track_t*
+    );
+    size_t out_size = item->count * 2 + 1;
+    out = malloc(out_size);
+    ch_bytes_to_hex(
+        (uint8_t*) item->data,
+        item->count,
+        out,
+        out_size
+    );
+
+    printf("%s", out);
+    free(out);
 }
 
 // .. c:function::
