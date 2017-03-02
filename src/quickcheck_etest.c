@@ -19,8 +19,6 @@
 // Not documented on purpose.
 //
 // .. code-block:: cpp
-//
-static int m = 0;
 
 void ch_gen_odd(ch_buf* data) {
     int i;
@@ -48,10 +46,10 @@ bool ch_is_ascii_string(ch_buf* data) {
 
     for(
             size_t i = 0;
-            i < item->count;
+            i < (item->count - 1);
             i++
     ) {
-        if(item->data[i] > m) // Using global to shutup the compiler
+        if(item->data[i] < 1)
             return 0;
     }
     return item->data[(item->count * item->size) - 1] == 0;
@@ -81,7 +79,6 @@ main(
     ch_qc_print ps0[] = { ch_qc_print_int };
     ret |= !ch_qc_for_all(ch_is_odd, 1, gs0, ps0, int);
 
-    m = 128;
     ch_qc_gen gs1[] = { ch_qc_gen_string };
     ch_qc_print ps1[] = { ch_qc_print_string };
     ret |= !ch_qc_for_all(
