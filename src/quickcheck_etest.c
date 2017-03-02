@@ -45,7 +45,7 @@ bool ch_is_ascii_string(ch_buf* data) {
     );
 
     for(
-            size_t i = 0;
+            int i = 0;
             i < (item->count - 1);
             i++
     ) {
