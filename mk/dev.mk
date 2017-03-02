@@ -1,6 +1,9 @@
 .PHONY: cppcheck
 .DEFAULT_GOAL := help
-ALPINE := $(shell [ -f /etc/apk/world ] && echo True )
+ALPINE_AND_CLANG := $(shell \
+	[ -f /etc/apk/world ] && [ "$(CC)" == "clang" ] \
+		&& echo True \
+)
 
 CFLAGS := \
 	-std=gnu99 \
@@ -26,19 +29,12 @@ LDFLAGS := \
 	-lpthread \
 	-lcrypto
 
-ifeq ($(ALPINE),True)
-ifeq ($(CC), clang)
+ifeq ($(ALPINE_AND_CLANG),True)
 test: all cppcheck todo  ## Test everything
+	@echo Note: Alpine Linux clang does not support coverage
 else
 CFLAGS += --coverage
 LDFLAGS += --coverage
-
-test: coverage cppcheck todo
-endif
-else
-CFLAGS += --coverage
-LDFLAGS += --coverage
-
 test: coverage cppcheck todo
 endif
 
