@@ -4,7 +4,6 @@
 //
 // .. todo:: Document purpose
 //
-// .. code-block:: cpp
 
 // Project includes
 // ================

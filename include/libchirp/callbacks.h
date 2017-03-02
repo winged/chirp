@@ -1,8 +1,8 @@
 // ===============
 // Chirp Callbacks
 // ===============
-// 
-// If you are on embedded platform you have to set the memory functions of
+//
+// If you are on an embedded platform you have to set the memory functions of
 // chirp, libuv and openssl.
 //
 // * ch_set_allocators

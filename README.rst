@@ -121,6 +121,10 @@ Windows
 Development
 ===========
 
+Test dependencies:
+
+* cppcheck
+
 Unix
 ----
 
@@ -159,4 +163,4 @@ No development build available.
 License
 =======
 
-LGPL 3.0
+AGPL 3.0

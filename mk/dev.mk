@@ -7,6 +7,7 @@ CFLAGS := \
 	-fPIC \
 	-Wall \
 	-Wextra \
+	-Werror \
 	-pedantic \
 	-ffunction-sections \
 	-fdata-sections \
@@ -32,13 +33,13 @@ else
 CFLAGS += --coverage
 LDFLAGS += --coverage
 
-test: coverage cppcheck todo  ## Test everything
+test: coverage cppcheck todo
 endif
 else
 CFLAGS += --coverage
 LDFLAGS += --coverage
 
-test: coverage cppcheck todo  ## Test everything
+test: coverage cppcheck todo
 endif
 
 help:  ## Display this help
@@ -49,6 +50,7 @@ etests:
 	PID=$$!; \
 	sleep 1; \
 	kill -2 $$PID
+	$(BUILD)/src/quickcheck_etest
 
 cppcheck:  ## Static analysis
 	cppcheck -v \

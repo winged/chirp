@@ -10,6 +10,9 @@ doc: doc_files
 	@rm -f $(BASE)/doc/src
 	@ln -s $(BUILD)/include $(BASE)/doc/inc
 	@ln -s $(BUILD)/src $(BASE)/doc/src
+	@mkdir -p $(BASE)/doc/_build/html
+	@cp -f $(BASE)/doc/sglib-1.0.4/doc/index.html \
+		$(BASE)/doc/_build/html/sglib.html
 ifeq ($(VERBOSE),True)
 	make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out
 	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
@@ -52,21 +55,27 @@ endif
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
 	$(BASE)/mk/c2rst $< $@
 else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
-
 endif
 
 $(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
 	$(BASE)/mk/c2rst $< $@
 else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
 	@echo RST $<
 	@$(BASE)/mk/c2rst $< $@
 endif
+
 
 $(BUILD)/libchirp.a: $(LIB_OBJECTS)
 ifeq ($(VERBOSE),True)

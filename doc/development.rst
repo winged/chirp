@@ -27,6 +27,8 @@ Internal API
    src/message.c.rst
    src/protocol.h.rst
    src/protocol.c.rst
+   src/quickcheck.h.rst
+   src/quickcheck.c.rst
    src/reader.h.rst
    src/reader.c.rst
    src/util.h.rst
@@ -54,12 +56,17 @@ Test binaries
    :includehidden:
 
    src/chirp_etest.c.rst
+   src/quickcheck_etest.c.rst
 
 External Libs
 =============
+
+* `SGLIB - Simple Generic Library`_
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
 
    src/sglib.h.rst
+
+.. _`SGLIB - Simple Generic Library`: sglib.html

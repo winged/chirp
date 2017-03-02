@@ -35,9 +35,9 @@
 // The assert macro A(condition, message, ...) behaves like printf and allows
 // to print a message with the assertion
 //
-// The validate macro V(chirp, condition, message, ...) behaves like printf and allows
-// to print a message with the assertion, it will print the message and return
-// CH_VALUE_ERROR, even in release mode.
+// The validate macro V(chirp, condition, message, ...) behaves like printf and
+// allows to print a message with the assertion, it will print the message and
+// return CH_VALUE_ERROR, even in release mode.
 //
 // .. code-block:: cpp
 //
