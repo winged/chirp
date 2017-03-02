@@ -3,15 +3,26 @@
 // =============
 //
 // I know common headers aren't good style but Windows is forcing me.
+// .. todo:: Document purpose
 //
 // .. code-block:: cpp
 //
 #ifndef ch_libchirp_common_h
 #define ch_libchirp_common_h
 
+// Project includes
+// ================
+//
+// .. code-block:: cpp
+//
 #include "error.h"
 #include "const.h"
 
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <uv.h>
 
 #include <assert.h>
@@ -24,26 +35,26 @@
 // Logging and assert macros
 // =========================
 //
-// The error macro E(chirp, message, ...) behaves like printf and allows to
-// log to a custom callback. Usually used to log into pythons logging facility.
-// On the callback it sets the argument error to true and it will log to stderr
-// if no callback is set.
+// .. code-block:: cpp
 //
-// The logging macro L(chirp, message, ...) behaves like printf and allows to
-// log to a custom callback. Usually used to log into pythons logging facility.
+#define CH_EMPTY
+
+// .. c:macro:: E
 //
-// The assert macro A(condition, message, ...) behaves like printf and allows
-// to print a message with the assertion
+//    Reports an error.
 //
-// The validate macro V(chirp, condition, message, ...) behaves like printf and allows
-// to print a message with the assertion, it will print the message and return
-// CH_VALUE_ERROR, even in release mode.
+//    The error macro E(chirp, message, ...) behaves like printf and allows to
+//    log to a custom callback. Usually used to log into pythons logging
+//    facility. On the callback it sets the argument error to true and it will
+//    log to stderr if no callback is set.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param message: The message to report.
+//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
+//                quantity).
 //
 // .. code-block:: cpp
 //
-
-#define CH_EMPTY
-
 #define E(chirp, message, ...) do { \
     if(chirp->_log != NULL) { \
         char buf[1024]; \
@@ -68,6 +79,25 @@
 } while(0)
 
 #ifndef NDEBUG
+
+// .. c:macro:: V
+//
+//    Validates the given condition and reports a message including arbitrary
+//    given arguments when the condition is not met in debug-/development-mode.
+//
+//    The validate macro V(chirp, condition, message, ...) behaves like printf
+//    and allows to print a message given an assertion. If that assertion is
+//    not fullfilled, it will print the given message and return
+//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param condition: A boolean condition to check.
+//    :param message: Message to print when the condition is not met.
+//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
+//                quantity).
+//
+// .. code-block:: cpp
+//
 #   define V(chirp, condition, message, ...) do { \
         if(!(condition)) { \
             if(chirp->_log != NULL) { \
@@ -97,6 +127,23 @@
             return CH_VALUE_ERROR; \
         } \
     } while(0)
+
+// .. c:macro:: VE
+//
+//    Validates the given condition and reports a message when the condition is
+//    not met in debug-/development-mode.
+//
+//    The validate macro VE(chirp, condition, message) behaves like printf
+//    and allows to print a message given an assertion. If that assertion is
+//    not fullfilled, it will print the given message and return
+//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param condition: A boolean condition to check.
+//    :param message: Message to print when the condition is not met.
+//
+// .. code-block:: cpp
+//
 #   define VE(chirp, condition, message) do { \
         if(!(condition)) { \
             if(chirp->_log != NULL) { \
@@ -124,6 +171,22 @@
             return CH_VALUE_ERROR; \
         } \
     } while(0)
+
+// .. c:macro:: L
+//
+//    Logs the given message including arbitrary arguments to a custom callback
+//    in debug-/development-mode.
+//
+//    The logging macro L(chirp, message, ...) behaves like printf and allows to
+//    log to a custom callback. Usually used to log into pythons logging facility.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param message: Message to print when the condition is not met.
+//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
+//                quantity).
+//
+// .. code-block:: cpp
+//
 #   define L(chirp, message, ...) do { \
         if(chirp->_log != NULL) { \
             char buf[1024]; \
@@ -146,6 +209,21 @@
             ); \
         } \
     } while(0)
+
+// .. c:macro:: A
+//
+//    Validates the given condition and reports arbitrary arguments when the
+//    condition is not met in debug-/development-mode.
+//
+//    The assert macro A(condition, ...) behaves like printf and allows to
+//    print a arbitrary arguments when the given assertion fails.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
+//                quantity).
+//
+// .. code-block:: cpp
+//
 #   define A(condition, ...) do { \
         if(!(condition)) { \
             fprintf(stderr, __VA_ARGS__); \
@@ -157,6 +235,25 @@
         } \
     } while(0)
 #else //NDEBUG
+
+// .. c:macro:: V
+//
+//    Validates the given condition and reports a message including arbitrary
+//    given arguments when the condition is not met in release-mode.
+//
+//    The validate macro V(chirp, condition, message, ...) behaves like printf
+//    and allows to print a message given an assertion. If that assertion is
+//    not fullfilled, it will print the given message and return
+//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param condition: A boolean condition to check.
+//    :param message: Message to print when the condition is not met.
+//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
+//                quantity).
+//
+// .. code-block:: cpp
+//
 #   define V(chirp, condition, message, ...) do { \
         if(!(condition)) { \
             if(chirp->_log != NULL) { \
@@ -182,6 +279,23 @@
             return CH_VALUE_ERROR; \
         } \
     } while(0)
+
+// .. c:macro:: VE
+//
+//    Validates the given condition and reports a message when the condition is
+//    not met in release-mode.
+//
+//    The validate macro VE(chirp, condition, message) behaves like printf
+//    and allows to print a message given an assertion. If that assertion is
+//    not fullfilled, it will print the given message and return
+//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
+//
+//    :param chirp: Pointer to a chirp object.
+//    :param condition: A boolean condition to check.
+//    :param message: Message to print when the condition is not met.
+//
+// .. code-block:: cpp
+//
 #   define VE(chirp, condition, message) do { \
         if(!(condition)) { \
             if(chirp->_log != NULL) { \
@@ -205,8 +319,22 @@
             return CH_VALUE_ERROR; \
         } \
     } while(0)
+
+// .. c:macro:: L
+//
+//    See :c:macro:`L`. Does nothing in release-mode.
+// .. code-block:: cpp
+//
 #   define L(chrip, message, ...) (void)(chirp); (void)(message)
+
+//.. c:macro:: A
+//
+//    See :c:macro:`A`. Does nothing in release-mode.
+//
+// .. code-block:: cpp
+//
 #   define A(condition, ...) (void)(condition)
+
 #endif
 
 

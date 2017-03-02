@@ -1,11 +1,16 @@
-// ======
-// Consts
-// ======
+// =========
+// Constants
+// =========
+//
+// Defines constants used throughout the project.
 //
 // .. code-block:: cpp
 
 #ifndef ch_libchirp_const_h
 #define ch_libchirp_const_h
+
+// Declarations
+// ============
 
 // .. c:type:: ch_ip_protocol_t
 //
@@ -13,11 +18,11 @@
 //
 //    .. c:member:: CH_IPV4
 //
-//       IPV4
+//       Defines the usage of IP protocol version 4.
 //
 //    .. c:member:: CH_IPV6
 //
-//       IPV6
+//       Defines the usage of IP protocol version 6.
 //
 // .. code-block:: cpp
 //

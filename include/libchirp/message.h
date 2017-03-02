@@ -242,4 +242,6 @@ ch_msg_set_address(
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
 
+// .. code-block:: cpp
+//
 #endif //ch_libchirp_message_h

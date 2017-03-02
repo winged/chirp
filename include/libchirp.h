@@ -37,9 +37,9 @@ ch_set_alloc_funcs(
 //    :param ch_alloc_cb_t alloc: Memory allocation callback. Has the same
 //                                signature as malloc
 //    :param ch_realloc_cb_t realloc: Memory reallocation callback. Has the same
-//                                signature as realloc
+//                                    signature as realloc
 //    :param ch_free_cb_t free: Callback to free memory. Has the same
-//                                signature as free
+//                              signature as free
 //
 // .. code-block:: cpp
 //

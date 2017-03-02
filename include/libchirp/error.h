@@ -2,6 +2,8 @@
 // Errors
 // ======
 //
+// ..todo:: Document purpose
+//
 // .. code-block:: cpp
 
 #ifndef ch_libchirp_error_h
@@ -13,41 +15,46 @@
 //
 //    .. c:member:: CH_SUCCESS
 //
-//       No error
+//       No error.
 //
 //    .. c:member:: CH_VALUE_ERROR
 //
-//       Supplied value is not allowed
+//       Supplied value is not allowed.
 //
 //    .. c:member:: CH_UV_ERROR
 //
-//       General libuv error
+//       General libuv error.
 //
 //    .. c:member:: CH_PROTOCOL_ERROR
 //
-//       Happens when bad values are received or remote dies unexpectedly
+//       Happens when bad values are received or the remote dies unexpectedly.
 //
 //    .. c:member:: CH_EADDRINUSE
 //
-//       The chirp port was already in use
+//       The chirp port is already in use.
 //
 //    .. c:member:: CH_FATAL
 //
 //       # TODO list cases
+//       .. todo: List all fatal error cases.
 //
-//       * We do not have a entropy source
+//       * We do not have an entropy source
 //
 //    .. c:member:: CH_TLS_ERROR
 //
-//       General TLS error
+//       General TLS error.
 //
 //    .. c:member:: CH_UNINIT
 //
-//       Chirp or another object is not initialized
+//       Chirp or another object is not initialized.
 //
-//    .. c:member:: CH_IN_PRORESS
+//    .. c:member:: CH_IN_PROGRESS
 //
-//       Action is already in progress
+//       Action is already in progress.
+//
+//    .. c:member:: CH_TIMEOUT
+//
+//       A timeout happened during an action.
 //
 // .. code-block:: cpp
 //
