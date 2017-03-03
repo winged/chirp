@@ -33,6 +33,43 @@
 // Logging and assert macros
 // =========================
 //
+// .. _double-eval:
+//
+// Double evaluation
+// ------------------
+//
+// In order to get proper file and line number we have to implement validation
+// and assertion using macros. But macros are prone to double evaluation, if you
+// pass function having side-effects. Passing a pure function or data is valid.
+// Our macros check if the condition passed is unstable, this doesn't mean they
+// will point out all mistakes, checking for stability once will catch the
+// most obvious mistakes, nothing more.
+//
+// So ONLY pass variables to the V, VE and A macros!
+//
+// But what is double evaluation?
+//     The macro will just copy the function call, passed to it. So it will
+//     be evaluated inside the macro, which people will often forget, the
+//     code will behave in unexpected ways. You might think that this is
+//     obvious, but forgetting it so easy. Humans have no problem writing
+//     something like this and be amazed that it doesn't work.
+//
+// .. code-block:: cpp
+//
+//    int i = generate_int();
+//    /* A few lines in between, so it isn't that obvious */
+//    V(chirp, generate_int() == 0, "The first int generated isn't zero");
+//
+// Which should look like this.
+//
+// .. code-block:: cpp
+//
+//    int i = generate_int();
+//    V(chirp, i == 0, "The first int generated isn't zero");
+//
+// Definitions
+// -----------
+//
 // .. code-block:: cpp
 //
 #define CH_EMPTY
@@ -83,6 +120,8 @@
 //    Validates the given condition and reports a message including arbitrary
 //    given arguments when the condition is not met in debug-/development-mode.
 //
+//    Be aware of :ref:`double-eval`
+//
 //    The validate macro V(chirp, condition, message, ...) behaves like printf
 //    and allows to print a message given an assertion. If that assertion is
 //    not fullfilled, it will print the given message and return
@@ -118,7 +157,7 @@
                     __VA_ARGS__ \
                 ); \
                 assert(condition); \
-                /* Since we check the condition twice, check for bad asserts*/ \
+                /* See the double evaluation chapter. */ \
                 fprintf(stderr, "Bad assert: condition not stable\n"); \
                 assert(0); \
             } \
@@ -130,6 +169,8 @@
 //
 //    Validates the given condition and reports a message when the condition is
 //    not met in debug-/development-mode.
+//
+//    Be aware of :ref:`double-eval`
 //
 //    The validate macro VE(chirp, condition, message) behaves like printf
 //    and allows to print a message given an assertion. If that assertion is
@@ -162,7 +203,7 @@
                     __LINE__ \
                 ); \
                 assert(condition); \
-                /* Since we check the condition twice, check for bad asserts*/ \
+                /* See the double evaluation chapter. */ \
                 fprintf(stderr, "Bad assert: condition not stable\n"); \
                 assert(0); \
             } \
@@ -214,6 +255,8 @@
 //    Validates the given condition and reports arbitrary arguments when the
 //    condition is not met in debug-/development-mode.
 //
+//    Be aware of :ref:`double-eval`
+//
 //    The assert macro A(condition, ...) behaves like printf and allows to
 //    print a arbitrary arguments when the given assertion fails.
 //
@@ -228,7 +271,7 @@
             fprintf(stderr, __VA_ARGS__); \
             fprintf(stderr, "\n"); \
             assert(condition); \
-            /* Since we check the condition twice, check for bad asserts*/ \
+            /* See the double evaluation chapter. */ \
             fprintf(stderr, "Bad assert: condition not stable\n"); \
             assert(0); \
         } \
@@ -239,6 +282,8 @@
 //
 //    Validates the given condition and reports a message including arbitrary
 //    given arguments when the condition is not met in release-mode.
+//
+//    Be aware of :ref:`double-eval`
 //
 //    The validate macro V(chirp, condition, message, ...) behaves like printf
 //    and allows to print a message given an assertion. If that assertion is
@@ -283,6 +328,8 @@
 //
 //    Validates the given condition and reports a message when the condition is
 //    not met in release-mode.
+//
+//    Be aware of :ref:`double-eval`
 //
 //    The validate macro VE(chirp, condition, message) behaves like printf
 //    and allows to print a message given an assertion. If that assertion is
@@ -329,6 +376,8 @@
 //.. c:macro:: A
 //
 //    See :c:macro:`A`. Does nothing in release-mode.
+//
+//    Be aware of :ref:`double-eval`
 //
 // .. code-block:: cpp
 //

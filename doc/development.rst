@@ -19,7 +19,6 @@ Internal API
    src/chirp.h.rst
    src/chirp.c.rst
    src/common.h.rst
-   inc/libchirp/common.h.rst
    src/connection.h.rst
    src/connection.c.rst
    src/encryption.h.rst

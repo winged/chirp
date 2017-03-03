@@ -21,6 +21,7 @@ API Reference
    inc/libchirp/encryption.h.rst
    inc/libchirp/error.h.rst
    inc/libchirp/wrappers.h.rst
+   inc/libchirp/common.h.rst
 
 Development and internals
 ==========================
