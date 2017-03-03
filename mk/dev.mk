@@ -41,7 +41,7 @@ endif
 help:  ## Display this help
 	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-etests:
+etests: all
 	$(BUILD)/src/chirp_etest & \
 	PID=$$!; \
 	sleep 1; \
