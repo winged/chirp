@@ -1,20 +1,25 @@
 # Contributor: Jean-Louis Fuchs <ganwell@fangorn.ch>
 # Maintainer: Jean-Louis Fuchs <ganwell@fangorn.ch>
 pkgname=chirp
-pkgver=0.1.41564
+pkgver=0.1.41565
 pkgrel=0
 pkgdesc="Message-passing and actor-based programming for everyone"
 url="https://github.com/concretecloud/chirp"
 arch="all"
 license="AGPL"
-makedepends="libuv-dev openssl-dev py-sphinx py-sphinx_rtd_theme graphviz"
+depends_dev="libuv-dev openssl-dev"
+makedepends="$depends_dev py-sphinx py-sphinx_rtd_theme graphviz cppcheck"
 subpackages="$pkgname-dev $pkgname-doc"
 source="chirp-$pkgver.tar.gz::https://github.com/concretecloud/chirp/archive/$pkgver.tar.gz"
-builddir="$srcdir/chirp-$pkgver"
+# A testbuild differs therefore we build the test in a different directory than
+# the release build
+distdir="$srcdir/chirp-$pkgver"
+builddir="$distdir/build"
+testdir="$distdir/testbuild"
 
 build() {
 	cd "$builddir"
-	./configure \
+	../configure \
 		--doc \
 		--prefix "$pkgdir" \
 		|| return 1
@@ -27,4 +32,17 @@ package() {
 	make install || return 1
 }
 
-sha512sums="8dbeb85630e3bac4e3beb8760b38ff0f44f25a6914023d70a662e4d13d73c812ceeb8ee761fd6995ec49bd375ef37553ae4a955b091c9420793eff798322396a  chirp-0.1.41564.tar.gz"
+check() {
+	mkdir -p "$testdir"
+	cd "$testdir"
+	../configure \
+		--doc \
+		--dev \
+		--ignore-coverage \
+		|| return 1
+	make test || return 1
+}
+
+md5sums="3cfc76acbb3283a2c4f0964e2cc1824c  chirp-0.1.41565.tar.gz"
+sha256sums="6afc44e8321d63ce148a069f4f4b34b6a9834bf0984185addac974746f9e214a  chirp-0.1.41565.tar.gz"
+sha512sums="f7d81474f476dfaf1aae7740f49c522e7408b9b6148bd471f4ca53428d4c24ca0fdeb1a3d06576bddbf5c1fbfdf9e4edc3dccbdc014e0eecdea07eda9ab89f9b  chirp-0.1.41565.tar.gz"
