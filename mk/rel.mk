@@ -1,4 +1,4 @@
-.PHONY: install uninstall
+.PHONY += install uninstall
 
 CFLAGS := \
 	-std=gnu99 \

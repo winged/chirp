@@ -1,4 +1,4 @@
-.PHONY: doc
+.PHONY += doc
 UNAME_S   := $(shell uname -s)
 
 libchirp.a: $(BUILD)/libchirp.a

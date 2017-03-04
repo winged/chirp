@@ -257,12 +257,14 @@ def write_makefile(args):
     if args.prefix:
         prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
+        f.write(
+            ".PHONY: all libraries executables objects doc_files coverage\n\n"
+        )
         if args.dev:
             f.write("all: libraries executables  ## Build everything\n\n")
         else:
             f.write("all: libraries\n\n")
 
-        f.write(".PHONY: libraries executables objects\n")
         f.write("BASE := %s\n" % _base)
         f.write("BUILD := %s\n" % _build)
         f.write("PREFIX := %s\n" % prefix)

@@ -1,3 +1,4 @@
+.PHONY += testlibuv testopenssl clean
 DEVNULL := $(shell mkdir -p "$(DTMP)")
 
 testlibuv:

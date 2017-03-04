@@ -1,4 +1,4 @@
-.PHONY: cppcheck
+.PHONY += test cppcheck etests todo help
 .DEFAULT_GOAL := help
 ALPINE_AND_CLANG := $(shell \
 	[ -f /etc/apk/world ] && [ "$(CC)" == "clang" ] \
