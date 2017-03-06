@@ -153,6 +153,25 @@ _ch_qc_gen_array(
 // .. code-block:: cpp
 //
 {
+    ch_qc_return(
+        ch_qc_mem_track_t*,
+        _ch_qc_tgen_array(g, size)
+    );
+}
+
+// .. c:function::
+ch_qc_mem_track_t*
+_ch_qc_tgen_array(
+        ch_qc_gen g,
+        size_t size
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_qc_tgen_array`
+//
+// .. code-block:: cpp
+//
+{
     int len = rand() % 100;
 
     ch_buf* arr = malloc((size_t) len * size);
@@ -167,8 +186,7 @@ _ch_qc_gen_array(
     for (i = 0; i < (size_t) len; i++) {
         g(arr + i * size);
     }
-
-    ch_qc_return(ch_qc_mem_track_t*, item);
+    return item;
 }
 
 // .. c:function::
@@ -181,7 +199,7 @@ ch_qc_gen_bool(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    int b = rand() % 2 == 0;
+    int b = ch_qc_tgen_bool();
 
     ch_qc_return(int, b);
 }
@@ -196,8 +214,7 @@ ch_qc_gen_byte(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    uint8_t c = rand();  // No need to mod overflow of unsigned char is
-                         // is well defined.
+    uint8_t c = ch_qc_tgen_byte();
 
     ch_qc_return(uint8_t, c);
 }
@@ -212,11 +229,9 @@ ch_qc_gen_bytes(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    ch_qc_mem_track_t *item;
-
-    ch_qc_gen_array((ch_buf*) &item, ch_qc_gen_byte, uint8_t);
-
-    ch_qc_return(ch_qc_mem_track_t*, item);
+    ch_qc_return(
+        ch_qc_mem_track_t*, ch_qc_tgen_bytes()
+    );
 }
 
 // .. c:function::
@@ -229,9 +244,24 @@ ch_qc_gen_char(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    char c = (char)((rand() % 127) + 1);
+    char c = ch_qc_tgen_char();
 
     ch_qc_return(char, c);
+}
+
+// .. c:function::
+void
+ch_qc_gen_double(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_gen_double`
+//
+// .. code-block:: cpp
+//
+{
+    double x =  ch_qc_tgen_double();
+
+    ch_qc_return(double, x);
 }
 
 // .. c:function::
@@ -244,7 +274,7 @@ ch_qc_gen_int(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    int i = rand();
+    int i = ch_qc_tgen_int();
 
     ch_qc_return(int, i);
 }
@@ -259,21 +289,9 @@ ch_qc_gen_string(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    ch_qc_mem_track_t *item;
-
-    ch_qc_gen_array((ch_buf*) &item, ch_qc_gen_char, char);
-    if(item->count == 0) {
-        ch_buf* arr = malloc(1);
-        item = malloc(sizeof(ch_qc_mem_track_t));
-        item->data = arr;
-        item->count = 1;
-        item->size = sizeof(char);
-        sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
-        *arr = 0;
-    } else
-        item->data[(item->count * item->size) - 1] = 0;
-
-    ch_qc_return(ch_qc_mem_track_t*, item);
+    ch_qc_return(
+        ch_qc_mem_track_t*, ch_qc_tgen_string()
+    );
 }
 
 // .. c:function::
@@ -367,6 +385,21 @@ ch_qc_print_char(ch_buf* data)
 
 // .. c:function::
 void
+ch_qc_print_double(ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_print_double`
+//
+// .. code-block:: cpp
+//
+{
+    double x = ch_qc_args(double, 0, double);
+
+    printf("'%f'", x);
+}
+
+// .. c:function::
+void
 ch_qc_print_int(ch_buf* data)
 //    :noindex:
 //
@@ -397,4 +430,64 @@ ch_qc_print_string(ch_buf* data)
     );
 
     printf("%s", item->data);
+}
+
+// .. c:function::
+ch_qc_mem_track_t*
+ch_qc_tgen_bytes(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_bytes`
+//
+// .. code-block:: cpp
+//
+{
+    ch_qc_mem_track_t* item = ch_qc_tgen_array(ch_qc_gen_byte, uint8_t);
+
+    return item;
+}
+
+// .. c:function::
+ch_qc_mem_track_t*
+ch_qc_tgen_string(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_string`
+//
+// .. code-block:: cpp
+//
+{
+    ch_qc_mem_track_t *item = ch_qc_tgen_array(ch_qc_gen_char, char);
+    if(item->count == 0) {
+        ch_buf* arr = malloc(1);
+        item = malloc(sizeof(ch_qc_mem_track_t));
+        item->data = arr;
+        item->count = 1;
+        item->size = sizeof(char);
+        sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+        *arr = 0;
+    } else
+        item->data[(item->count * item->size) - 1] = 0;
+
+    return item;
+}
+
+// .. c:function::
+ch_qc_mem_track_t*
+ch_qc_track_alloc(size_t size)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_track_alloc`
+//
+// .. code-block:: cpp
+//
+{
+    ch_buf* arr = malloc(size);
+    ch_qc_mem_track_t* item = malloc(sizeof(ch_qc_mem_track_t));
+    item->data = arr;
+    item->count = size;
+    item->size = 1;
+    sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+
+    return item;
 }
