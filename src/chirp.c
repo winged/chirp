@@ -95,6 +95,14 @@ static int _ch_chirp_ref_count = 0;
 //
 static ch_chirp_t* _ch_chirp_instances = NULL;
 
+// .. c:var:: ch_chirp_t** _ch_chirp_instances
+//
+//    Signal handler was initialized
+//
+// .. code-block:: cpp
+//
+static uv_mutex_t _ch_libchirp_mutex;
+
 // .. c:function::
 static
 void
@@ -363,6 +371,8 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 {
     CH_GET_CHIRP(handle);
     ch_chirp_int_t* ichirp = chirp->_;
+    uv_mutex_lock(&_ch_libchirp_mutex);
+    uv_async_send(&chirp->_done);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
         uv_stop(ichirp->loop);
         L(
@@ -385,277 +395,8 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
         );
     }
     _ch_chirp_ref_count -= 1;
-    A(chirp, "Chirp reference count dropped below 0");
-}
-
-// .. c:function::
-ch_identity_t
-ch_chirp_get_identity(ch_chirp_t* chirp)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_get_identity`
-//
-// .. code-block:: cpp
-//
-{
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_identity_t id;
-    memcpy(id.data, chirp->_->identity, sizeof(id.data));
-    return id;
-}
-
-// .. c:function::
-uv_loop_t*
-ch_chirp_get_loop(ch_chirp_t* chirp)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_get_loop`
-//
-// .. code-block:: cpp
-//
-{
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    return chirp->_->loop;
-}
-
-// .. c:function::
-ch_error_t
-ch_chirp_init(
-        ch_chirp_t* chirp,
-        const ch_config_t* config,
-        uv_loop_t* loop,
-        ch_log_cb_t log_cb
-)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_init`
-//
-// .. code-block:: cpp
-//
-{
-    int tmp_err;
-    memset(chirp, 0, sizeof(ch_chirp_t));
-    chirp->_init            = CH_CHIRP_MAGIC;
-    ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
-    memset(ichirp, 0, sizeof(ch_chirp_int_t));
-    ichirp->config          = *config;
-    ichirp->public_port     = config->PORT;
-    ichirp->loop            = loop;
-    ch_config_t* tmp_conf   = &ichirp->config;
-    ch_protocol_t* protocol = &ichirp->protocol;
-    ch_encryption_t* enc    = &ichirp->encryption;
-    chirp->_                = ichirp;
-    if(log_cb != NULL)
-        ch_chirp_register_log_cb(chirp, log_cb);
-    tmp_err = _ch_chirp_verify_cfg(chirp);
-    if(tmp_err != CH_SUCCESS) {
-        chirp->_init = 0;
-        return tmp_err;
-    }
-
-    // rand
-    srand((unsigned int) time(NULL));
-    unsigned int i = 0;
-    while(
-            i < (sizeof(tmp_conf->IDENTITY) - 1) &&
-            tmp_conf->IDENTITY[i] == 0
-    ) i += 1;
-    if(tmp_conf->IDENTITY[i] == 0)
-        ch_random_ints_as_bytes(ichirp->identity, sizeof(ichirp->identity));
-    else
-        *ichirp->identity = *tmp_conf->IDENTITY;
-
-
-    if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
-        E(
-            chirp,
-            "Could not initialize close callback. ch_chirp_t:%p",
-            (void*) chirp
-        );
-        ch_free(ichirp);
-        chirp->_init = 0;
-        return CH_UV_ERROR; // NOCOV
-    }
-
-    ch_pr_init(chirp, protocol);
-    tmp_err = ch_pr_start(protocol);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could not start protocol: %d. ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
-        );
-        ch_free(ichirp);
-        chirp->_init = 0;
-        return tmp_err;
-    }
-    ch_en_init(chirp, enc);
-    tmp_err = ch_en_start(enc);
-    if(tmp_err != CH_SUCCESS) {
-#       ifndef NDEBUG
-            ERR_print_errors_fp(stderr);
-#       endif
-        E(
-            chirp,
-            "Could not start encryption: %d. ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
-        );
-        ch_free(ichirp);
-        chirp->_init = 0;
-        return tmp_err;
-    }
-#   ifndef NDEBUG
-    char id_str[33];
-    ch_bytes_to_hex(
-        ichirp->identity,
-        sizeof(ichirp->identity),
-        id_str,
-        sizeof(id_str)
-    );
-    L(
-        chirp,
-        "Chirp initialized id: %s. ch_chirp_t:%p, uv_loop_t:%p",
-        id_str,
-        (void*) chirp,
-        (void*) loop
-    );
-#   endif
-#   ifndef CH_DISABLE_SIGNALS
-        if(!_ch_chirp_sig_init) {
-           if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
-                E(
-                    chirp,
-                    "Unable to set SIGINT handler. ch_chirp_t:%p",
-                    (void*) chirp
-                );
-           }
-           else
-               _ch_chirp_sig_init = 1; // We need at least sigint
-           if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
-                E(
-                    chirp,
-                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                    (void*) chirp
-                );
-           }
-        }
-        sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
-#   endif
-    _ch_chirp_ref_count += 1;
-    return CH_SUCCESS;
-}
-
-// .. c:function::
-ch_error_t
-ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp_out)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_run`
-//
-// .. code-block:: cpp
-//
-{
-    ch_chirp_t chirp;
-    uv_loop_t  loop;
-    ch_error_t tmp_err;
-    if(chirp_out == NULL) {
-        return CH_UNINIT; // NOCOV  TODO can be tested
-    }
-    *chirp_out = NULL;
-
-    tmp_err = ch_uv_error_map(ch_loop_init(&loop));
-    chirp._log = NULL; // Bootstrap order problem. E checks _log but
-                       // ch_chirp_init() will initialize it.
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            (&chirp),
-            "Could not init loop: %d. uv_loop_t:%p",
-            tmp_err,
-            (void*) &loop
-        );
-        return tmp_err;  // NOCOV this can only fail with access error
-    }
-    tmp_err = ch_chirp_init(&chirp, config, &loop, NULL);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            (&chirp),
-            "Could not init chirp: %d ch_chirp_t:%p",
-            tmp_err,
-            (void*) &chirp
-        );
-        return tmp_err;  // NOCOV covered in ch_chirp_init tests
-    }
-    chirp._->flags |= CH_CHIRP_AUTO_STOP;
-    L(
-        (&chirp),
-        "UV-Loop run by chirp. ch_chirp_t:%p, uv_loop_t:%p",
-        (void*) &chirp,
-        (void*) &loop
-    );
-    /* This works and is not TOO bad because the function blocks. */
-    // cppcheck-suppress autoVariables
-    *chirp_out = &chirp;
-    tmp_err = ch_run(&loop);
-    *chirp_out = NULL;
-    if(tmp_err != 0) {
-        E(
-            (&chirp),
-            "uv_run returned with error: %d, uv_loop_t:%p",
-            tmp_err,
-            (void*) &loop
-        );
-        return tmp_err; // NOCOV only breaking things will trigger this
-    }
-    if(ch_loop_close(&loop)) {
-        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
-    }
-    return CH_SUCCESS;
-}
-
-// .. c:function::
-void
-ch_chirp_set_auto_stop(ch_chirp_t* chirp)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_set_auto_stop`
-//
-//    This function is thread-safe
-//
-// .. code-block:: cpp
-//
-{
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    chirp->_->flags |= CH_CHIRP_AUTO_STOP;
-}
-
-// .. c:function::
-static
-void
-_ch_chirp_sig_handler(int signo)
-//    :noindex:
-//
-//    see: :c:func:`_ch_chirp_sig_handler`
-//
-// .. code-block:: cpp
-//
-{
-    ch_chirp_t* t;
-    if(signo != SIGINT && signo != SIGTERM)
-        return;
-    struct sglib_ch_chirp_t_iterator it;
-    for(
-            t = sglib_ch_chirp_t_it_init(
-                &it,
-                _ch_chirp_instances
-            );
-            t != NULL;
-            t = sglib_ch_chirp_t_it_next(&it)
-    ) {
-        if(t->_->config.CLOSE_ON_SIGINT)
-            ch_chirp_close_ts(t);
-    }
+    A(_ch_chirp_ref_count >= 0, "Chirp reference count dropped below 0");
+    uv_mutex_unlock(&_ch_libchirp_mutex);
 }
 
 // .. c:function::
@@ -784,4 +525,333 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
         conf->BUFFER_SIZE
     );
     return CH_SUCCESS;
+}
+
+// .. c:function::
+ch_identity_t
+ch_chirp_get_identity(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_get_identity`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_identity_t id;
+    memcpy(id.data, chirp->_->identity, sizeof(id.data));
+    return id;
+}
+
+// .. c:function::
+uv_loop_t*
+ch_chirp_get_loop(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_get_loop`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    return chirp->_->loop;
+}
+
+// .. c:function::
+ch_error_t
+ch_chirp_init(
+        ch_chirp_t* chirp,
+        const ch_config_t* config,
+        uv_loop_t* loop,
+        uv_async_cb done,
+        ch_log_cb_t log_cb
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_init`
+//
+// .. code-block:: cpp
+//
+{
+    uv_mutex_lock(&_ch_libchirp_mutex);
+    int tmp_err;
+    memset(chirp, 0, sizeof(ch_chirp_t));
+    chirp->_init            = CH_CHIRP_MAGIC;
+    ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
+    if(!ichirp) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Could not allocate memory for chirp. ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) chirp
+        );
+        return CH_ENOMEM;
+    }
+    memset(ichirp, 0, sizeof(ch_chirp_int_t));
+    ichirp->config          = *config;
+    ichirp->public_port     = config->PORT;
+    ichirp->loop            = loop;
+    ch_config_t* tmp_conf   = &ichirp->config;
+    ch_protocol_t* protocol = &ichirp->protocol;
+    ch_encryption_t* enc    = &ichirp->encryption;
+    chirp->_                = ichirp;
+    if(log_cb != NULL)
+        ch_chirp_register_log_cb(chirp, log_cb);
+    tmp_err = _ch_chirp_verify_cfg(chirp);
+    if(tmp_err != CH_SUCCESS) {
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return tmp_err;
+    }
+
+    // rand
+    srand((unsigned int) time(NULL));
+    unsigned int i = 0;
+    while(
+            i < (sizeof(tmp_conf->IDENTITY) - 1) &&
+            tmp_conf->IDENTITY[i] == 0
+    ) i += 1;
+    if(tmp_conf->IDENTITY[i] == 0)
+        ch_random_ints_as_bytes(ichirp->identity, sizeof(ichirp->identity));
+    else
+        *ichirp->identity = *tmp_conf->IDENTITY;
+
+
+    if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
+        E(
+            chirp,
+            "Could not initialize close callback. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return CH_UV_ERROR; // NOCOV
+    }
+    if(uv_async_init(loop, &chirp->_done, done) < 0) {
+        E(
+            chirp,
+            "Could not initialize done handler. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return CH_UV_ERROR; // NOCOV
+    }
+
+    ch_pr_init(chirp, protocol);
+    tmp_err = ch_pr_start(protocol);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Could not start protocol: %d. ch_chirp_t:%p",
+            tmp_err,
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return tmp_err;
+    }
+    ch_en_init(chirp, enc);
+    tmp_err = ch_en_start(enc);
+    if(tmp_err != CH_SUCCESS) {
+#       ifndef NDEBUG
+            ERR_print_errors_fp(stderr);
+#       endif
+        E(
+            chirp,
+            "Could not start encryption: %d. ch_chirp_t:%p",
+            tmp_err,
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return tmp_err;
+    }
+#   ifndef NDEBUG
+    char id_str[33];
+    ch_bytes_to_hex(
+        ichirp->identity,
+        sizeof(ichirp->identity),
+        id_str,
+        sizeof(id_str)
+    );
+    L(
+        chirp,
+        "Chirp initialized id: %s. ch_chirp_t:%p, uv_loop_t:%p",
+        id_str,
+        (void*) chirp,
+        (void*) loop
+    );
+#   endif
+#   ifndef CH_DISABLE_SIGNALS
+        if(!_ch_chirp_sig_init) {
+           if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
+                E(
+                    chirp,
+                    "Unable to set SIGINT handler. ch_chirp_t:%p",
+                    (void*) chirp
+                );
+           }
+           else
+               _ch_chirp_sig_init = 1; // We need at least sigint
+           if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
+                E(
+                    chirp,
+                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
+                    (void*) chirp
+                );
+           }
+        }
+        sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
+#   endif
+    _ch_chirp_ref_count += 1;
+    uv_mutex_unlock(&_ch_libchirp_mutex);
+    return CH_SUCCESS;
+}
+
+// .. c:function::
+ch_error_t
+ch_chirp_run(
+        const ch_config_t* config,
+        ch_chirp_t** chirp_out,
+        ch_log_cb_t log
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_run`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t chirp;
+    uv_loop_t  loop;
+    ch_error_t tmp_err;
+    if(chirp_out == NULL) {
+        return CH_UNINIT; // NOCOV  TODO can be tested
+    }
+    *chirp_out = NULL;
+
+    tmp_err = ch_uv_error_map(ch_loop_init(&loop));
+    chirp._log = NULL; // Bootstrap order problem. E checks _log but
+                       // ch_chirp_init() will initialize it.
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            (&chirp),
+            "Could not init loop: %d. uv_loop_t:%p",
+            tmp_err,
+            (void*) &loop
+        );
+        return tmp_err;  // NOCOV this can only fail with access error
+    }
+    tmp_err = ch_chirp_init(&chirp, config, &loop, NULL, log);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            (&chirp),
+            "Could not init chirp: %d ch_chirp_t:%p",
+            tmp_err,
+            (void*) &chirp
+        );
+        return tmp_err;  // NOCOV covered in ch_chirp_init tests
+    }
+    chirp._->flags |= CH_CHIRP_AUTO_STOP;
+    L(
+        (&chirp),
+        "UV-Loop run by chirp. ch_chirp_t:%p, uv_loop_t:%p",
+        (void*) &chirp,
+        (void*) &loop
+    );
+    /* This works and is not TOO bad because the function blocks. */
+    // cppcheck-suppress autoVariables
+    *chirp_out = &chirp;
+    tmp_err = ch_run(&loop);
+    *chirp_out = NULL;
+    if(tmp_err != 0) {
+        E(
+            (&chirp),
+            "uv_run returned with error: %d, uv_loop_t:%p",
+            tmp_err,
+            (void*) &loop
+        );
+        return tmp_err; // NOCOV only breaking things will trigger this
+    }
+    if(ch_loop_close(&loop)) {
+        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
+    }
+    return CH_SUCCESS;
+}
+
+// .. c:function::
+void
+ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_set_auto_stop_loop`
+//
+//    This function is thread-safe
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    chirp->_->flags |= CH_CHIRP_AUTO_STOP;
+}
+
+// .. c:function::
+static
+void
+_ch_chirp_sig_handler(int signo)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_sig_handler`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* t;
+    if(signo != SIGINT && signo != SIGTERM)
+        return;
+    struct sglib_ch_chirp_t_iterator it;
+    for(
+            t = sglib_ch_chirp_t_it_init(
+                &it,
+                _ch_chirp_instances
+            );
+            t != NULL;
+            t = sglib_ch_chirp_t_it_next(&it)
+    ) {
+        if(t->_->config.CLOSE_ON_SIGINT) {
+            ch_chirp_close_ts(t);
+        }
+    }
+}
+
+// .. c:function::
+void
+ch_libchirp_cleanup(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_libchirp_cleanup`
+//
+// .. code-block:: cpp
+//
+{
+    uv_mutex_destroy(&_ch_libchirp_mutex);
+}
+
+// .. c:function::
+void
+ch_libchirp_init(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_libchirp_init`
+//
+// .. code-block:: cpp
+//
+{
+    uv_mutex_init(&_ch_libchirp_mutex);
 }

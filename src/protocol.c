@@ -246,6 +246,14 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(
         sizeof(ch_connection_t)
     );
+    if(!conn) {
+        E(
+            chirp,
+            "Could not allocate memory for connection. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        return;
+    }
     if(ch_cn_init(chirp, conn, CH_CN_ENCRYPTED) != CH_SUCCESS) {
         E(
             chirp,

@@ -33,7 +33,9 @@ ch_alloc(size_t size)
 // .. code-block:: cpp
 //
 {
-    return _ch_alloc_cb(size);
+    void* buf = _ch_alloc_cb(size);
+    assert(buf); // Assert we got memory
+    return buf;
 }
 
 // .. c:function::
@@ -62,7 +64,9 @@ ch_realloc(
 // .. code-block:: cpp
 //
 {
-    return _ch_realloc_cb(buf, size);
+    void* rbuf = _ch_realloc_cb(buf, size);
+    assert(rbuf); // Assert we got memory
+    return rbuf;
 }
 
 // .. c:function::

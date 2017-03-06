@@ -21,6 +21,22 @@ extern char* ch_version;
 
 // .. c:function::
 void
+ch_libchirp_cleanup(void);
+//
+//    Cleanup the libchirp mutex, used for thread-safety during
+//    ch_chirp_init and ch_chirp_close.
+//
+
+// .. c:function::
+void
+ch_libchirp_init(void);
+//
+//    Initialize the libchirp mutex, used for thread-safety during
+//    ch_chirp_init and ch_chirp_close.
+//
+
+// .. c:function::
+void
 ch_set_alloc_funcs(
         ch_alloc_cb_t alloc,
         ch_realloc_cb_t realloc,

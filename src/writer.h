@@ -56,10 +56,11 @@ struct ch_connection_s;
 //       Pointer to a message. The message is set when sending through
 //       :c:func:`_ch_wr_send` and being read again during the callbacks.
 //
-//    .. c:member:: ch_ms_message_t net_msg
+//    .. c:member:: ch_msg_message_t net_msg
 //
 //       The net version of the ``msg``. The net message structure is of type
-//       :c:type:`ch_ms_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
+//       :c:type:`ch_msg_message_t`, which is actually
+//       :c:macro:`CH_WIRE_MESSAGE`.
 //
 //       The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
 //       type :c:type:`ch_message_t` and ``net_msg`` of type
@@ -70,11 +71,11 @@ struct ch_connection_s;
 // .. code-block:: cpp
 //
 typedef struct ch_writer_s {
-    ch_send_cb_t    send_cb;
-    uv_timer_t      send_timeout;
-    uv_mutex_t      lock;
-    ch_message_t*   msg;
-    ch_ms_message_t net_msg;
+    ch_send_cb_t     send_cb;
+    uv_timer_t       send_timeout;
+    uv_mutex_t       lock;
+    ch_message_t*    msg;
+    ch_msg_message_t net_msg;
 } ch_writer_t;
 
 // .. c:function::

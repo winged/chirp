@@ -55,6 +55,13 @@
 //
 //       A timeout happened during an action.
 //
+//    .. c:member:: CH_ENOMEM
+//
+//       Could not get memory. We consider this as totally fatal, but try to
+//       handle it transparent for the user. We try to chain this error up to
+//       the user, but often it might only be logged. In debug mode it is
+//       asserted.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -68,6 +75,7 @@ typedef enum {
     CH_UNINIT         = 7,
     CH_IN_PRORESS     = 8,
     CH_TIMEOUT        = 9,
+    CH_ENOMEM         = 10,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

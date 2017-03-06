@@ -108,7 +108,7 @@ ch_bf_free(ch_buffer_pool_t* pool)
 // .. c:function::
 static
 ch_inline
-void
+ch_error_t
 ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 //
 //    Initialize the given buffer pool structure using given max. buffers.
@@ -124,12 +124,24 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;
     pool->handlers     = ch_alloc(max_buffers * sizeof(ch_bf_handler_t));
+    if(!pool->handlers) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Could not allocate memory fo r buffers. "
+            "ch_buffer_pool_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) pool
+        );
+        return CH_ENOMEM;
+    }
     pool->free_buffers = 0xFFFFFFFFU;
     pool->free_buffers <<= (32 - max_buffers);
     for(i = 0; i < max_buffers; ++i) {
         pool->handlers[i].id   = i;
         pool->handlers[i].used = 0;
     }
+    return CH_SUCCESS;
 }
 
 // .. c:function::

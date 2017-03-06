@@ -236,13 +236,13 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
     uv_mutex_lock(&writer->lock);
     // Use the writers net message structure to write the actual message over
     // the connection. The net message structure is of type
-    // :c:type:`ch_ms_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
+    // :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
     // The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
     // type :c:type:`ch_message_t` and ``net_msg`` of type
     // :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
     // essentially only the identity, the serial number, the message type and
     // the lengths of the header, the actor and the data.
-    ch_ms_message_t* net_msg = &writer->net_msg;
+    ch_msg_message_t* net_msg = &writer->net_msg;
     writer->msg = msg;
     writer->send_cb = send_cb;
     tmp_err = uv_timer_start(
@@ -277,7 +277,7 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_cn_write(
         conn,
         net_msg,
-        sizeof(ch_ms_message_t),
+        sizeof(ch_msg_message_t),
         _ch_wr_send_msg_header_cb
     );
 }

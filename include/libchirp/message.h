@@ -142,15 +142,15 @@ typedef struct ch_message_s {
     int8_t   free_data;
 } ch_message_t;
 
-// .. c:type:: ch_ms_message_t
+// .. c:type:: ch_msg_message_t
 //
 //    Wire message (network endianness), see :c:macro:`CH_WIRE_MESSAGE`.
 //
 // .. code-block:: cpp
 //
-typedef struct ch_ms_message_s {
+typedef struct ch_msg_message_s {
     CH_WIRE_MESSAGE;
-} ch_ms_message_t;
+} ch_msg_message_t;
 
 // .. c:type:: ch_text_address_t
 //

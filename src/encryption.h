@@ -71,40 +71,6 @@ typedef struct ch_encryption_s {
 } ch_encryption_t;
 
 // .. c:function::
-static
-void
-_cn_en_free(void* buf, const char* file, int line);
-//
-//    Free callback for OpenSSL.
-//
-//    :param void* buf: Buffer to free
-//    :param const char* file: File the allocation came from
-//    :param int line: The line the allocation came from
-
-// .. c:function::
-static
-void*
-_cn_en_malloc(size_t size, const char* file, int line);
-//
-//    Malloc callback for OpenSSL.
-//
-//    :param size_t size: Size to allocate
-//    :param const char* file: File the allocation came from
-//    :param int line: The line the allocation came from
-//
-// .. c:function::
-static
-void*
-_cn_en_realloc(void* buf, size_t new_size, const char* file, int line);
-//
-//    Realloc callback for OpenSSL.
-//
-//    :param void* buf: Buffer to reallocate
-//    :param size_t size: Size to allocate
-//    :param const char* file: File the allocation came from
-//    :param int line: The line the allocation came from
-
-// .. c:function::
 ch_error_t
 ch_en_start(ch_encryption_t* enc);
 //

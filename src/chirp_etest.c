@@ -33,12 +33,15 @@ main(
     ch_chirp_config_init(&config);
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM = "./dh.pem";
+    ch_libchirp_init();
     ch_loop_init(&loop);
-    if(ch_chirp_init(&chirp, &config, &loop, NULL) != CH_SUCCESS) {
+    if(ch_chirp_init(&chirp, &config, &loop, NULL, NULL) != CH_SUCCESS) {
         printf("ch_chirp_init error\n");
         return 1;
     }
-    ch_chirp_set_auto_stop(&chirp);
+    ch_chirp_set_auto_stop_loop(&chirp);
     ch_run(&loop);
-    return ch_loop_close(&loop);
+    int tmp_err = ch_loop_close(&loop);
+    ch_libchirp_cleanup();
+    return tmp_err;
 }

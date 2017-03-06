@@ -43,7 +43,8 @@ Test code
    :maxdepth: 2
    :includehidden:
 
-   src/dummy_test.c.rst
+   src/message_test.h.rst
+   src/message_test.c.rst
 
 Test binaries
 =============
@@ -53,6 +54,7 @@ Test binaries
    :includehidden:
 
    src/chirp_etest.c.rst
+   src/message_etest.c.rst
    src/quickcheck_etest.c.rst
 
 External Libs

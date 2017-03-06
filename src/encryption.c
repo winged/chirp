@@ -4,7 +4,6 @@
 //
 // .. todo:: Document purpose
 //
-// .. code-block:: cpp
 
 // Project includes
 // ================
@@ -28,12 +27,29 @@
 
 // .. c:var:: _ch_en_manual_openssl
 //
-//    The user will call ch_en_openssl_init() and ch_en_openssl_uninit().
+//    The user will call ch_en_openssl_init() and ch_en_openssl_cleanup().
 //    Defaults to 0.
 //
 // .. code-block:: cpp
 //
 static char _ch_en_manual_openssl = 0;
+
+// .. c:var:: _ch_en_lock_count
+//
+//    The count of locks created for openssl.
+//
+// .. code-block:: cpp
+//
+static int _ch_en_lock_count = 0;
+
+// .. c:var:: _ch_en_lock_list
+//
+//    List of locks provided for openssl. Openssl will tell us how many locks
+//    it needs.
+//
+// .. code-block:: cpp
+//
+static uv_rwlock_t* _ch_en_lock_list = NULL;
 
 // .. c:var:: _ch_en_openssl_ref_count
 //
@@ -43,8 +59,60 @@ static char _ch_en_manual_openssl = 0;
 //
 static int _ch_en_openssl_ref_count = 0;
 
+
+// .. c:function::
+static
+void
+_ch_en_locking_function(int mode, int n, const char *file, int line);
+//
+//    Called by openssl to lock a mutex.
+//
+//    :param int mode: Can be CRYPTO_LOCK or CRYPTO_UNLOCK
+//    :param int n: The lock to lock/unlock
+//    :param const char* file: File the function was called from (deubbing)
+//    :param const char* line: Line the function was called from (deubbing)
+//
+
+// .. c:function::
+static
+unsigned long
+_ch_en_thread_id_function(void);
+//
+//    Called by openssl to get the current thread it.
+//
+
 // Definitions
 // ===========
+
+// .. c:function::
+static
+void
+_ch_en_locking_function(int mode, int n, const char *file, int line)
+//    :noindex:
+//
+//    see: :c:func:`_ch_en_locking_function`
+//
+// .. code-block:: cpp
+//
+{
+    (void)(file);
+    (void)(line);
+    if(mode & CRYPTO_LOCK) {
+        if(mode & CRYPTO_WRITE)  // The user requested write
+            uv_rwlock_wrlock(&_ch_en_lock_list[n]);
+        else if(mode & CRYPTO_READ) // The user requested read
+            uv_rwlock_rdlock(&_ch_en_lock_list[n]);
+        else  // The user requested something bad, do a wrlock for safety
+            uv_rwlock_wrlock(&_ch_en_lock_list[n]);
+    } else {
+        if(mode & CRYPTO_WRITE)
+            uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+        else if(mode & CRYPTO_READ)
+            uv_rwlock_rdunlock(&_ch_en_lock_list[n]);
+        else
+            uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+    }
+}
 
 // .. c:function::
 ch_error_t
@@ -61,15 +129,15 @@ ch_en_openssl_init(void)
     SSL_load_error_strings();
     OPENSSL_config("chirp");
 
-    return CH_SUCCESS;
+    return ch_en_openssl_threading_setup();
 }
 
 // .. c:function::
 ch_error_t
-ch_en_openssl_uninit(void)
+ch_en_openssl_cleanup(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_openssl_uninit`
+//    see: :c:func:`ch_en_openssl_cleanup`
 //
 // .. code-block:: cpp
 //
@@ -81,7 +149,68 @@ ch_en_openssl_uninit(void)
     CRYPTO_cleanup_all_ex_data();
     ERR_free_strings();
     CONF_modules_free();
-    return CH_SUCCESS;
+
+    return ch_en_openssl_threading_cleanup();
+}
+
+// .. c:function::
+ch_error_t
+ch_en_openssl_threading_cleanup(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_en_openssl_threading_cleanup`
+//
+// .. code-block:: cpp
+//
+{
+    if(!_ch_en_lock_list) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Threading not setup.\n",
+            __FILE__,
+            __LINE__
+        );
+        return CH_VALUE_ERROR;
+    }
+    CRYPTO_set_id_callback(NULL);
+    CRYPTO_set_locking_callback(NULL);
+    for(int i = 0;  i < _ch_en_lock_count;  i++)
+        uv_rwlock_destroy(&_ch_en_lock_list[i]);
+    ch_free(_ch_en_lock_list);
+    _ch_en_lock_list = NULL;
+    return 0;
+}
+
+
+// .. c:function::
+ch_error_t
+ch_en_openssl_threading_setup(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_en_openssl_threading_setup`
+//
+// .. code-block:: cpp
+//
+{
+    int lock_count = CRYPTO_num_locks();
+    _ch_en_lock_list = ch_alloc(
+         lock_count * sizeof(uv_rwlock_t)
+    );
+    if(!_ch_en_lock_list) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Could not allocate memory for locking.\n",
+            __FILE__,
+            __LINE__
+        );
+        return CH_ENOMEM;
+    }
+    _ch_en_lock_count = lock_count;
+    for(int i = 0;  i < lock_count;  i++)
+        uv_rwlock_init(&_ch_en_lock_list[i]);
+    CRYPTO_set_id_callback(_ch_en_thread_id_function);
+    CRYPTO_set_locking_callback(_ch_en_locking_function);
+    return 0;
 }
 
 // .. c:function::
@@ -281,9 +410,24 @@ ch_en_stop(ch_encryption_t* enc)
                 "Uninitializing the OpenSSL library. ch_chirp_t:%p",
                 (void*) chirp
             );
-            return ch_en_openssl_uninit();
+            return ch_en_openssl_cleanup();
         }
     }
     SSL_CTX_free(enc->ssl_ctx);
     return CH_SUCCESS;
+}
+
+// .. c:function::
+static
+unsigned long
+_ch_en_thread_id_function(void)
+//    :noindex:
+//
+//    see: :c:func:`_ch_en_thread_id_function`
+//
+// .. code-block:: cpp
+//
+{
+    uv_thread_t self = uv_thread_self();
+    return (unsigned long)self;
 }

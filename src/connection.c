@@ -698,7 +698,18 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->chirp           = chirp;
     conn->flags          |= flags;
     conn->write_req.data  = conn;
-    ch_rd_init(&conn->reader, ichirp->config.MAX_HANDLERS);
+    tmp_err = ch_rd_init(&conn->reader, ichirp->config.MAX_HANDLERS);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Could not initialize reader: %d. ch_connection_t:%p,"
+            " ch_chirp_t:%p",
+            tmp_err,
+            (void*) conn,
+            (void*) chirp
+        );
+        return tmp_err;
+    }
     ch_wr_init(&conn->writer, conn);
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
@@ -710,6 +721,7 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
             (void*) conn,
             (void*) chirp
         );
+        return tmp_err;
     }
     conn->shutdown_timeout.data = conn;
     if(conn->flags & CH_CN_ENCRYPTED)
@@ -812,6 +824,19 @@ ch_cn_read_alloc_cb(
                 conn->buffer_rtls  = ch_alloc(ichirp->config.BUFFER_SIZE);
             }
             conn->buffer_size = ichirp->config.BUFFER_SIZE;
+        }
+        if(!(conn->buffer_uv && conn->buffer_wtls && conn->buffer_rtls)) {
+            E(
+                chirp,
+                "Could not allocate memory for libuv and tls. "
+                "ch_chirp_t:%p, ch_connection_t:%p",
+                (void*) chirp,
+                (void*) conn
+            );
+            // Tell libuv about the error
+            buf->base = 0;
+            buf->len = 0;
+            return;
         }
         conn->buffer_uv_uv = uv_buf_init(
             conn->buffer_uv,

@@ -101,7 +101,7 @@ typedef struct ch_rd_handshake_s {
 //       Handshake data structure to send over the network, which is used as
 //       data source.
 //
-//    .. c:member:: ch_ms_message_t msg
+//    .. c:member:: ch_msg_message_t msg
 //
 //       Wire protocol message in network order (network endianness).
 //
@@ -121,7 +121,7 @@ typedef struct ch_rd_handshake_s {
 typedef struct ch_reader_s {
     ch_rd_state_t     state;
     ch_rd_handshake_t hs;
-    ch_ms_message_t   msg;
+    ch_msg_message_t  msg;
     ch_buffer_pool_t  pool;
     size_t            bytes_read;
 } ch_reader_t;
@@ -159,7 +159,7 @@ ch_rd_free(ch_reader_t* reader)
 // .. c:function::
 static
 ch_inline
-void
+ch_error_t
 ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
 //
 //    Initialize the reader structure
@@ -172,7 +172,7 @@ ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
 //
 {
     reader->state = CH_RD_START;
-    ch_bf_init(&reader->pool, max_buffers);
+    return ch_bf_init(&reader->pool, max_buffers);
 }
 
 #endif //ch_reader_h

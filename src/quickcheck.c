@@ -82,7 +82,7 @@ _ch_qc_for_all(
     size_t i, j;
     ch_buf* values;
 
-    values = malloc(arglen * max_size);
+    values = ch_alloc(arglen * max_size);
 
     for (i = 0; i < 100; i++) {
         for (j = 0; j < arglen; j++) {
@@ -100,7 +100,7 @@ _ch_qc_for_all(
                 printf("\n");
             }
             _ch_qc_free_mem();
-            free(values);
+            ch_free(values);
             return 0;
         }
         _ch_qc_free_mem();
@@ -108,7 +108,7 @@ _ch_qc_for_all(
 
     printf("+++ OK, passed 100 tests.\n");
 
-    free(values);
+    ch_free(values);
     return 1;
 }
 
@@ -133,8 +133,8 @@ _ch_qc_free_mem(void)
             t != NULL;
             t = sglib_ch_qc_mem_track_t_it_next(&it)
     ) {
-        free(t->data);
-        free(t);
+        ch_free(t->data);
+        ch_free(t);
     }
     _ch_qc_mem_track = NULL;
 }
@@ -174,8 +174,8 @@ _ch_qc_tgen_array(
 {
     int len = rand() % 100;
 
-    ch_buf* arr = malloc((size_t) len * size);
-    ch_qc_mem_track_t* item = malloc(sizeof(ch_qc_mem_track_t));
+    ch_buf* arr = ch_alloc((size_t) len * size);
+    ch_qc_mem_track_t* item = ch_alloc(sizeof(ch_qc_mem_track_t));
     item->data = arr;
     item->count = len;
     item->size = size;
@@ -341,7 +341,7 @@ ch_qc_print_bytes(ch_buf* data)
         ch_qc_mem_track_t*
     );
     size_t out_size = item->count * 2 + 1;
-    out = malloc(out_size);
+    out = ch_alloc(out_size);
     ch_bytes_to_hex(
         (uint8_t*) item->data,
         item->count,
@@ -350,7 +350,7 @@ ch_qc_print_bytes(ch_buf* data)
     );
 
     printf("%s", out);
-    free(out);
+    ch_free(out);
 }
 
 // .. c:function::
@@ -459,8 +459,8 @@ ch_qc_tgen_string(void)
 {
     ch_qc_mem_track_t *item = ch_qc_tgen_array(ch_qc_gen_char, char);
     if(item->count == 0) {
-        ch_buf* arr = malloc(1);
-        item = malloc(sizeof(ch_qc_mem_track_t));
+        ch_buf* arr = ch_alloc(1);
+        item = ch_alloc(sizeof(ch_qc_mem_track_t));
         item->data = arr;
         item->count = 1;
         item->size = sizeof(char);
@@ -482,8 +482,8 @@ ch_qc_track_alloc(size_t size)
 // .. code-block:: cpp
 //
 {
-    ch_buf* arr = malloc(size);
-    ch_qc_mem_track_t* item = malloc(sizeof(ch_qc_mem_track_t));
+    ch_buf* arr = ch_alloc(size);
+    ch_qc_mem_track_t* item = ch_alloc(sizeof(ch_qc_mem_track_t));
     item->data = arr;
     item->count = size;
     item->size = 1;

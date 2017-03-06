@@ -254,7 +254,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
 // .. code-block:: cpp
 //
 {
-    ch_ms_message_t* msg;
+    ch_msg_message_t* msg;
     ch_buf* buf = buffer; // Don't do pointer arithmetics on void*
 
     // Bytes handled is used for the case when multiple data streams are coming
@@ -296,7 +296,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 break;
             case CH_RD_WAIT:
                 // We expect that complete message header arrives at once
-                if(read + bytes_handled < sizeof(ch_ms_message_t)) {
+                if(read + bytes_handled < sizeof(ch_msg_message_t)) {
                     E(
                         chirp,
                         "Illegal message header size -> shutdown. "
@@ -311,12 +311,12 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 memcpy(
                     msg,
                     buf + bytes_handled,
-                    sizeof(ch_ms_message_t)
+                    sizeof(ch_msg_message_t)
                 );
                 msg->header_len    = ntohs(msg->header_len);
                 msg->actor_len     = ntohs(msg->actor_len);
                 msg->data_len      = ntohl(msg->data_len);
-                bytes_handled     += sizeof(ch_ms_message_t);
+                bytes_handled     += sizeof(ch_msg_message_t);
                 reader->bytes_read = 0; // Reset partial buffer reads
                 // Direct jump to next read state
                 if(msg->header_len > 0)

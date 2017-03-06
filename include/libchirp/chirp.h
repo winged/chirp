@@ -136,6 +136,7 @@ typedef struct ch_chirp_s {
     ch_chirp_int_t*    _;
     ch_log_cb_t        _log;
     int                _init;
+    uv_async_t         _done;
     char               _color_field;
     struct ch_chirp_s* _left;
     struct ch_chirp_s* _right;
@@ -210,15 +211,30 @@ ch_chirp_init(
         ch_chirp_t* chirp,
         const ch_config_t* config,
         uv_loop_t* loop,
+        uv_async_cb done,
         ch_log_cb_t log_cb
 );
 //
 //    Initialiaze a chirp object. Memory is provided by the caller. You must call
 //    :c:func:`ch_chirp_close` to cleanup the chirp object.
 //
+//    You can free **chirp**, **config** and **loop** either after the **done**
+//    callback has been called or if chirp is set to auto-stop, after the loop
+//    has finished.
+//
+//    Please call
+//
+//    .. code-block: cpp
+//
+//       ch_loop_close(loop)
+//
+//    before freeing the loop. Of course if the loop will continue to run, feel
+//    free not to close/free the loop.
+//
 //    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
 //    :param ch_config_t* config: Pointer to a chirp configration.
 //    :param uv_loop_t* loop: Reference to a libuv loop.
+//    :param uv_async_cb done: Called when chirp is finished, can be NULL.
 //    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
@@ -247,10 +263,13 @@ ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 // .. c:function::
 extern
 ch_error_t
-ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp);
+ch_chirp_run(
+        const ch_config_t* config,
+        ch_chirp_t** chirp,
+        ch_log_cb_t log
+);
 //
 //    Initializes, runs and cleans everything. Everything being:
-//    TODO: Add message callback
 //
 //      * chirp object
 //      * uv-loop
@@ -266,6 +285,7 @@ ch_chirp_run(const ch_config_t* config, ch_chirp_t** chirp);
 //                               NULL.
 //
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
+//    :param ch_log_cb_t log: Callback to be called when logging messages.
 //    :rtype: ch_error_t
 
 // .. c:function::
@@ -288,9 +308,11 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 // .. c:function::
 extern
 void
-ch_chirp_set_auto_stop(ch_chirp_t* chirp);
+ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //
-//    Tells chirp to stop (by setting the corresponding flag)>
+//    Tells chirp to stop the uv-loop when closing (by setting the
+//    corresponding flag).
+//
 //    After this function is called, :c:func:`ch_chirp_close_ts` will also stop
 //    the loop.
 //
