@@ -26,7 +26,7 @@ build() {
 }
 
 check() {
-	mkdir -p "$testdir"
+	cd "$testdir"
 	make check || return 1
 }
 package() {
