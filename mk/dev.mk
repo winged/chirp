@@ -63,21 +63,6 @@ todo:  ## Show todos
 
 include $(BASE)/mk/rules.mk
 
-$(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp.a
-ifeq ($(VERBOSE),True)
-	$(CC) -o $@ $< $(BUILD)/libchirp.a $(LDFLAGS)
-ifeq ($(STRIP),True)
-	$(STRPCMD) $@
-endif
-else
-	@echo LD $@
-	@$(CC) -o $@ $< $(BUILD)/libchirp.a $(LDFLAGS)
-ifeq ($(STRIP),True)
-	@echo STRIP $@
-	@$(STRPCMD) $@
-endif
-endif
-
 $(BUILD)/%.c.gcov: $(BUILD)/%.o
 ifeq ($(CC),clang)
 ifeq ($(UNAME_S),Darwin)

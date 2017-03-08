@@ -124,6 +124,13 @@ def parse():
         )
     )
     parser.add_argument(
+        '--no-strip',
+        action="store_true",
+        help=(
+            "Allow the distributions to strip binaries as they wish."
+        )
+    )
+    parser.add_argument(
         '--verbose',
         action="store_true",
         help="Verbose build: display commands. Also: Env-Var VERBOSE=True."
@@ -260,10 +267,7 @@ def write_makefile(args):
         f.write(
             ".PHONY: all libraries executables objects doc_files coverage\n\n"
         )
-        if args.dev:
-            f.write("all: libraries executables  ## Build everything\n\n")
-        else:
-            f.write("all: libraries\n\n")
+        f.write("all: libraries executables  ## Build everything\n\n")
 
         f.write("BASE := %s\n" % _base)
         f.write("BUILD := %s\n" % _build)
@@ -274,7 +278,7 @@ def write_makefile(args):
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
         if args.verbose:
             f.write("VERBOSE := True\n")
-        if not args.dev:
+        if not (args.dev or args.no_strip):
             f.write("STRIP := True\n")
         if args.doc:
             f.write("DOC := True\n")
@@ -283,33 +287,27 @@ def write_makefile(args):
         f.write("\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
         depends, files = read_depends()
-        if args.dev:
-            depends = list(depends.items())
-        else:
-            depends = [
-                (
-                    key, value
-                ) for key, value in depends.items()
-                if not key.endswith("test.c")
-            ]
-        f.write(
-            "LIBRARIES := $(BUILD)/{0}.a $(BUILD)/{0}.so\n\n".format(_project)
+        depends = list(depends.items())
+        fmt_str = (
+            "LIBRARIES := $(BUILD)/{0}_test.a $(BUILD)/{0}.a "
+            "$(BUILD)/{0}.so\n\n"
         )
+        f.write(fmt_str.format(_project))
         f.write("libraries: $(LIBRARIES)\n\n")
+        f.write("EXECUTABLES := \\\n")
+        executables = [
+            (
+                key, value
+            ) for key, value in depends
+            if key.endswith("_etest.c")
+        ]
+        for executable, _ in executables[:-1]:
+            f.write("\t\t%s \\\n" % replace_base_build(executable[:-2]))
+        f.write(
+            "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
+        )
+        f.write("executables: $(EXECUTABLES)\n\n")
         if args.dev:
-            f.write("EXECUTABLES := \\\n")
-            executables = [
-                (
-                    key, value
-                ) for key, value in depends
-                if key.endswith("_etest.c")
-            ]
-            for executable, _ in executables[:-1]:
-                f.write("\t\t%s \\\n" % replace_base_build(executable[:-2]))
-            f.write(
-                "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
-            )
-            f.write("executables: $(EXECUTABLES)\n\n")
             f.write("COV_FILES := \\\n")
             for file_, _ in depends[:-1]:
                 f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
@@ -337,6 +335,15 @@ endif
         for file_ in lib_objs[:-1]:
             f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
         f.write("\t\t%so \n\n" % replace_base_build(lib_objs[-1][:-1]))
+
+        f.write("TEST_OBJECTS := \\\n")
+        test_objs = [
+            file_ for file_, _ in depends
+            if file_.endswith("_test.c")
+        ]
+        for file_ in test_objs[:-1]:
+            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
+        f.write("\t\t%so \n\n" % replace_base_build(test_objs[-1][:-1]))
 
         if args.doc:
             f.write("DOC_FILES := \\\n")

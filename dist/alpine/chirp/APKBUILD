@@ -9,13 +9,11 @@ arch="all"
 license="AGPL"
 depends_dev="libuv-dev openssl-dev"
 makedepends="$depends_dev py-sphinx py-sphinx_rtd_theme graphviz cppcheck"
-subpackages="$pkgname-dev $pkgname-doc"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-dbg"
 source="chirp-$pkgver.tar.gz::https://github.com/concretecloud/chirp/archive/$pkgver.tar.gz"
 # A testbuild differs therefore we build the test in a different directory than
 # the release build
-distdir="$srcdir/chirp-$pkgver"
-builddir="$distdir/build"
-testdir="$distdir/testbuild"
+builddir="$srcdir/chirp-$pkgver/build"
 
 build() {
 	cd "$builddir"
@@ -27,21 +25,15 @@ build() {
 	make doc || return 1
 }
 
+check() {
+	mkdir -p "$testdir"
+	make check || return 1
+}
 package() {
 	cd "$builddir"
 	make install || return 1
 }
 
-check() {
-	mkdir -p "$testdir"
-	cd "$testdir"
-	../configure \
-		--doc \
-		--dev \
-		--ignore-coverage \
-		|| return 1
-	make test || return 1
-}
 
 md5sums="3cfc76acbb3283a2c4f0964e2cc1824c  chirp-0.1.41565.tar.gz"
 sha256sums="6afc44e8321d63ce148a069f4f4b34b6a9834bf0984185addac974746f9e214a  chirp-0.1.41565.tar.gz"

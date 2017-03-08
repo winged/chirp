@@ -11,6 +11,7 @@ CFLAGS := \
 	-fdata-sections \
 	-Wno-unused-function \
 	-O2 \
+	-ggdb3 \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)" \
