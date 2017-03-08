@@ -1,5 +1,9 @@
 .PHONY += install uninstall
 
+ifneq ($(STRIP),True)
+	GGDBFLAG:=-ggdb3
+endif
+
 CFLAGS := \
 	-std=gnu99 \
 	-fPIC \
@@ -11,7 +15,7 @@ CFLAGS := \
 	-fdata-sections \
 	-Wno-unused-function \
 	-O2 \
-	-ggdb3 \
+	$(GGDBFLAG) \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)" \
