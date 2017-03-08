@@ -178,6 +178,24 @@ make check
 make test
     Instrumented (dev mode), goal: helping developers to find bugs
 
+
+Syntastic
+---------
+
+By default vim will treat \*.h files as cpp, but syntastic has no make-checker
+for cpp, so \*.h would not get checked.
+
+.. code-block:: bash
+
+   let g:syntastic_c_checkers = ['make']
+   au BufNewFile,BufRead *.h set ft=c
+
+With this setting syntastic will check the following:
+
+* Clang-based build errors
+* Line length
+* Trailing whitespaces
+
 License
 =======
 
