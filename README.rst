@@ -69,6 +69,7 @@ Install to prefix /usr/local. (with docs)
    cd build
    ../configure --doc
    make
+   make check
    sudo make install
 
 Install to prefix /usr. (without docs)
@@ -78,6 +79,7 @@ Install to prefix /usr. (without docs)
    cd build
    ../configure --prefix /usr
    make
+   make check
    sudo make install
 
 In-source build is also possible.
@@ -86,6 +88,7 @@ In-source build is also possible.
 
    ./configure
    make
+   make check
    sudo make install
 
 .. [3] Script-headers can be patched to work with python2. It also possible to generate
@@ -159,6 +162,15 @@ Windows
 -------
 
 No development build available.
+
+Check vs test
+-------------
+
+make check
+    Not instrumented (release mode), goal: checking compatibility
+
+make test
+    Instrumented (dev mode), goal: helping developers to find bugs
 
 License
 =======
