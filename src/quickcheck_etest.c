@@ -109,6 +109,7 @@ main(
         ch_qc_mem_track_t*
     );
 
+#ifndef NDEBUG
     ch_qc_gen gs2[] = { ch_qc_gen_bytes };
     ch_qc_print ps2[] = { ch_qc_print_bytes };
     printf("The next test may (should) fail: ");
@@ -119,6 +120,7 @@ main(
         ps2,
         ch_qc_mem_track_t*
     ); // Just for memcheck
+#endif
 
     ch_qc_gen gs3[] = { ch_qc_gen_double };
     ch_qc_print ps3[] = { ch_qc_print_double };

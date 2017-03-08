@@ -1,8 +1,22 @@
 .PHONY += doc
-UNAME_S   := $(shell uname -s)
+UNAME_S := $(shell uname -s)
 
 libchirp.a: $(BUILD)/libchirp.a
+libchirp_test.a: $(BUILD)/libchirp_test.a
 libchirp.so: $(BUILD)/libchirp.so
+
+$(BUILD)/libchirp.a: $(LIB_OBJECTS)
+
+$(BUILD)/libchirp_test.a: $(TEST_OBJECTS)
+
+$(BUILD)/libchirp.so: $(LIB_OBJECTS)
+
+check: all
+	$(BUILD)/src/chirp_etest & \
+	PID=$$!; \
+	sleep 1; \
+	kill -2 $$PID
+	$(BUILD)/src/quickcheck_etest
 
 ifeq ($(DOC),True)
 doc: doc_files
@@ -42,7 +56,6 @@ LDFLAGS += -Wl,--gc-sections
 LDFLAGS += -lrt
 endif
 
-
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -76,31 +89,45 @@ else
 	@$(BASE)/mk/c2rst $< $@
 endif
 
-
-$(BUILD)/libchirp.a: $(LIB_OBJECTS)
+$(BUILD)/%.a:
 ifeq ($(VERBOSE),True)
-	ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
+	ar $(ARFLAGS) $@ $+
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 else
 	@echo AR $@
-	@ar $(ARFLAGS) $@ $(LIB_OBJECTS) > /dev/null 2> /dev/null
+	@ar $(ARFLAGS) $@ $+ > /dev/null 2> /dev/null
 ifeq ($(STRIP),True)
 	@echo STRIP $@
 	@$(STRPCMD) $@
 endif
 endif
 
-$(BUILD)/libchirp.so: $(LIB_OBJECTS)
+$(BUILD)/%.so:
 ifeq ($(VERBOSE),True)
-	$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
+	$(CC) -shared -o $@ $+ $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 else
 	@echo LD $@
-	@$(CC) -shared -o $@ $(LIB_OBJECTS) $(LDFLAGS)
+	@$(CC) -shared -o $@ $+ $(LDFLAGS)
+ifeq ($(STRIP),True)
+	@echo STRIP $@
+	@$(STRPCMD) $@
+endif
+endif
+
+$(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp.a
+ifeq ($(VERBOSE),True)
+	$(CC) -o $@ $< $(BUILD)/libchirp_test.a $(BUILD)/libchirp.a $(LDFLAGS)
+ifeq ($(STRIP),True)
+	$(STRPCMD) $@
+endif
+else
+	@echo LD $@
+	@$(CC) -o $@ $< $(BUILD)/libchirp_test.a $(BUILD)/libchirp.a $(LDFLAGS)
 ifeq ($(STRIP),True)
 	@echo STRIP $@
 	@$(STRPCMD) $@

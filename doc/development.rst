@@ -36,6 +36,15 @@ Internal API
    src/writer.h.rst
    src/writer.c.rst
 
+Test code
+=========
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+
+   src/dummy_test.c.rst
+
 Test binaries
 =============
 
