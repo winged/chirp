@@ -143,6 +143,12 @@ In development mode the make file has a help:
 
    make
 
+Please memcheck your code, we haven't automated memcheck, yet:
+
+.. code-block:: bash
+
+   valgrind --tool=memcheck ./src/[relevant]_etest
+
 Docker
 ------
 
