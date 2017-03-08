@@ -231,15 +231,14 @@ OSX:            brew install cppcheck
 
 def copy_files(args):
     """Copy to build directory."""
-    if args.dev:
-        shutil.copy(
-            path.join(_base, "mk", "dh.pem"),
-            path.join(_build, "dh.pem")
-        )
-        shutil.copy(
-            path.join(_base, "mk", "cert.pem"),
-            path.join(_build, "cert.pem")
-        )
+    shutil.copy(
+        path.join(_base, "mk", "dh.pem"),
+        path.join(_build, "dh.pem")
+    )
+    shutil.copy(
+        path.join(_base, "mk", "cert.pem"),
+        path.join(_build, "cert.pem")
+    )
 
 
 def write_config():
