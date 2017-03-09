@@ -83,7 +83,9 @@ static int _ch_chirp_ref_count = 0;
 //
 // .. code-block:: cpp
 //
-static char _ch_chirp_sig_init = 0;
+#ifndef CH_DISABLE_SIGNALS
+    static char _ch_chirp_sig_init = 0;
+#endif
 
 // .. c:var:: ch_chirp_t** _ch_chirp_instances
 //
@@ -520,26 +522,28 @@ ch_chirp_init(
         (void*) loop
     );
 #   endif
-    if(!_ch_chirp_sig_init) {
-       if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
-            E(
-                chirp,
-                "Unable to set SIGINT handler. ch_chirp_t:%p",
-                (void*) chirp
-            );
-       }
-       else
-           _ch_chirp_sig_init = 1; // We need at least sigint
-       if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
-            E(
-                chirp,
-                "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                (void*) chirp
-            );
-       }
-    }
+#   ifndef CH_DISABLE_SIGNALS
+        if(!_ch_chirp_sig_init) {
+           if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
+                E(
+                    chirp,
+                    "Unable to set SIGINT handler. ch_chirp_t:%p",
+                    (void*) chirp
+                );
+           }
+           else
+               _ch_chirp_sig_init = 1; // We need at least sigint
+           if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
+                E(
+                    chirp,
+                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
+                    (void*) chirp
+                );
+           }
+        }
+        sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
+#   endif
     _ch_chirp_ref_count += 1;
-    sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
     return CH_SUCCESS;
 }
 

@@ -7,6 +7,16 @@
 //
 #define CH_VERSION "XVERSIONX"
 
+// Disable SIGINT and SIGTERM to close chirp. Used for compatibility with
+// existing applications: When you use chirp in an existing application that
+// uses SIGINT and SIGTERM signals and the handlers added by chirp somehow
+// conflict. For example the applications wants to cleanup chirp by itself,
+// it isn't ready for code executed after SIGINT or it just wants to die().
+//
+// .. code-block:: cpp
+//
+////#define CH_DISABLE_SIGNALS
+
 // Minimal buffersize we require when allocating for libuv
 //
 // .. code-block:: cpp
