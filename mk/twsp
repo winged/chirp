@@ -10,15 +10,17 @@ import re
 _twsp = re.compile(".*\s$")
 _sphinx_link = re.compile(".. [^:]+: http")
 
+in_comment = False
 line = 0
 ret = 0
 
 file_ = os.path.abspath(sys.argv[1])
+if file_.endswith("sglib.h"):
+    sys.exit(0)
+
 with codecs.open(file_, encoding="UTF-8") as in_:
     for i, line in enumerate(in_.readlines()):
         line = line.strip("\n\r")
-        if file_.endswith("sglib.h"):
-            continue
         if len(line) > 81:
             if not _sphinx_link.match(line):
                 ret = 1
@@ -34,4 +36,26 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                 i + 1,
                 len(line) - 1
             ))
+        strip_line = line.lstrip(' ')
+        if "*/" in strip_line:
+            in_comment = False
+        if (len(line) - len(strip_line)) % 4:
+            if not (
+                    strip_line.startswith("//") or
+                    strip_line.startswith("*/") or
+                    in_comment
+            ):
+                ret = 1
+                print(
+                    "%s:%d:0: error: leading spaces should "
+                    "be multiple for four" % (
+                        file_,
+                        i + 1,
+                    )
+                )
+        # Not completely accurate but good enough
+        if "/*" in strip_line:
+            in_comment = True
+        if "*/" in strip_line:
+            in_comment = False
 sys.exit(ret)

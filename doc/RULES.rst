@@ -71,7 +71,7 @@ RULES
 * Use pointers sparsely
 
   - Copy small structs 
-  - Use pointers for large structs (with const)
+  - Use pointers for large structs
   - Use pointer if it has to be modified (also out params)
   - Use pointer where you have to because of forward declarations
 
@@ -92,7 +92,6 @@ RULES
 
   - So we have a pure-python and C implementation
 
-* Static linking rules
 * Provide wheels
 * Provide distro packages
 

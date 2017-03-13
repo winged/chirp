@@ -203,9 +203,9 @@ If you use clang complete, we recommend
 
 .. code-block:: bash
 
-   let g:clang_snippets                  = 1
-   let g:clang_snippets_engine           = 'clang_complete'
-   let g:syntastic_c_checkers            = ['make']
+   let g:clang_auto_select     = 1
+   let g:clang_snippets        = 1
+   let g:clang_snippets_engine = 'clang_complete'
 
 License
 =======

@@ -7,7 +7,7 @@
 //
 // * ch_set_allocators
 // * uv_replace_allocator_
-// * CRYPTO_set_mem_functions_
+// * CRYPTO_set_mem_functions
 //
 // .. _uv_replace_allocator: http://docs.libuv.org/en/v1.x/misc.html
 // .. _CRYPTO_set_mem_functions: https://www.openssl.org/docs/man1.1.0/crypto/OPENSSL_malloc.html
