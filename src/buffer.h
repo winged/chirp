@@ -199,8 +199,9 @@ ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 // .. code-block:: cpp
 //
 {
-    // .. todo:: Should we not assert first, that the given handler buffer
-    //           actually IS not in the pool as free buffer?
+    /* TODO Should we not assert first, that the given handler buffer
+     * actually IS not in the pool as free buffer?
+     */
     A(handler_buf->used == 1, "Double return of buffer.");
     handler_buf->used = 0;
     A(handler_buf->used == 0, "Buffer pool inconsistent.");

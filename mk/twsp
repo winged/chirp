@@ -11,6 +11,7 @@ _twsp = re.compile(".*\s$")
 _sphinx_link = re.compile(".. [^:]+: http")
 
 in_comment = False
+slash_comment = 0
 line = 0
 ret = 0
 
@@ -39,7 +40,20 @@ with codecs.open(file_, encoding="UTF-8") as in_:
         strip_line = line.lstrip(' ')
         if "*/" in strip_line:
             in_comment = False
-        if (len(line) - len(strip_line)) % 4:
+        spaces = len(line) - len(strip_line)
+        if spaces:
+            if strip_line.startswith("//"):
+                if slash_comment == spaces:
+                    ret = 1
+                    print("%s:%d:%d: error: use /* for multiline comments" % (
+                        file_,
+                        i + 1,
+                        spaces - 1
+                    ))
+                slash_comment = spaces
+            else:
+                slash_comment = 0
+        if spaces % 4:
             if not (
                     strip_line.startswith("//") or
                     strip_line.startswith("/*") or

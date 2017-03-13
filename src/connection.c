@@ -389,8 +389,9 @@ _ch_cn_shutdown_gen(
         );
         return CH_IN_PRORESS;
     }
-    // There are many reasons the connection is not in this data-structure,
-    // therefore we do a blind delete.
+    /* There are many reasons the connection is not in this data-structure,
+     * therefore we do a blind delete.
+     */
     ch_connection_t* out_conn;
     sglib_ch_connection_t_delete_if_member(
         &protocol->connections,
@@ -642,8 +643,9 @@ ch_cn_close_cb(uv_handle_t* handle)
         (void*) conn,
         (void*) chirp
     );
-    // In production we allow the semaphore to drop below 0, but we log an
-    // error
+    /* In production we allow the semaphore to drop below 0, but we log an
+     * error
+     */
     if(conn->shutdown_tasks < 0) {
         E(
             chirp,
@@ -660,9 +662,10 @@ ch_cn_close_cb(uv_handle_t* handle)
             }
         }
         if(conn->ssl != NULL)
-            SSL_free(conn->ssl); // The doc says this frees conn->bio_ssl
-                                 // I tested it. let's hope they never change
-                                 // that.
+            /* The doc says this frees conn->bio_ssl I tested it. let's
+             * hope they never change that.
+             */
+            SSL_free(conn->ssl);
         if(conn->bio_app != NULL)
             BIO_free(conn->bio_app);
         ch_rd_free(&conn->reader);
@@ -801,15 +804,15 @@ ch_cn_read_alloc_cb(
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    // .. todo:: Remove
-    //    ichirp->config.BUFFER_SIZE = 40; // TODO remove
+    // ichirp->config.BUFFER_SIZE = 40; // TODO remove
     A(!(conn->flags & CH_CN_BUF_UV_USED), "UV buffer still used");
 #   ifndef NDEBUG
         conn->flags |= CH_CN_BUF_UV_USED;
 #   endif
     if(!conn->buffer_uv) {
-        // We also allocate the TLS buffer, because they have to be of the same
-        // size
+        /* We also allocate the TLS buffer, because they have to be of the same
+         * size
+         */
         if(ichirp->config.BUFFER_SIZE == 0) {
             conn->buffer_uv   = ch_alloc(suggested_size);
             if(conn->flags & CH_CN_ENCRYPTED) {

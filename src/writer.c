@@ -231,17 +231,19 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ch_writer_t* writer = &conn->writer;
-    // We have to lock before starting the timeout. Otherwise the
-    // lock-wait-time would count towards the timeout.
+    /* We have to lock before starting the timeout. Otherwise the
+     * lock-wait-time would count towards the timeout.
+     */
     uv_mutex_lock(&writer->lock);
-    // Use the writers net message structure to write the actual message over
-    // the connection. The net message structure is of type
-    // :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
-    // The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
-    // type :c:type:`ch_message_t` and ``net_msg`` of type
-    // :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
-    // essentially only the identity, the serial number, the message type and
-    // the lengths of the header, the actor and the data.
+    /* Use the writers net message structure to write the actual message over
+     * the connection. The net message structure is of type
+     * :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
+     * The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
+     * type :c:type:`ch_message_t` and ``net_msg`` of type
+     * :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
+     * essentially only the identity, the serial number, the message type and
+     * the lengths of the header, the actor and the data.
+     */
     ch_msg_message_t* net_msg = &writer->net_msg;
     writer->msg = msg;
     writer->send_cb = send_cb;

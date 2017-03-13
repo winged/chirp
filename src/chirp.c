@@ -192,8 +192,9 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
         ichirp->closing_tasks,
         (void*) chirp
     );
-    // In production we allow the semaphore to drop below zero but log it as an
-    // error
+    /* In production we allow the semaphore to drop below zero but log it as
+     * an error.
+     */
     if(ichirp->closing_tasks < 1) {
         assert(uv_prepare_stop(handle) == CH_SUCCESS);
         assert(ch_en_stop(&ichirp->encryption) == CH_SUCCESS);
@@ -260,14 +261,15 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     ichirp->closing_tasks += 1;
     assert(uv_prepare_init(ichirp->loop, &ichirp->close_check) == CH_SUCCESS);
     ichirp->close_check.data = chirp;
-    // We use a semaphore to wait until all callbacks are done:
-    // 1. Every time a new callback is scheduled we do
-    //    ichirp->closing_tasks += 1
-    // 2. Every time a callback is called we do ichirp->closing_tasks -= 1
-    // 3. Every uv_loop iteration before it blocks we check
-    //    ichirp->closing_tasks == 0
-    // -> if we reach 0 all callbacks are done and we continue freeing memory
-    // etc.
+    /* We use a semaphore to wait until all callbacks are done:
+     * 1. Every time a new callback is scheduled we do
+     *    ichirp->closing_tasks += 1
+     * 2. Every time a callback is called we do ichirp->closing_tasks -= 1
+     * 3. Every uv_loop iteration before it blocks we check
+     *    ichirp->closing_tasks == 0
+     * -> if we reach 0 all callbacks are done and we continue freeing memory
+     * etc.
+     */
     assert(uv_prepare_start(
         &ichirp->close_check,
         _ch_chirp_check_closing_cb
@@ -738,8 +740,9 @@ ch_chirp_run(
     *chirp_out = NULL;
 
     tmp_err = ch_uv_error_map(ch_loop_init(&loop));
-    chirp._log = NULL; // Bootstrap order problem. E checks _log but
-                       // ch_chirp_init() will initialize it.
+    chirp._log = NULL; /* Bootstrap order problem. E checks _log but
+                        * ch_chirp_init() will initialize it.
+                        */
     if(tmp_err != CH_SUCCESS) {
         E(
             (&chirp),

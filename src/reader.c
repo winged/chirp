@@ -188,11 +188,13 @@ _ch_rd_handshake(
         protocol->connections,
         conn
     );
-    // If there is a network race condition we replace the old connection and
-    // leave the old one for garbage collection
+    /* If there is a network race condition we replace the old connection and
+     * leave the old one for garbage collection
+     */
     if(old_conn) {
-        // Since we reuse the tree members we have to delete the connection
-        // from the old data-structure, before adding it to the new.
+        /* Since we reuse the tree members we have to delete the connection
+         * from the old data-structure, before adding it to the new.
+         */
         L(
             chirp,
             "ch_connection_t:%p replaced ch_connection_t:%p. "
@@ -257,9 +259,10 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     ch_msg_message_t* msg;
     ch_buf* buf = buffer; // Don't do pointer arithmetics on void*
 
-    // Bytes handled is used for the case when multiple data streams are coming
-    // in and the reader switches between various states as for example
-    // CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER.
+    /* Bytes handled is used for the case when multiple data streams are
+     * coming in and the reader switches between various states as for
+     * example CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER.
+     */
     size_t bytes_handled = 0;
 
     ch_chirp_t* chirp = conn->chirp;
@@ -283,8 +286,9 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 reader->state = CH_RD_HANDSHAKE;
                 break;
             case CH_RD_HANDSHAKE:
-                // We expect that complete handshake arrives at once,
-                // check in _ch_rd_handshake
+                /* We expect that complete handshake arrives at once,
+                 * check in _ch_rd_handshake
+                 */
                 _ch_rd_handshake(
                     conn,
                     reader,
