@@ -423,7 +423,7 @@ ch_qc_print_string(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-     ch_qc_mem_track_t* item = ch_qc_args(
+    ch_qc_mem_track_t* item = ch_qc_args(
         ch_qc_mem_track_t*,
         0,
         ch_qc_mem_track_t*

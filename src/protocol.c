@@ -259,7 +259,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             chirp,
             "Could not initialize connection. ch_chirp_t:%p",
             (void*) chirp
-         );
+        );
         ch_free(conn);
         return;
     }

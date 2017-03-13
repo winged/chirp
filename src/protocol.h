@@ -47,10 +47,10 @@
 // .. code-block:: cpp
 //
 typedef struct ch_receipt_s {
-  unsigned char        receipt[16];
-  char                 color_field;
-  struct ch_receipt_s* left;
-  struct ch_receipt_s* right;
+    unsigned char        receipt[16];
+    char                 color_field;
+    struct ch_receipt_s* left;
+    struct ch_receipt_s* right;
 } ch_receipt_t;
 
 // .. c:type:: ch_protocol_t

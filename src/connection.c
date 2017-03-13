@@ -751,7 +751,7 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
             "Could not create SSL. ch_chirp_t:%p, ch_connection_t:%p",
             (void*) chirp,
             (void*) conn
-         );
+        );
         return CH_TLS_ERROR;
     }
     if(BIO_new_bio_pair(&(conn->bio_ssl), 0, &(conn->bio_app), 0) != 1) {
@@ -763,7 +763,7 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
             "Could not create BIO pair. ch_chirp_t:%p, ch_connection_t:%p",
             (void*) chirp,
             (void*) conn
-         );
+        );
         SSL_free(conn->ssl);
         return CH_TLS_ERROR;
     }
@@ -867,7 +867,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
     int pending = BIO_pending(conn->bio_app);
     if(pending < 1) {
         if(!(conn->flags & CH_CN_TLS_HANDSHAKE))
-             ch_rd_read(conn, NULL, 0); // Start reader
+            ch_rd_read(conn, NULL, 0); // Start reader
         return;
     }
     A(!(conn->flags & CH_CN_BUF_WTLS_USED), "The wtls buffer is still used");

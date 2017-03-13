@@ -56,7 +56,7 @@ static
 bool
 ch_is_ascii_string(ch_buf* data)
 {
-     ch_qc_mem_track_t* item = ch_qc_args(
+    ch_qc_mem_track_t* item = ch_qc_args(
         ch_qc_mem_track_t*,
         0,
         ch_qc_mem_track_t*

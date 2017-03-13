@@ -691,22 +691,22 @@ ch_chirp_init(
 #   endif
 #   ifndef CH_DISABLE_SIGNALS
         if(!_ch_chirp_sig_init) {
-           if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
+            if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
                 E(
                     chirp,
                     "Unable to set SIGINT handler. ch_chirp_t:%p",
                     (void*) chirp
                 );
-           }
-           else
-               _ch_chirp_sig_init = 1; // We need at least sigint
-           if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
+            }
+            else
+                _ch_chirp_sig_init = 1; // We need at least sigint
+            if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
                 E(
                     chirp,
                     "Unable to set SIGTERM handler. ch_chirp_t:%p",
                     (void*) chirp
                 );
-           }
+            }
         }
         sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
 #   endif

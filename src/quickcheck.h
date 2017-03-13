@@ -179,7 +179,7 @@ SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
 // .. code-block:: cpp
 //
 #define ch_qc_for_all(property, arglen, gs, ps, max_class) \
-  (_ch_qc_for_all((ch_qc_prop) property, arglen, gs, ps, sizeof(max_class)))
+    (_ch_qc_for_all((ch_qc_prop) property, arglen, gs, ps, sizeof(max_class)))
 
 // .. c:macro:: ch_qc_gen_array
 //

@@ -99,7 +99,7 @@
             "%s:%d " message, \
             __FILE__, \
             __LINE__, \
-           __VA_ARGS__ \
+            __VA_ARGS__ \
         ); \
         chirp->_log(buf, 1); \
     } else { \

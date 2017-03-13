@@ -58,4 +58,10 @@ with codecs.open(file_, encoding="UTF-8") as in_:
             in_comment = True
         if "*/" in strip_line:
             in_comment = False
+if not len(line.strip()):
+        ret = 1
+        print("%s:%d:0: error: empty line at end" % (
+            file_,
+            i + 1,
+        ))
 sys.exit(ret)

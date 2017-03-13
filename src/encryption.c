@@ -194,7 +194,7 @@ ch_en_openssl_threading_setup(void)
 {
     int lock_count = CRYPTO_num_locks();
     _ch_en_lock_list = ch_alloc(
-         lock_count * sizeof(uv_rwlock_t)
+        lock_count * sizeof(uv_rwlock_t)
     );
     if(!_ch_en_lock_list) {
         fprintf(
