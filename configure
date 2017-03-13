@@ -217,7 +217,7 @@ OSX:            brew install sphinx-doc graphviz
         if os.system("command -v cppcheck > /dev/null"):
             print("""cppcheck was not found.
 
-Please install sphinx:
+Please install cppcheck:
 
 Alpine:         apk add cppcheck
 Debian-based:   apt install cppcheck
