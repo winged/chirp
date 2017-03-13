@@ -244,11 +244,12 @@ typedef enum {
 //
 typedef struct ch_connection_s {
     uint8_t                 ip_protocol;
-    uint8_t                 address[16];
+    uint8_t                 address[CH_IP_ADDR_SIZE];
     int32_t                 port;
-    uint8_t                 remote_identity[16];
+    uint8_t                 remote_identity[CH_ID_SIZE];
     float                   max_timeout;
     uv_tcp_t                client;
+    uv_connect_t            connect;
     ch_buf*                 buffer_uv;
     ch_buf*                 buffer_wtls;
     ch_buf*                 buffer_rtls;
@@ -333,12 +334,14 @@ ch_cn_read_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
 
 // .. c:function::
 ch_error_t
-ch_cn_shutdown(ch_connection_t* conn);
+ch_cn_shutdown(ch_connection_t* conn, int reason);
 //
 //    Shutdown this connection.
 //
 //    :param ch_connection_t* conn: Connection dictionary holding a
 //                                  chirp instance.
+//    :param int reason: The error code that caused the shutdown, it will be
+//                       reported to the user.
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype: ch_error_t
 
@@ -346,7 +349,13 @@ ch_cn_shutdown(ch_connection_t* conn);
 ch_error_t
 ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags);
 //
-//    Initialize a connection.
+//    Initialize a connection. Please do:
+//
+//    .. code-block:
+//
+//       memset(conn, 0, sizeof(ch_connection_t));
+//
+//    before calling this. We usually do this, but this is an exception.
 //
 //    :param ch_chirp_t* chirp: Chirp instance
 //    :param ch_connection_t* conn: Connection to initialize
@@ -422,7 +431,7 @@ ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
         int tmp_cmp = memcmp(
             x->address,
             y->address,
-            x->ip_protocol == CH_IPV6 ? 16 : 4
+            x->ip_protocol == CH_IPV6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
         );
         if(tmp_cmp != 0) {
             return tmp_cmp;

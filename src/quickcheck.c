@@ -31,13 +31,6 @@
 // Declarations
 // ============
 //
-// .. c:function::
-static
-void
-_ch_qc_free_mem(void);
-//
-//    Free memory allocations made during quickcheck test.
-
 // .. c:var:: ch_qc_mem_track_t* _ch_qc_mem_track
 //
 //    List of memory allocations during current quickcheck test.
@@ -99,11 +92,11 @@ _ch_qc_for_all(
                 ps[j](values + j * max_size);
                 printf("\n");
             }
-            _ch_qc_free_mem();
+            ch_qc_free_mem();
             ch_free(values);
             return 0;
         }
-        _ch_qc_free_mem();
+        ch_qc_free_mem();
     }
 
     printf("+++ OK, passed 100 tests.\n");
@@ -113,12 +106,11 @@ _ch_qc_for_all(
 }
 
 // .. c:function::
-static
 void
-_ch_qc_free_mem(void)
+ch_qc_free_mem(void)
 //    :noindex:
 //
-//    see: :c:func:`_ch_qc_free_mem`
+//    see: :c:func:`ch_qc_free_mem`
 //
 // .. code-block:: cpp
 //

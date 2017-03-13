@@ -320,6 +320,13 @@ _ch_qc_tgen_array(
 
 // .. c:function::
 void
+ch_qc_free_mem(void);
+//
+//    Free memory allocations made during quickcheck test. Call this if you
+//    don't intend to call ch_qc_for_all().
+
+// .. c:function::
+void
 ch_qc_gen_bool(ch_buf* data);
 //
 //    Generate data of type bool. Has to be copied.

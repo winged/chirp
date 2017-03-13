@@ -10,6 +10,10 @@ API Reference
    The API is not thread-safe except where stated: Functions have \*_ts suffix.
    uv_async_send() can be used.
 
+   Only one thread per :c:type:`ch_chirp_t` object is possible, the
+   :c:type:`uv_loop_t` has to run in that thread. \*_ts functions can be called
+   from any thread.
+
 .. toctree::
    :maxdepth: 3
 
@@ -30,6 +34,10 @@ Development and internals
    :maxdepth: 3
 
    development.rst
+
+* `SGLIB - Simple Generic Library`_
+
+.. _`SGLIB - Simple Generic Library`: sglib.html
 
 Indices and tables
 ==================

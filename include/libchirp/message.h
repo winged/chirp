@@ -15,6 +15,7 @@
 // .. code-block:: cpp
 //
 #include "common.h"
+#include "callbacks.h"
 
 // System includes
 // ===============
@@ -63,8 +64,8 @@
 // .. code-block:: cpp
 //
 #define CH_WIRE_MESSAGE \
-    uint8_t  identity[16]; \
-    uint8_t  serial[16]; \
+    uint8_t  identity[CH_ID_SIZE]; \
+    uint8_t  serial[CH_ID_SIZE]; \
     uint8_t  message_type; \
     uint16_t header_len; \
     uint16_t actor_len; \
@@ -124,23 +125,30 @@
 //       Unused.
 //       .. todo:: Unused.
 //
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Pointer to chirp instance.
+//
 // .. code-block:: cpp
 //
-typedef struct ch_message_s {
+struct ch_message_s {
     // Network data, has to be sent in network order
     CH_WIRE_MESSAGE;
     // These fields follow the message in this order (see _len above)
-    ch_buf*  header;
-    char*    actor;
-    ch_buf*  data;
-    // Local only data
-    uint8_t  ip_protocol;
-    uint8_t  address[16];
-    int32_t  port;
-    int8_t   free_header;
-    int8_t   free_actor;
-    int8_t   free_data;
-} ch_message_t;
+    ch_buf*     header;
+    char*       actor;
+    ch_buf*     data;
+    // Local    only data
+    uint8_t     ip_protocol;
+    uint8_t     address[CH_IP_ADDR_SIZE];  // 16
+    int32_t     port;
+    int8_t      free_header;
+    int8_t      free_actor;
+    int8_t      free_data;
+    ch_chirp_t* chirp;
+    ch_send_cb_t _send_cb;
+    void* _conn;
+};
 
 // .. c:type:: ch_msg_message_t
 //
@@ -151,17 +159,6 @@ typedef struct ch_message_s {
 typedef struct ch_msg_message_s {
     CH_WIRE_MESSAGE;
 } ch_msg_message_t;
-
-// .. c:type:: ch_text_address_t
-//
-//    Type to be used with :c:func:`ch_msg_get_address`. Used for the textual
-//    representation of the IP-address.
-//
-// .. code-block:: cpp
-//
-typedef struct ch_text_address_s {
-    char data[INET6_ADDRSTRLEN];
-} ch_text_address_t;
 
 // Protocol receiver /Pseudo code/
 //
@@ -213,10 +210,11 @@ ch_msg_get_address(
 // .. c:function::
 extern
 ch_error_t
-ch_msg_init(ch_message_t* message);
+ch_msg_init(struct ch_chirp_s* chirp, ch_message_t* message);
 //
 //    Initialize a message. Memory provided by caller (for performance).
 //
+//    :param ch_chirp_t* chirp: Pointer to chirp
 //    :param ch_message_t* message: Pointer to the message
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`

@@ -55,8 +55,8 @@ int _ch_test_gen_data_field(
 
 
 // .. c:function::
-void
-ch_test_gen_message(ch_buf* data)
+ch_message_t*
+ch_test_gen_message(struct ch_chirp_s* chirp)
 //    :noindex:
 //
 //    see: :c:func:`ch_ms_gen_message`
@@ -68,7 +68,7 @@ ch_test_gen_message(ch_buf* data)
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(ch_message_t));
     message = (ch_message_t*) track->data;
-    ch_msg_init(message);
+    ch_msg_init(chirp, message);
     message->header_len = _ch_test_gen_data_field(
         0.1,
         0.1,
@@ -88,6 +88,7 @@ ch_test_gen_message(ch_buf* data)
         &message->data
     );
     bool ipv6 = ch_qc_tgen_bool();
+    ipv6 = 0; // TODO remove
     if(ipv6)
         ch_msg_set_address(
             message,
@@ -102,6 +103,5 @@ ch_test_gen_message(ch_buf* data)
             "127.0.0.1",
             59732
         );
-
-    ch_qc_return(ch_message_t*, message);
+    return message;
 }

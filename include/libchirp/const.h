@@ -31,4 +31,22 @@ typedef enum {
     CH_IPV6     = 1
 } ch_ip_protocol_t;
 
+// The maximum size of an IP address
+//
+// .. code-block:: cpp
+//
+#define CH_IP_ADDR_SIZE 16
+
+// The size of an IP4 address
+//
+// .. code-block:: cpp
+//
+#define CH_IP4_ADDR_SIZE 4
+
+// The size of an id
+//
+// .. code-block:: cpp
+//
+#define CH_ID_SIZE 16
+
 #endif //ch_libchirp_const_h

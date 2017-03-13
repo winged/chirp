@@ -47,12 +47,33 @@ _ch_wr_check_send_error(
 //    :return:                       the status, which is of type
 //                                   :c:type:`ch_error_t`.
 //    :rtype:                        int
+//
+
+// .. c:function::
+static
+void _ch_wr_close_failed_conn_cb(uv_handle_t* handle);
+//
+//    Called by libuv when failed connection is close.
+//
+//    :param uv_handle_t* handle: The libuv handle holding the
+//                                connection
+
+
+// .. c:function::
+void
+ch_wr_connect_cb(uv_connect_t* req, int status);
+//
+//    Called by libuv after trying to connect. Contains the connection status.
+//
+//    :param uv_connect_t* req: Connect request, containing the connection.
+//    :param int status:        Status of the connection.
+//
 
 // .. c:function::
 static
 ch_inline
 void
-_ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb);
+_ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
 //
 //    Send the message after a connection has been established.
 //
@@ -60,8 +81,7 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb);
 //    :param ch_message_t msg:       The message to send. The memory of the
 //                                   message must stay valid until the callback
 //                                   is called.
-//    :param ch_send_cb_t send_cb:   The callback, that will be called after
-//                                   sending.
+//
 
 // .. c:function::
 static
@@ -204,10 +224,8 @@ _ch_wr_check_send_error(
             (void*) chirp,
             (void*) conn
         );
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         uv_timer_stop(&writer->send_timeout);
-        uv_mutex_unlock(&writer->lock);
-        writer->send_cb(CH_PROTOCOL_ERROR, conn->load);
         return CH_PROTOCOL_ERROR;
     }
     return CH_SUCCESS;
@@ -215,9 +233,76 @@ _ch_wr_check_send_error(
 
 // .. c:function::
 static
+void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
+//    :noindex:
+//
+//    see: :c:func:`_ch_wr_close_failed_conn_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_message_t* msg = handle->data;
+    ch_chirp_t* chirp = msg->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_connection_t* conn = msg->_conn;
+    ch_free(conn);
+    if(msg->_send_cb) {
+        // The user may free the message in the cb
+        ch_send_cb_t cb = msg->_send_cb;
+        msg->_send_cb = NULL;
+        cb(msg, CH_CANNOT_CONNECT, -1);
+    }
+}
+
+// .. c:function::
+void
+ch_wr_connect_cb(uv_connect_t* req, int status)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_connect_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_text_address_t taddr;
+    ch_message_t* msg = req->data;
+    ch_chirp_t* chirp = msg->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_connection_t* conn = msg->_conn;
+    ch_msg_get_address(msg, &taddr);
+    if(status == CH_SUCCESS) {
+        L(
+            chirp,
+            "Connected to remote %s:%d. ch_chirp_t:%p, ch_connection_t:%p",
+            taddr.data,
+            msg->port,
+            (void*) chirp,
+            (void*) conn
+        );
+        // Here we join the code called on accept
+        conn->writer.msg = msg;
+        ch_pr_conn_start(chirp, conn, &conn->client, 0);
+    } else {
+        E(
+            chirp,
+            "Connection to remote failed %s:%d (%d). ch_chirp_t:%p, "
+            "ch_connection_t:%p",
+            taddr.data,
+            msg->port,
+            status,
+            (void*) chirp,
+            (void*) conn
+        );
+        conn->client.data = msg;
+        uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
+    }
+}
+
+// .. c:function::
+static
 ch_inline
 void
-_ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
+_ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
 //    :noindex:
 //
 //    see: :c:func:`_ch_wr_send`
@@ -231,10 +316,6 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ch_writer_t* writer = &conn->writer;
-    /* We have to lock before starting the timeout. Otherwise the
-     * lock-wait-time would count towards the timeout.
-     */
-    uv_mutex_lock(&writer->lock);
     /* Use the writers net message structure to write the actual message over
      * the connection. The net message structure is of type
      * :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
@@ -246,7 +327,6 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg, ch_send_cb_t send_cb)
      */
     ch_msg_message_t* net_msg = &writer->net_msg;
     writer->msg = msg;
-    writer->send_cb = send_cb;
     tmp_err = uv_timer_start(
         &writer->send_timeout,
         _ch_wr_send_timeout_cb,
@@ -350,8 +430,19 @@ _ch_wr_send_finish(
     ch_chirp_int_t* ichirp  = chirp->_;
     if(ichirp->config.ACKNOWLEDGE == 0) {
         uv_timer_stop(&writer->send_timeout);
-        uv_mutex_unlock(&writer->lock);
-        writer->send_cb(CH_PROTOCOL_ERROR, conn->load);
+        ch_message_t* msg = writer->msg;
+        A(msg != NULL, "Writer has no message");
+        writer->msg = NULL;
+        if(msg->_send_cb) {
+            // The user may free the message in the cb
+            ch_send_cb_t cb = msg->_send_cb;
+            msg->_send_cb = NULL;
+            cb(
+                writer->msg,
+                CH_SUCCESS,
+                conn->load
+            );
+        }
     }
 }
 
@@ -453,10 +544,8 @@ _ch_wr_send_timeout_cb(uv_timer_t* handle)
         (void*) chirp,
         (void*) conn
     );
-    ch_cn_shutdown(conn);
+    ch_cn_shutdown(conn, CH_TIMEOUT);
     uv_timer_stop(&writer->send_timeout);
-    uv_mutex_unlock(&writer->lock);
-    writer->send_cb(CH_TIMEOUT, conn->load);
 }
 
 //
@@ -470,8 +559,16 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 // .. code-block:: cpp
 //
 {
+    int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
+    msg->_send_cb = send_cb;
+
+    /* TODO
+     * 1. Create ichirp->_connecting_port, _connecting_addr, _message_queue
+     * 2. If connecting_port is not zero queue the message by port/addr key
+     * 3. Of course cleanup and reset port on connect_cb
+     */
 
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp  = chirp->_;
@@ -481,7 +578,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     memcpy(
         search_conn.address,
         msg->address,
-        msg->ip_protocol == CH_IPV6 ? 16 : 4
+        msg->ip_protocol == CH_IPV6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
     );
     conn = sglib_ch_connection_t_find_member(
         protocol->connections,
@@ -489,9 +586,94 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     );
     ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
     if(conn == NULL) {
-        // TODO connect
+        printf("%d\n\n", (int) sizeof(ch_connection_t));
+        conn = ch_alloc(sizeof(ch_connection_t));
+        if(!conn) {
+            E(
+                chirp,
+                "Could not allocate memory for connection. ch_chirp_t:%p",
+                (void*) chirp
+            );
+            if(send_cb != NULL)
+                send_cb(msg, CH_ENOMEM, -1);
+            return;
+        }
+        memset(conn, 0, sizeof(ch_connection_t));
+        msg->_conn         = conn;
+        conn->port         = msg->port;
+        conn->ip_protocol  = msg->ip_protocol;
+        conn->connect.data = msg;
+        ch_text_address_t taddr;
+        ch_msg_get_address(msg, &taddr);
+        if(!(
+                ichirp->config.DISABLE_ENCRYPTION  ||
+                ch_is_local_addr(&taddr)
+        )) {
+            conn->flags |= CH_CN_ENCRYPTED;
+        }
+        memcpy(
+            &conn->address,
+            &msg->address,
+            CH_IP_ADDR_SIZE
+        );
+        uv_tcp_init(ichirp->loop, &conn->client);
+        if(msg->ip_protocol == CH_IPV6) {
+            struct sockaddr_in6 addr;
+            uv_ip6_addr(taddr.data, msg->port, &addr);
+            tmp_err = uv_tcp_connect(
+                &conn->connect,
+                &conn->client,
+                (struct sockaddr*) &addr,
+                ch_wr_connect_cb
+            );
+        } else {
+            A(msg->ip_protocol == CH_IPV4, "Unknown IP protocol");
+            struct sockaddr_in addr;
+            uv_ip4_addr(taddr.data, msg->port, &addr);
+            tmp_err = uv_tcp_connect(
+                &conn->connect,
+                &conn->client,
+                (struct sockaddr*) &addr,
+                ch_wr_connect_cb
+            );
+        }
+        L(
+            chirp,
+            "Connecting to remote %s:%d. ch_chirp_t:%p, ch_connection_t:%p",
+            taddr.data,
+            msg->port,
+            (void*) chirp,
+            (void*) conn
+        );
+        if(tmp_err != CH_SUCCESS) {
+            E(
+                chirp,
+                "Failed to connect to host: %s:%d (%d). ch_chirp_t:%p",
+                taddr.data,
+                msg->port,
+                tmp_err,
+                (void*) chirp
+            );
+        }
     } else
-        _ch_wr_send(conn, msg, send_cb);
+        _ch_wr_send(conn, msg);
+}
+
+// .. c:function::
+void
+ch_wr_free(ch_writer_t* writer)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_free`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = writer->send_timeout.data;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    uv_close((uv_handle_t*) &writer->send_timeout, ch_cn_close_cb);
+    conn->shutdown_tasks += 1;
 }
 
 // .. c:function::
@@ -509,7 +691,6 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    uv_mutex_init(&writer->lock);
     tmp_err = uv_timer_init(ichirp->loop, &writer->send_timeout);
     if(tmp_err != CH_SUCCESS) {
         E(

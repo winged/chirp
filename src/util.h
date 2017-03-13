@@ -83,6 +83,29 @@ ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
 static
 ch_inline
 int
+ch_is_local_addr(ch_text_address_t* addr)
+//
+//    Check if an address is either 127.0.0.1 or ::1
+//
+//    :param ch_text_address_t* addr: Address to check
+//
+// .. code-block:: cpp
+//
+{
+    /* TODO move to util.c, create _ch_always_encrypt and change this code
+     * accordingly.
+     */
+    return 0;
+    return (
+        strncmp("::1", addr->data, sizeof(ch_text_address_t)) ||
+        strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t))
+    );
+}
+
+// .. c:function::
+static
+ch_inline
+int
 ch_msb32(uint32_t x)
 //
 //    Get the most significant bit set of a set of bits.

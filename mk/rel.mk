@@ -4,7 +4,7 @@ ifneq ($(STRIP),True)
 	GGDBFLAG:=-ggdb3
 endif
 
-CFLAGS := \
+CFLAGS += \
 	-std=gnu99 \
 	-fPIC \
 	-Wall \
@@ -18,10 +18,9 @@ CFLAGS := \
 	$(GGDBFLAG) \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
-	-I"$(BUILD)" \
-	$(CFLAGS)
+	-I"$(BUILD)"
 
-LDFLAGS := \
+LDFLAGS += \
 	-luv \
 	-lssl \
 	-lm \

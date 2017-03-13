@@ -62,6 +62,15 @@
 //       the user, but often it might only be logged. In debug mode it is
 //       asserted.
 //
+//    .. c:member:: CH_SHUTDOWN
+//
+//       Indicates that error occurred because chirp is shutting down. For
+//       example the connection that is currently sending a message got closed.
+//
+//    .. c:member:: CH_CANNOT_CONNECT
+//
+//       Indicates that the remote has refused the connection or has timed out.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -76,6 +85,8 @@ typedef enum {
     CH_IN_PRORESS     = 8,
     CH_TIMEOUT        = 9,
     CH_ENOMEM         = 10,
+    CH_SHUTDOWN       = 11,
+    CH_CANNOT_CONNECT = 12,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

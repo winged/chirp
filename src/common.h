@@ -398,11 +398,6 @@
 
 #define CH_CHIRP_MAGIC 42429
 
-#define CH_GET_CHIRP(handle) \
-ch_chirp_t* chirp = (ch_chirp_t*) handle->data; \
-A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*")
-/* Fail fast, best I know :( */
-
 // Windows compatiblity
 // ====================
 //

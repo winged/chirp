@@ -60,12 +60,9 @@ Test binaries
 External Libs
 =============
 
-* `SGLIB - Simple Generic Library`_
-
 .. toctree::
    :maxdepth: 2
    :includehidden:
 
    src/sglib.h.rst
 
-.. _`SGLIB - Simple Generic Library`: sglib.html

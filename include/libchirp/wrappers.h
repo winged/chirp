@@ -101,7 +101,7 @@ ch_run(uv_loop_t* loop)
         tmp_err = uv_run(loop, UV_RUN_ONCE);
         /* Now we clearly have a problem */
         if(tmp_err != 0) {
-            return tmp_err;  // NOCOV only breaking things will trigger this
+            fprintf(stderr, "FATAL: Cannot close all uv-handles.\n");
         }
     }
     return tmp_err;

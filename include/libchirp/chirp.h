@@ -94,9 +94,14 @@
 //
 //       Holds the path to the file containing DH parameters.
 //
+//    .. c:member:: char DISABLE_ENCRYPTION
+//
+//       Disables encryption. Only use if you know what you are doing.
+//       Connections to "127.0.0.1" and "::1" aren't encrypted anyways.
+//
 // .. code-block:: cpp
 //
-typedef struct ch_config_s {
+struct ch_config_s {
     float           REUSE_TIME;
     float           TIMEOUT;
     uint16_t        PORT;
@@ -107,12 +112,13 @@ typedef struct ch_config_s {
     char            FLOW_CONTROL;
     char            CLOSE_ON_SIGINT;
     uint32_t        BUFFER_SIZE;
-    uint8_t         BIND_V6[16];
-    uint8_t         BIND_V4[4];
-    uint8_t         IDENTITY[16];
+    uint8_t         BIND_V6[CH_IP_ADDR_SIZE];
+    uint8_t         BIND_V4[CH_IP4_ADDR_SIZE];
+    uint8_t         IDENTITY[CH_ID_SIZE]; // 16
     char*           CERT_CHAIN_PEM;
     char*           DH_PARAMS_PEM;
-} ch_config_t;
+    char            DISABLE_ENCRYPTION;
+};
 
 // .. c:type:: ch_chirp_int_t
 //    :noindex:
@@ -132,28 +138,29 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 //
 // .. code-block:: cpp
 //
-typedef struct ch_chirp_s {
+struct ch_chirp_s {
     ch_chirp_int_t*    _;
     ch_log_cb_t        _log;
     int                _init;
     uv_async_t         _done;
+    ch_done_cb_t       _done_cb;
     char               _color_field;
     struct ch_chirp_s* _left;
     struct ch_chirp_s* _right;
-} ch_chirp_t;
+};
 
 // .. c:type:: ch_identity_t
 //
 //    Struct containing the chirp identity.
 //
-//    .. c:member:: unsigned char[16] data
+//    .. c:member:: unsigned uint8_t[16] data
 //
-//       The chrip identity is unsigned char array of length 16.
+//       The chrip identity is uint8_t array of length 16.
 //
 // .. code-block:: cpp
 //
 typedef struct ch_identity_s {
-    unsigned char data[16];
+    uint8_t data[CH_ID_SIZE];
 } ch_identity_t;
 
 // .. c:function::
@@ -211,7 +218,8 @@ ch_chirp_init(
         ch_chirp_t* chirp,
         const ch_config_t* config,
         uv_loop_t* loop,
-        uv_async_cb done,
+        ch_start_cb_t start,
+        ch_done_cb_t done,
         ch_log_cb_t log_cb
 );
 //
@@ -234,11 +242,20 @@ ch_chirp_init(
 //    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
 //    :param ch_config_t* config: Pointer to a chirp configration.
 //    :param uv_loop_t* loop: Reference to a libuv loop.
-//    :param uv_async_cb done: Called when chirp is finished, can be NULL.
+//    :param ch_start_cb_t done: Called when chirp is started, can be NULL.
+//    :param ch_done_cb_t done: Called when chirp is finished, can be NULL.
 //    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
+//
+//    The done callback must call:
+//
+//    .. code-block: cpp
+//
+//       uv_close((uv_handle_t*) handle, NULL);
+//
+//
 
 // Definitions
 // ===========
@@ -266,6 +283,7 @@ ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
         ch_chirp_t** chirp,
+        ch_start_cb_t start,
         ch_log_cb_t log
 );
 //

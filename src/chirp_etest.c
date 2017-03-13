@@ -35,7 +35,14 @@ main(
     config.DH_PARAMS_PEM = "./dh.pem";
     ch_libchirp_init();
     ch_loop_init(&loop);
-    if(ch_chirp_init(&chirp, &config, &loop, NULL, NULL) != CH_SUCCESS) {
+    if(ch_chirp_init(
+            &chirp,
+            &config,
+            &loop,
+            NULL,
+            NULL,
+            NULL
+    ) != CH_SUCCESS) {
         printf("ch_chirp_init error\n");
         return 1;
     }

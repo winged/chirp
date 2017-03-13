@@ -74,7 +74,7 @@ typedef enum {
 //       handshake. The value gets computed by the configured number of retries
 //       incremented by two times the configured timeout value.
 //
-//    .. c:member:: unsigned char[16] identity
+//    .. c:member:: uint8_t[16] identity
 //
 //       The identity of the remote target which is passed to a connection upon
 //       a successful handshake. It is used by the connection for getting the
@@ -83,9 +83,9 @@ typedef enum {
 // .. code-block:: cpp
 //
 typedef struct ch_rd_handshake_s {
-    uint16_t      port;
-    uint16_t      max_timeout;
-    unsigned char identity[16];
+    uint16_t port;
+    uint16_t max_timeout;
+    uint8_t  identity[CH_ID_SIZE];
 } ch_rd_handshake_t;
 
 // .. c:type:: ch_reader_t

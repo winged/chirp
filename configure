@@ -359,6 +359,9 @@ endif
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/config.h \\\n")
+                if file_.endswith("_etest.c"):
+                    f.write("\t\t$(BUILD)/libchirp.so \\\n")
+                    f.write("\t\t$(BUILD)/libchirp_test.a \\\n")
                 f.write("\t\t$(BUILD)/Makefile\n\n")
         if args.dev:
             f.write("\ninclude $(BASE)/mk/dev.mk")

@@ -17,6 +17,13 @@
 #ifndef ch_libchirp_callbacks_h
 #define ch_libchirp_callbacks_h
 
+#include "common.h"
+
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+//
 #include <stdlib.h>
 
 // .. c:type:: ch_alloc_cb_t
@@ -30,6 +37,18 @@
 // .. code-block:: cpp
 //
 typedef void* (*ch_alloc_cb_t)(size_t size);
+
+// .. c:type:: ch_done_cb_t
+//
+//    Callback called when chirp has closed.
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Chirp object closed.
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_done_cb_t)(ch_chirp_t* chirp);
 
 // .. c:type:: ch_free_cb_t
 //
@@ -68,11 +87,24 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //       The load of the remote peer. Range 0.0 - 1.0. 1.0 means all remote
 //       handlers are blocked. Use this for load balancing between multiple
 //       nodes. If flow control is not active or the remote node is completely
-//       blocked, you are likely to see timeouts on high load.
+//       blocked, you are likely to see timeouts on high load. If no load was
+//       reported yet, the callback return -1.
 //
 // .. code-block:: cpp
 //
-typedef void (*ch_send_cb_t)(int status, float load);
+typedef void (*ch_send_cb_t)(ch_message_t* msg, int status, float load);
+
+// .. c:type:: ch_start_cb_t
+//
+//    Callback called when chirp is started
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Chirp object started
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_start_cb_t)(ch_chirp_t* chirp);
 
 // .. c:type:: ch_realloc_cb_t
 //

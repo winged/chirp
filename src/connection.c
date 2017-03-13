@@ -52,6 +52,18 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
 // .. c:function::
 static
 ch_inline
+ch_error_t
+_ch_cn_allocate_buffers(ch_connection_t* conn);
+//
+//    Allocate the connections communication buffers.
+//
+//    :param ch_connection_t* conn: Connection
+//
+
+
+// .. c:function::
+static
+ch_inline
 void
 _ch_cn_partial_write(ch_connection_t* conn);
 //
@@ -87,48 +99,6 @@ _ch_cn_shutdown_cb(uv_shutdown_t* req, int status);
 
 // .. c:function::
 static
-ch_inline
-ch_error_t
-_ch_cn_shutdown_gen(
-        ch_connection_t* conn,
-        uv_shutdown_cb shutdown_cb,
-        uv_timer_cb timer_cb
-);
-//
-//    Generic version of shutdown, called by ch_cn_shutdown.
-//
-//    :param ch_connection_t* conn: Connection dictionary holding a
-//                                  chirp instance.
-//    :param uv_shutdown_cb shutdown_cb: Callback which gets called
-//                                       after the shutdown is
-//                                       complete
-//    :param uv_timer_cb timer_cb: Callback which gets called after
-//                                 the timer has reached 0
-//    :return: A chirp error. see: :c:type:`ch_error_t`
-//    :rtype: ch_error_t
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_cn_shutdown_gen_cb(
-        uv_shutdown_t* req,
-        int status,
-        uv_close_cb close_cb
-);
-//
-//    Generic version of the shutdown callback, called by ch_cn_shutdown_cb.
-//
-//    :param uv_shutdown_t* req: Shutdown request type, holding the
-//                               connection handle
-//    :param int status: The status after the shutdown. 0 in case of
-//                       success, < 0 otherwise
-//    :param uv_close_cb close_cb: Callback which will be called
-//                                 asynchronously after uv_close
-//                                 has been called
-
-// .. c:function::
-static
 void
 _ch_cn_shutdown_timeout_cb(uv_timer_t* handle);
 //
@@ -136,23 +106,6 @@ _ch_cn_shutdown_timeout_cb(uv_timer_t* handle);
 //    shutdown was delayed.
 //
 //    :param uv_timer_t* handle: Timer handle to schedule callback
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_cn_shutdown_timeout_gen_cb(
-        uv_timer_t* handle,
-        uv_shutdown_cb shutdown_cb
-);
-//
-//    Generic version of the shutdown callback, called by
-//    _ch_cn_shutdown_timeout_cb.
-//
-//    :param uv_timer_t* handle: Timer handle to schedule callback
-//    :param uv_shutdown_cb shutdown_cb: Callback which gets called
-//                                       after the shutdown is
-//                                       complete
 
 // .. c:function::
 static
@@ -167,6 +120,60 @@ _ch_cn_write_cb(uv_write_t* req, int status);
 
 // Definitions
 // ===========
+//
+// .. c:function::
+static
+ch_inline
+ch_error_t
+_ch_cn_allocate_buffers(ch_connection_t* conn)
+//    :noindex:
+//
+//    See: :c:func:`_ch_cn_allocate_buffers`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    size_t size = ichirp->config.BUFFER_SIZE;
+    if(size == 0)
+        size = CH_BUFFER_SIZE;
+    conn->buffer_uv   = ch_alloc(size);
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        conn->buffer_wtls  = ch_alloc(size);
+        conn->buffer_rtls  = ch_alloc(size);
+    }
+    conn->buffer_size = size;
+    int alloc_nok = 0;
+    if(conn->flags & CH_CN_ENCRYPTED)
+        alloc_nok = !(
+            conn->buffer_uv &&
+            conn->buffer_wtls &&
+            conn->buffer_rtls
+        );
+    else
+        alloc_nok = !conn->buffer_uv;
+    if(alloc_nok) {
+        E(
+            chirp,
+            "Could not allocate memory for libuv and tls. "
+            "ch_chirp_t:%p, ch_connection_t:%p",
+            (void*) chirp,
+            (void*) conn
+        );
+        return CH_ENOMEM;
+    }
+    conn->buffer_uv_uv = uv_buf_init(
+        conn->buffer_uv,
+        conn->buffer_size
+    );
+    conn->buffer_wtls_uv = uv_buf_init(
+        conn->buffer_wtls,
+        conn->buffer_size
+    );
+    return CH_SUCCESS;
+}
 
 // .. c:function::
 static
@@ -205,7 +212,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
                 (void*) conn,
                 (void*) chirp
             );
-            ch_cn_shutdown(conn);
+            ch_cn_shutdown(conn, tmp_err);
             return;
         }
         int read = BIO_read(
@@ -263,7 +270,7 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
             (void*) chirp,
             (void*) conn
         );
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, status);
         return;
     }
     L(
@@ -279,33 +286,13 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
 // .. c:function::
 static
 void
-_ch_cn_shutdown_cb(uv_shutdown_t* req, int status)
-//    :noindex:
-//
-//    see: :c:func:`_ch_cn_shutdown_cb`
-//
-// .. code-block:: cpp
-//
-{
-    _ch_cn_shutdown_gen_cb(
-        req,
-        status,
-        ch_cn_close_cb
-    );
-}
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_cn_shutdown_gen_cb(
+_ch_cn_shutdown_cb(
         uv_shutdown_t* req,
-        int status,
-        uv_close_cb close_cb
+        int status
 )
 //    :noindex:
 //
-//    see: :c:func:`_ch_cn_shutdown_gen_cb`
+//    see: :c:func:`_ch_cn_shutdown_cb`
 //
 // .. code-block:: cpp
 //
@@ -314,7 +301,6 @@ _ch_cn_shutdown_gen_cb(
     int tmp_err;
     ch_connection_t* conn = req->handle->data;
     ch_chirp_t* chirp = conn->chirp;
-    ch_chirp_int_t* ichirp = chirp->_;
     L(
         chirp,
         "Shutdown callback called. ch_connection_t:%p, ch_chirp_t:%p",
@@ -334,8 +320,6 @@ _ch_cn_shutdown_gen_cb(
     }
     uv_handle_t* handle = (uv_handle_t*) req->handle;
     if(uv_is_closing(handle)) {
-        if(ichirp->flags & CH_CHIRP_CLOSING)
-            chirp->_->closing_tasks -= 1;
         E(
             chirp,
             "Connection already closed after shutdown. "
@@ -344,10 +328,11 @@ _ch_cn_shutdown_gen_cb(
             (void*) chirp
         );
     } else {
-        uv_close((uv_handle_t*) req->handle, close_cb);
-        uv_close((uv_handle_t*) &conn->shutdown_timeout, close_cb);
-        if(ichirp->flags & CH_CHIRP_CLOSING)
-            chirp->_->closing_tasks += 1;
+        uv_read_stop(req->handle);
+        ch_rd_free(&conn->reader);
+        ch_wr_free(&conn->writer);
+        uv_close(handle, ch_cn_close_cb);
+        uv_close((uv_handle_t*) &conn->shutdown_timeout, ch_cn_close_cb);
         conn->shutdown_tasks += 2;
         L(
             chirp,
@@ -361,141 +346,11 @@ _ch_cn_shutdown_gen_cb(
 
 // .. c:function::
 static
-ch_inline
-ch_error_t
-_ch_cn_shutdown_gen(
-    ch_connection_t* conn,
-    uv_shutdown_cb shutdown_cb,
-    uv_timer_cb timer_cb
-)
-//    :noindex:
-//
-//    see: :c:func:`_ch_cn_shutdown_gen`
-//
-// .. code-block:: cpp
-//
-{
-    int tmp_err;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    ch_protocol_t* protocol = &ichirp->protocol;
-    if(conn->flags & CH_CN_SHUTTING_DOWN) {
-        E(
-            chirp,
-            "Shutdown in progress. ch_connection_t:%p, ch_chirp_t:%p",
-            (void*) conn,
-            (void*) chirp
-        );
-        return CH_IN_PRORESS;
-    }
-    /* There are many reasons the connection is not in this data-structure,
-     * therefore we do a blind delete.
-     */
-    ch_connection_t* out_conn;
-    sglib_ch_connection_t_delete_if_member(
-        &protocol->connections,
-        conn,
-        &out_conn
-    );
-    conn->flags |= CH_CN_SHUTTING_DOWN;
-    if(conn->flags & CH_CN_ENCRYPTED) {
-        tmp_err = SSL_get_verify_result(conn->ssl);
-        if(tmp_err != X509_V_OK) {
-            E(
-                chirp,
-                "Connection has cert verification error: %d. "
-                "ch_connection_t:%p, ch_chirp_t:%p",
-                tmp_err,
-                (void*) conn,
-                (void*) chirp
-            );
-        }
-        // If we have a valid SSL connection send a shutdown to the remote
-        if(SSL_is_init_finished(conn->ssl)) {
-            if(SSL_shutdown(conn->ssl) < 0) {
-                E(
-                    chirp,
-                    "Could not shutdown SSL connection. "
-                    "ch_connection_t:%p, ch_chirp_t:%p",
-                    (void*) conn,
-                    (void*) chirp
-                );
-            } else
-                ch_cn_send_if_pending(conn);
-        }
-    }
-    tmp_err = uv_shutdown(
-        &conn->shutdown_req,
-        (uv_stream_t*) &conn->client,
-        shutdown_cb
-    );
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "uv_shutdown returned error: %d. ch_connection_t:%p, "
-            "ch_chirp_t:%p",
-            tmp_err,
-            (void*) conn,
-            (void*) chirp
-        );
-        return ch_uv_error_map(tmp_err);
-    }
-    if(ichirp->flags & CH_CHIRP_CLOSING)
-        chirp->_->closing_tasks += 1;
-    tmp_err = uv_timer_start(
-        &conn->shutdown_timeout,
-        timer_cb,
-        ichirp->config.TIMEOUT * 1000,
-        0
-    );
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Starting shutdown timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
-            tmp_err,
-            (void*) conn,
-            (void*) chirp
-        );
-    }
-    L(
-        chirp,
-        "Shutdown connection. ch_connection_t:%p, ch_chirp_t:%p",
-        (void*) conn,
-        (void*) chirp
-    );
-    return CH_SUCCESS;
-}
-
-// .. c:function::
-static
 void
-_ch_cn_shutdown_timeout_cb(uv_timer_t* handle)
+_ch_cn_shutdown_timeout_cb( uv_timer_t* handle)
 //    :noindex:
 //
 //    see: :c:func:`_ch_cn_shutdown_timeout_cb`
-//
-// .. code-block:: cpp
-//
-{
-    _ch_cn_shutdown_timeout_gen_cb(
-        handle,
-        _ch_cn_shutdown_cb
-    );
-}
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_cn_shutdown_timeout_gen_cb(
-        uv_timer_t* handle,
-        uv_shutdown_cb shutdown_cb
-)
-//    :noindex:
-//
-//    see: :c:func:`_ch_cn_shutdown_timeout_gen_cb`
 //
 // .. code-block:: cpp
 //
@@ -504,10 +359,7 @@ _ch_cn_shutdown_timeout_gen_cb(
     int tmp_err;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    if(ichirp->flags & CH_CHIRP_CLOSING)
-        chirp->_->closing_tasks -= 1;
-    shutdown_cb(&conn->shutdown_req, 1);
+    _ch_cn_shutdown_cb(&conn->shutdown_req, 1);
     tmp_err = uv_cancel((uv_req_t*) &conn->shutdown_req);
     if(tmp_err != CH_SUCCESS) {
         E(
@@ -553,7 +405,7 @@ _ch_cn_write_cb(uv_write_t* req, int status)
             (void*) conn
         );
         conn->write_callback(req, status);
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, status);
         return;
     }
     if(conn->write_size < conn->write_written) {
@@ -632,8 +484,6 @@ ch_cn_close_cb(uv_handle_t* handle)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    if(ichirp->flags & CH_CHIRP_CLOSING)
-        chirp->_->closing_tasks -= 1;
     conn->shutdown_tasks -= 1;
     A(conn->shutdown_tasks > -1, "Shutdown semaphore dropped below zero");
     L(
@@ -654,6 +504,8 @@ ch_cn_close_cb(uv_handle_t* handle)
         );
     }
     if(conn->shutdown_tasks < 1) {
+        if(ichirp->flags & CH_CHIRP_CLOSING)
+            chirp->_->closing_tasks -= 1;
         if(conn->buffer_uv != NULL) {
             ch_free(conn->buffer_uv);
             if(conn->flags & CH_CN_ENCRYPTED) {
@@ -668,8 +520,6 @@ ch_cn_close_cb(uv_handle_t* handle)
             SSL_free(conn->ssl);
         if(conn->bio_app != NULL)
             BIO_free(conn->bio_app);
-        ch_rd_free(&conn->reader);
-        ch_wr_free(&conn->writer);
         ch_free(conn);
         L(
             chirp,
@@ -696,8 +546,7 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
 
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp  = chirp->_;
-    memset(conn, 0, sizeof(ch_connection_t));
-    conn->load            = 0;
+    conn->load            = -1;
     conn->chirp           = chirp;
     conn->flags          |= flags;
     conn->write_req.data  = conn;
@@ -728,8 +577,10 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     }
     conn->shutdown_timeout.data = conn;
     if(conn->flags & CH_CN_ENCRYPTED)
-        return ch_cn_init_enc(chirp, conn);
-    return CH_SUCCESS;
+        tmp_err = ch_cn_init_enc(chirp, conn);
+    if(tmp_err != CH_SUCCESS)
+        return tmp_err;
+    return _ch_cn_allocate_buffers(conn);
 }
 
 // .. c:function::
@@ -783,6 +634,12 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
     sk_SSL_CIPHER_free(ciphers);
 
 #   endif
+    L(
+        chirp,
+        "SSL context created. ch_chirp_t:%p, ch_connection_t:%p",
+        (void*) chirp,
+        (void*) conn
+    );
     return CH_SUCCESS;
 }
 
@@ -800,56 +657,18 @@ ch_cn_read_alloc_cb(
 // .. code-block:: cpp
 //
 {
+    /* That whole suggested size concept doesn't work, we have to allocated
+     * consistent buffers.
+     */
+    (void)(suggested_size);
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
     // ichirp->config.BUFFER_SIZE = 40; // TODO remove
     A(!(conn->flags & CH_CN_BUF_UV_USED), "UV buffer still used");
 #   ifndef NDEBUG
         conn->flags |= CH_CN_BUF_UV_USED;
 #   endif
-    if(!conn->buffer_uv) {
-        /* We also allocate the TLS buffer, because they have to be of the same
-         * size
-         */
-        if(ichirp->config.BUFFER_SIZE == 0) {
-            conn->buffer_uv   = ch_alloc(suggested_size);
-            if(conn->flags & CH_CN_ENCRYPTED) {
-                conn->buffer_wtls  = ch_alloc(suggested_size);
-                conn->buffer_rtls  = ch_alloc(suggested_size);
-            }
-            conn->buffer_size = suggested_size;
-        } else {
-            conn->buffer_uv   = ch_alloc(ichirp->config.BUFFER_SIZE);
-            if(conn->flags & CH_CN_ENCRYPTED) {
-                conn->buffer_wtls  = ch_alloc(ichirp->config.BUFFER_SIZE);
-                conn->buffer_rtls  = ch_alloc(ichirp->config.BUFFER_SIZE);
-            }
-            conn->buffer_size = ichirp->config.BUFFER_SIZE;
-        }
-        if(!(conn->buffer_uv && conn->buffer_wtls && conn->buffer_rtls)) {
-            E(
-                chirp,
-                "Could not allocate memory for libuv and tls. "
-                "ch_chirp_t:%p, ch_connection_t:%p",
-                (void*) chirp,
-                (void*) conn
-            );
-            // Tell libuv about the error
-            buf->base = 0;
-            buf->len = 0;
-            return;
-        }
-        conn->buffer_uv_uv = uv_buf_init(
-            conn->buffer_uv,
-            conn->buffer_size
-        );
-        conn->buffer_wtls_uv = uv_buf_init(
-            conn->buffer_wtls,
-            conn->buffer_size
-        );
-    }
     buf->base = conn->buffer_uv;
     buf->len = conn->buffer_size;
 }
@@ -899,7 +718,10 @@ ch_cn_send_if_pending(ch_connection_t* conn)
 
 // .. c:function::
 ch_error_t
-ch_cn_shutdown(ch_connection_t* conn)
+ch_cn_shutdown(
+    ch_connection_t* conn,
+    int reason
+)
 //    :noindex:
 //
 //    see: :c:func:`ch_cn_shutdown`
@@ -907,11 +729,112 @@ ch_cn_shutdown(ch_connection_t* conn)
 // .. code-block:: cpp
 //
 {
-    return _ch_cn_shutdown_gen(
+    int tmp_err;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    ch_protocol_t* protocol = &ichirp->protocol;
+    ch_writer_t* writer = &conn->writer;
+    ch_message_t* msg = writer->msg;
+    if(msg != NULL) {
+        writer->msg = NULL;
+        if(msg->_send_cb != NULL) {
+            // The user may free the message in the cb
+            ch_send_cb_t cb = msg->_send_cb;
+            msg->_send_cb = NULL;
+            cb(
+                msg,
+                reason,
+                conn->load
+            );
+        }
+    }
+    if(conn->flags & CH_CN_SHUTTING_DOWN) {
+        E(
+            chirp,
+            "Shutdown in progress. ch_connection_t:%p, ch_chirp_t:%p",
+            (void*) conn,
+            (void*) chirp
+        );
+        return CH_IN_PRORESS;
+    }
+    /* There are many reasons the connection is not in this data-structure,
+     * therefore we do a blind delete.
+     */
+    ch_connection_t* out_conn;
+    sglib_ch_connection_t_delete_if_member(
+        &protocol->connections,
         conn,
-        _ch_cn_shutdown_cb,
-        _ch_cn_shutdown_timeout_cb
+        &out_conn
     );
+    conn->flags |= CH_CN_SHUTTING_DOWN;
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        tmp_err = SSL_get_verify_result(conn->ssl);
+        if(tmp_err != X509_V_OK) {
+            E(
+                chirp,
+                "Connection has cert verification error: %d. "
+                "ch_connection_t:%p, ch_chirp_t:%p",
+                tmp_err,
+                (void*) conn,
+                (void*) chirp
+            );
+        }
+        // If we have a valid SSL connection send a shutdown to the remote
+        if(SSL_is_init_finished(conn->ssl)) {
+            if(SSL_shutdown(conn->ssl) < 0) {
+                E(
+                    chirp,
+                    "Could not shutdown SSL connection. "
+                    "ch_connection_t:%p, ch_chirp_t:%p",
+                    (void*) conn,
+                    (void*) chirp
+                );
+            } else
+                ch_cn_send_if_pending(conn);
+        }
+    }
+    tmp_err = uv_shutdown(
+        &conn->shutdown_req,
+        (uv_stream_t*) &conn->client,
+        _ch_cn_shutdown_cb
+    );
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "uv_shutdown returned error: %d. ch_connection_t:%p, "
+            "ch_chirp_t:%p",
+            tmp_err,
+            (void*) conn,
+            (void*) chirp
+        );
+        return ch_uv_error_map(tmp_err);
+    }
+    if(ichirp->flags & CH_CHIRP_CLOSING)
+        chirp->_->closing_tasks += 1;
+    tmp_err = uv_timer_start(
+        &conn->shutdown_timeout,
+        _ch_cn_shutdown_timeout_cb,
+        ichirp->config.TIMEOUT * 1000,
+        0
+    );
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Starting shutdown timeout failed: %d. ch_connection_t:%p,"
+            " ch_chirp_t:%p",
+            tmp_err,
+            (void*) conn,
+            (void*) chirp
+        );
+    }
+    L(
+        chirp,
+        "Shutdown connection. ch_connection_t:%p, ch_chirp_t:%p",
+        (void*) conn,
+        (void*) chirp
+    );
+    return CH_SUCCESS;
 }
 
 // .. c:function::

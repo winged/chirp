@@ -136,7 +136,7 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
             t != NULL;
             t = sglib_ch_connection_t_it_next(&itt) // NOCOV TODO remove
     ) {
-        ch_cn_shutdown(t);
+        ch_cn_shutdown(t, CH_SHUTDOWN);
     } // NOCOV TODO remove
     for(
             t = sglib_ch_connection_set_t_it_init(
@@ -146,7 +146,7 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
             t != NULL;
             t = sglib_ch_connection_set_t_it_next(&its) // NOCOV TODO remove
     ) {
-        ch_cn_shutdown(t);
+        ch_cn_shutdown(t, CH_SHUTDOWN);
     } // NOCOV TODO remove
     // Effectively we have cleared the list
     protocol->old_connections = NULL;
@@ -189,7 +189,7 @@ _ch_pr_do_handshake(ch_connection_t* conn)
                 (void*) chirp,
                 (void*) conn
             );
-            ch_cn_shutdown(conn);
+            ch_cn_shutdown(conn, CH_TLS_ERROR);
             return;
         }
     }
@@ -233,7 +233,9 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
 // .. code-block:: cpp
 //
 {
-    CH_GET_CHIRP(server); // NOCOV TODO
+    ch_chirp_t* chirp = server->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp  = chirp->_;
     if (status < 0) { // NOCOV TODO
         L(
             chirp,
@@ -247,6 +249,12 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(
         sizeof(ch_connection_t)
     );
+    L(
+        chirp,
+        "Accepted connection. ch_chirp_t:%p, ch_connection_t:%p",
+        (void*) chirp,
+        (void*) conn
+    );
     if(!conn) {
         E(
             chirp,
@@ -255,40 +263,104 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         );
         return;
     }
-    if(ch_cn_init(chirp, conn, CH_CN_ENCRYPTED) != CH_SUCCESS) {
+    memset(conn, 0, sizeof(ch_connection_t));
+    uv_tcp_t* client = &conn->client;
+    uv_tcp_init(server->loop, client);
+    if (uv_accept(server, (uv_stream_t*) client) == 0) {
+        int addr_len;
+        struct sockaddr_storage addr;
+        ch_text_address_t taddr;
+        if(uv_tcp_getpeername(
+                    &conn->client,
+                    (struct sockaddr*) &addr,
+                    &addr_len
+        ) != CH_SUCCESS) {
+            E(
+                chirp,
+                "Could not get remote address. ch_chirp_t:%p, "
+                "ch_connection_t:%p",
+                (void*) chirp,
+                (void*) conn
+            );
+            ch_free(conn);
+            uv_close((uv_handle_t*) client, NULL);
+            return;
+        };
+        if(addr.ss_family == AF_INET6) {
+            struct sockaddr_in6* saddr = (struct sockaddr_in6*) &addr;
+            conn->ip_protocol = CH_IPV6;
+            memcpy(
+                &conn->address,
+                &saddr->sin6_addr,
+                sizeof(saddr->sin6_addr)
+            );
+            uv_ip6_name(saddr, taddr.data, sizeof(ch_text_address_t));
+        } else {
+            struct sockaddr_in* saddr = (struct sockaddr_in*) &addr;
+            conn->ip_protocol = CH_IPV4;
+            memcpy(
+                &conn->address,
+                &saddr->sin_addr,
+                sizeof(saddr->sin_addr)
+            );
+            uv_ip4_name(saddr, taddr.data, sizeof(ch_text_address_t));
+        }
+        if(!(
+                ichirp->config.DISABLE_ENCRYPTION  ||
+                ch_is_local_addr(&taddr)
+        )) {
+            conn->flags |= CH_CN_ENCRYPTED;
+        }
+        ch_pr_conn_start(chirp, conn, client, 1);
+    }
+    else {
+        uv_close((uv_handle_t*) client, NULL);
+    }
+}
+
+// .. c:function::
+ch_error_t
+ch_pr_conn_start(
+        ch_chirp_t* chirp,
+        ch_connection_t* conn,
+        uv_tcp_t* client,
+        int accept
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_conn_start`
+//
+// .. code-block:: cpp
+//
+{
+    int tmp_err = ch_cn_init(chirp, conn, conn->flags);
+    if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
             "Could not initialize connection. ch_chirp_t:%p",
             (void*) chirp
         );
         ch_free(conn);
-        return;
+        uv_close((uv_handle_t*) client, NULL);
+        return tmp_err;
     }
-    uv_tcp_t* client = &conn->client;
-    uv_tcp_init(server->loop, client);
     client->data = conn;
-    if (uv_accept(server, (uv_stream_t*) client) == 0) {
-        L(
-            chirp,
-            "Accepted connection. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
-            (void*) conn
-        );
-        if(conn->flags & CH_CN_ENCRYPTED) {
+    uv_read_start(
+        (uv_stream_t*) client,
+        ch_cn_read_alloc_cb,
+        _ch_pr_read_data_cb
+    );
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        if(accept)
             SSL_set_accept_state(conn->ssl);
-            conn->flags |= CH_CN_TLS_HANDSHAKE;
-        } else
-            ch_rd_read(conn, NULL, 0); // Start reader
-        uv_read_start(
-            (uv_stream_t*) client,
-            ch_cn_read_alloc_cb,
-            _ch_pr_read_data_cb
-        );
-    }
-    else {
-        conn->shutdown_tasks = 1;
-        uv_close((uv_handle_t*) client, ch_cn_close_cb);
-    }
+        else {
+            SSL_set_connect_state(conn->ssl);
+            _ch_pr_do_handshake(conn);
+        }
+        conn->flags |= CH_CN_TLS_HANDSHAKE;
+    } else
+        ch_rd_read(conn, NULL, 0); // Start reader
+    return CH_SUCCESS;
 }
 
 // .. c:function::
@@ -341,7 +413,7 @@ _ch_pr_read(ch_connection_t* conn)
                 (void*) conn
             );
         }
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, tmp_err);
         return;
     }
 }
@@ -367,7 +439,7 @@ _ch_pr_read_data_cb(
         conn->flags &= ~CH_CN_BUF_UV_USED;
 #   endif
     if(nread == UV_EOF) {
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
     if(nread < 0) {
@@ -379,7 +451,7 @@ _ch_pr_read_data_cb(
             (void*) chirp,
             (void*) conn
         );
-        ch_cn_shutdown(conn);
+        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
     L(
@@ -407,7 +479,7 @@ _ch_pr_read_data_cb(
                     (void*) conn,
                     (void*) chirp
                 );
-                ch_cn_shutdown(conn);
+                ch_cn_shutdown(conn, CH_TLS_ERROR);
                 return;
             }
             bytes_decrypted += tmp_err;

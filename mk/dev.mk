@@ -5,7 +5,7 @@ ALPINE_AND_CLANG := $(shell \
 		&& echo True \
 )
 
-CFLAGS := \
+CFLAGS += \
 	-std=gnu99 \
 	-fPIC \
 	-Wall \
@@ -18,10 +18,9 @@ CFLAGS := \
 	-O0 \
 	-ggdb3 \
 	-I"$(BASE)/include" \
-	-I"$(BUILD)" \
-	$(CFLAGS)
+	-I"$(BUILD)"
 
-LDFLAGS := \
+LDFLAGS += \
 	-L"$(BUILD)" \
 	-luv \
 	-lssl \

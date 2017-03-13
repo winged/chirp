@@ -52,21 +52,22 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
 // .. code-block:: cpp
 //
 static ch_config_t _ch_config_defaults = {
-    .REUSE_TIME      = 30,
-    .TIMEOUT         = 5,
-    .PORT            = 2998,
-    .BACKLOG         = 100,
-    .RETRIES         = 1,
-    .MAX_HANDLERS    = 16,
-    .FLOW_CONTROL    = 1,
-    .ACKNOWLEDGE     = 1,
-    .CLOSE_ON_SIGINT = 1,
-    .BUFFER_SIZE     = 0,
-    .BIND_V6         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    .BIND_V4         = {0, 0, 0, 0},
-    .IDENTITY        = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    .CERT_CHAIN_PEM  = NULL,
-    .DH_PARAMS_PEM   = NULL,
+    .REUSE_TIME         = 30,
+    .TIMEOUT            = 5,
+    .PORT               = 2998,
+    .BACKLOG            = 100,
+    .RETRIES            = 1,
+    .MAX_HANDLERS       = 16,
+    .FLOW_CONTROL       = 1,
+    .ACKNOWLEDGE        = 1,
+    .CLOSE_ON_SIGINT    = 1,
+    .BUFFER_SIZE        = 0,
+    .BIND_V6            = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    .BIND_V4            = {0, 0, 0, 0},
+    .IDENTITY           = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    .CERT_CHAIN_PEM     = NULL,
+    .DH_PARAMS_PEM      = NULL,
+    .DISABLE_ENCRYPTION = 0,
 };
 
 // .. c:var:: int _ch_chirp_ref_count
@@ -139,12 +140,32 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle);
 // .. c:function::
 static
 void
+_ch_chirp_done(uv_async_t* handle);
+//
+//    Done callback calls the user supplied done callback.
+//
+//    :param uv_handle_t* handle: Async handler.
+//
+
+// .. c:function::
+static
+void
 _ch_chirp_sig_handler(int);
 //
 //    Closes all chirp instances on sig int.
 //
 //    :param int signo: The signal number, that tells which signal should be
 //                      handled.
+//
+//
+// .. c:function::
+static
+void
+_ch_chirp_start(uv_async_t* handle);
+//
+//    Start callback calls the user supplied done callback.
+//
+//    :param uv_handle_t* handle: Async handler.
 //
 
 // .. c:function::
@@ -183,7 +204,8 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
 // .. code-block:: cpp
 //
 {
-    CH_GET_CHIRP(handle);
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     A(ichirp->closing_tasks > -1, "Closing semaphore dropped below zero");
     L(
@@ -197,7 +219,8 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
      */
     if(ichirp->closing_tasks < 1) {
         assert(uv_prepare_stop(handle) == CH_SUCCESS);
-        assert(ch_en_stop(&ichirp->encryption) == CH_SUCCESS);
+        if(!ichirp->config.DISABLE_ENCRYPTION)
+            assert(ch_en_stop(&ichirp->encryption) == CH_SUCCESS);
         uv_close((uv_handle_t*) handle, _ch_chirp_closing_down_cb);
     }
     if(ichirp->closing_tasks < 0) {
@@ -233,7 +256,8 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
 // .. code-block:: cpp
 //
 {
-    CH_GET_CHIRP(handle);
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(chirp->_ == NULL) {
         E(
             chirp,
@@ -286,7 +310,8 @@ ch_chirp_close_cb(uv_handle_t* handle)
 // .. code-block:: cpp
 //
 {
-    CH_GET_CHIRP(handle);
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     chirp->_->closing_tasks -= 1;
     L(
         chirp,
@@ -371,7 +396,8 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 // .. code-block:: cpp
 //
 {
-    CH_GET_CHIRP(handle);
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&_ch_libchirp_mutex);
     uv_async_send(&chirp->_done);
@@ -399,6 +425,43 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     _ch_chirp_ref_count -= 1;
     A(_ch_chirp_ref_count >= 0, "Chirp reference count dropped below 0");
     uv_mutex_unlock(&_ch_libchirp_mutex);
+}
+
+// .. c:function::
+static
+void
+_ch_chirp_done(uv_async_t* handle)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_done`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    uv_close((uv_handle_t*) handle, NULL);
+    if(chirp->_done_cb != NULL)
+        chirp->_done_cb(chirp);
+}
+
+// .. c:function::
+static
+void
+_ch_chirp_start(uv_async_t* handle)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_start`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    uv_close((uv_handle_t*) handle, NULL);
+    if(ichirp->start_cb != NULL)
+        ichirp->start_cb(chirp);
 }
 
 // .. c:function::
@@ -505,9 +568,9 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
     );
     V(
         chirp,
-        conf->BUFFER_SIZE >= CH_LIB_UV_MIN_BUFFER || conf->BUFFER_SIZE == 0,
+        conf->BUFFER_SIZE >= CH_MIN_BUFFER_SIZE || conf->BUFFER_SIZE == 0,
         "Config: buffer size must be > %d (%d)",
-        CH_LIB_UV_MIN_BUFFER,
+        CH_MIN_BUFFER_SIZE,
         conf->BUFFER_SIZE
     );
     V(
@@ -565,7 +628,8 @@ ch_chirp_init(
         ch_chirp_t* chirp,
         const ch_config_t* config,
         uv_loop_t* loop,
-        uv_async_cb done,
+        ch_start_cb_t start,
+        ch_done_cb_t done,
         ch_log_cb_t log_cb
 )
 //    :noindex:
@@ -577,6 +641,7 @@ ch_chirp_init(
 {
     uv_mutex_lock(&_ch_libchirp_mutex);
     int tmp_err;
+    chirp->_done_cb = done;
     memset(chirp, 0, sizeof(ch_chirp_t));
     chirp->_init            = CH_CHIRP_MAGIC;
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
@@ -595,6 +660,7 @@ ch_chirp_init(
     ichirp->config          = *config;
     ichirp->public_port     = config->PORT;
     ichirp->loop            = loop;
+    ichirp->start_cb        = start;
     ch_config_t* tmp_conf   = &ichirp->config;
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_encryption_t* enc    = &ichirp->encryption;
@@ -632,7 +698,7 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_libchirp_mutex);
         return CH_UV_ERROR; // NOCOV
     }
-    if(uv_async_init(loop, &chirp->_done, done) < 0) {
+    if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
         E(
             chirp,
             "Could not initialize done handler. ch_chirp_t:%p",
@@ -643,6 +709,19 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_libchirp_mutex);
         return CH_UV_ERROR; // NOCOV
     }
+    chirp->_done.data = chirp;
+    if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
+        E(
+            chirp,
+            "Could not initialize done handler. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_libchirp_mutex);
+        return CH_UV_ERROR; // NOCOV
+    }
+    ichirp->start.data = chirp;
 
     ch_pr_init(chirp, protocol);
     tmp_err = ch_pr_start(protocol);
@@ -658,22 +737,24 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_libchirp_mutex);
         return tmp_err;
     }
-    ch_en_init(chirp, enc);
-    tmp_err = ch_en_start(enc);
-    if(tmp_err != CH_SUCCESS) {
+    if(!ichirp->config.DISABLE_ENCRYPTION) {
+        ch_en_init(chirp, enc);
+        tmp_err = ch_en_start(enc);
+        if(tmp_err != CH_SUCCESS) {
 #       ifndef NDEBUG
-            ERR_print_errors_fp(stderr);
+                ERR_print_errors_fp(stderr);
 #       endif
-        E(
-            chirp,
-            "Could not start encryption: %d. ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
-        );
-        ch_free(ichirp);
-        chirp->_init = 0;
-        uv_mutex_unlock(&_ch_libchirp_mutex);
-        return tmp_err;
+            E(
+                chirp,
+                "Could not start encryption: %d. ch_chirp_t:%p",
+                tmp_err,
+                (void*) chirp
+            );
+            ch_free(ichirp);
+            chirp->_init = 0;
+            uv_mutex_unlock(&_ch_libchirp_mutex);
+            return tmp_err;
+        }
     }
 #   ifndef NDEBUG
     char id_str[33];
@@ -713,6 +794,7 @@ ch_chirp_init(
         sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
 #   endif
     _ch_chirp_ref_count += 1;
+    uv_async_send(&ichirp->start);
     uv_mutex_unlock(&_ch_libchirp_mutex);
     return CH_SUCCESS;
 }
@@ -722,6 +804,7 @@ ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
         ch_chirp_t** chirp_out,
+        ch_start_cb_t start,
         ch_log_cb_t log
 )
 //    :noindex:
@@ -752,7 +835,7 @@ ch_chirp_run(
         );
         return tmp_err;  // NOCOV this can only fail with access error
     }
-    tmp_err = ch_chirp_init(&chirp, config, &loop, NULL, log);
+    tmp_err = ch_chirp_init(&chirp, config, &loop, start, NULL, log);
     if(tmp_err != CH_SUCCESS) {
         E(
             (&chirp),

@@ -21,6 +21,7 @@
 #include <openssl/crypto.h>
 #include <openssl/engine.h>
 #include <openssl/conf.h>
+#include <openssl/err.h>
 
 // Declarations
 // ============
@@ -145,10 +146,14 @@ ch_en_openssl_cleanup(void)
     FIPS_mode_set(0);
     ENGINE_cleanup();
     CONF_modules_unload(1);
-    EVP_cleanup();
-    CRYPTO_cleanup_all_ex_data();
     ERR_free_strings();
     CONF_modules_free();
+    EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+    CRYPTO_THREADID id;
+    CRYPTO_THREADID_current(&id);
+    ERR_remove_thread_state(&id);
+    ASN1_STRING_TABLE_cleanup();
 
     return ch_en_openssl_threading_cleanup();
 }
@@ -299,6 +304,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.CERT_CHAIN_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_use_certificate_chain_file(
@@ -311,6 +317,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.CERT_CHAIN_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_use_PrivateKey_file(
@@ -324,6 +331,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.CERT_CHAIN_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_check_private_key(enc->ssl_ctx) != 1) {
@@ -333,6 +341,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.CERT_CHAIN_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     DH *dh = NULL;
@@ -345,6 +354,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.DH_PARAMS_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     dh = PEM_read_DHparams(paramfile, NULL, NULL, NULL);
@@ -356,6 +366,7 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.DH_PARAMS_PEM,
             (void*) chirp
         );
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_set_tmp_dh(enc->ssl_ctx, dh) != 1) {
@@ -365,6 +376,8 @@ ch_en_start(ch_encryption_t* enc)
             ichirp->config.DH_PARAMS_PEM,
             (void*) chirp
         );
+        ch_free(dh);
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_set_cipher_list(
@@ -380,6 +393,8 @@ ch_en_start(ch_encryption_t* enc)
             "Could not set the cipher list. ch_chirp_t:%p",
             (void*) chirp
         );
+        ch_free(dh);
+        SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
     L(
@@ -387,6 +402,7 @@ ch_en_start(ch_encryption_t* enc)
         "Created SSL context for chirp. ch_chirp_t:%p",
         (void*) chirp
     );
+    ch_free(dh);
     return CH_SUCCESS;
 }
 
@@ -402,6 +418,10 @@ ch_en_stop(ch_encryption_t* enc)
 {
     ch_chirp_t* chirp = enc->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    SSL_CTX_free(enc->ssl_ctx);
+    CRYPTO_THREADID id;
+    CRYPTO_THREADID_current(&id);
+    ERR_remove_thread_state(&id);
     if(!_ch_en_manual_openssl) {
         _ch_en_openssl_ref_count -= 1;
         if(_ch_en_openssl_ref_count == 0) {
@@ -413,7 +433,6 @@ ch_en_stop(ch_encryption_t* enc)
             return ch_en_openssl_cleanup();
         }
     }
-    SSL_CTX_free(enc->ssl_ctx);
     return CH_SUCCESS;
 }
 

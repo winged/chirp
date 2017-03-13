@@ -44,13 +44,6 @@ struct ch_connection_s;
 //       message. At the end of the defined timeout time, the timer triggers
 //       the :c:func:`_ch_wr_send_timeout_cb` callback.
 //
-//    .. c:member:: uv_mutex_t lock
-//
-//       Mutex acting as lock. The mutex is locked when a writer is initialized
-//       or when a writer is trying to send a message. It is unlocked when
-//       sending is finished, when an error during sending happened or when
-//       sending runs into a timeout.
-//
 //    .. c:member:: ch_message_t* msg
 //
 //       Pointer to a message. The message is set when sending through
@@ -71,29 +64,19 @@ struct ch_connection_s;
 // .. code-block:: cpp
 //
 typedef struct ch_writer_s {
-    ch_send_cb_t     send_cb;
     uv_timer_t       send_timeout;
-    uv_mutex_t       lock;
     ch_message_t*    msg;
     ch_msg_message_t net_msg;
 } ch_writer_t;
 
 // .. c:function::
-static
-ch_inline
 void
-ch_wr_free(ch_writer_t* writer)
+ch_wr_free(ch_writer_t* writer);
 //
-//    Free the writer data structure. This means essentially destroying the
-//    muteck on the writers lock attribute :c:member:`ch_writer_t.lock`.
+//    Free the writer data structure.
 //
 //    :param ch_writer_t* writer: Pointer to writer (data-) structure.
 //
-// .. code-block:: cpp
-//
-{
-    uv_mutex_destroy(&writer->lock);
-}
 
 // .. c:function::
 void

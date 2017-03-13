@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export LDFLAGS=-L/usr/dev/lib/
+export CFLAGS=-I/usr/dev/include/
+export LD_LIBRARY_PATH=/usr/dev/lib/

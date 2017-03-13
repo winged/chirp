@@ -35,6 +35,39 @@ WORK IN PROGRESS
  :target: https://waffle.io/concretecloud/chirp/metrics/throughput 
  :alt: 'Throughput Graph'
 
+Features
+========
+
+* Fully automatic connection setup
+
+* TLS support
+
+  * Connections to 127.0.0.1 and ::1 aren't encrypted
+
+* Flow control
+
+   * Chirp won't overload peers out-of-the box, if you work with long requests
+     >2.5s adjust the timeout
+   * Peer-load is reported so you can implement load-balancing easily
+
+* Easy message routing
+
+* Robust
+
+   * No message can be lost without an exception (or it is a bug)
+   * Due to retry it takes a very bad network for messages to be lost
+
+* Very thin API
+
+* Minimal code-base, all additional features will be implemented as modules in
+  an upper layer
+
+* Fast
+
+   * Up to TODO msg/s
+   * Using multiple channels multiplies throughput until another bottle-neck
+     kicks in
+
 Install
 =======
 

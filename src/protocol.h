@@ -25,7 +25,7 @@
 //
 //    Receipt set implemented as red-black tree.
 //
-//    .. c:member:: unsigned char receipt[16]
+//    .. c:member:: uint8_t receipt[16]
 //
 //       Identity of the receipt, represented as 16 byte long byte string.
 //
@@ -47,7 +47,7 @@
 // .. code-block:: cpp
 //
 typedef struct ch_receipt_s {
-    unsigned char        receipt[16];
+    uint8_t              receipt[CH_ID_SIZE];
     char                 color_field;
     struct ch_receipt_s* left;
     struct ch_receipt_s* right;
@@ -140,7 +140,7 @@ typedef struct ch_protocol_s {
 // .. code-block:: cpp
 //
 #define CH_RECEIPT_CMP(x,y) \
-    memcmp(x->receipt, y->receipt, 16)
+    memcmp(x->receipt, y->receipt, CH_ID_SIZE)
 
 
 SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
@@ -150,6 +150,25 @@ SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
     color_field,
     CH_RECEIPT_CMP
 )
+
+// .. c:function::
+ch_error_t
+ch_pr_conn_start(
+        ch_chirp_t* chirp,
+        ch_connection_t* conn,
+        uv_tcp_t* client,
+        int accept
+);
+//
+//    Start the given connection
+//
+//    :param ch_chirp_t* chirp: Chirp object
+//    :param ch_connection_t* conn: Connection object
+//    :param uv_tcp_t* client: Client to start
+//    :param int accept: Is accepted connection
+//
+//    :return: Void since only called from callbacks.
+//
 
 // .. c:function::
 ch_error_t

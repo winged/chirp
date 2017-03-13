@@ -16,12 +16,20 @@
 // .. code-block:: cpp
 //
 ////#define CH_DISABLE_SIGNALS
+//
+// Buffersize when allocating communication buffers, can be overridden in
+// :c:type:`ch_config_t`.
+//
+// .. code-block:: cpp
+//
+/* 64k */
+#define CH_BUFFER_SIZE 65536
 
-// Minimal buffersize we require when allocating for libuv
+// Minimal buffersize we require when allocating communication buffers
 //
 // .. code-block:: cpp
 
-#define CH_LIB_UV_MIN_BUFFER 1024
+#define CH_MIN_BUFFER_SIZE 1024
 
 // Preallocated buffer size for header. If the size is to small the buffer gets
 // allocated using ch_alloc().
