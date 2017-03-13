@@ -42,6 +42,7 @@ with codecs.open(file_, encoding="UTF-8") as in_:
         if (len(line) - len(strip_line)) % 4:
             if not (
                     strip_line.startswith("//") or
+                    strip_line.startswith("/*") or
                     strip_line.startswith("*/") or
                     in_comment
             ):
