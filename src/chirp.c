@@ -586,6 +586,7 @@ ch_chirp_init(
             __LINE__,
             (void*) chirp
         );
+        uv_mutex_unlock(&_ch_libchirp_mutex);
         return CH_ENOMEM;
     }
     memset(ichirp, 0, sizeof(ch_chirp_int_t));
