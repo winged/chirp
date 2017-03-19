@@ -78,16 +78,6 @@ static ch_config_t _ch_config_defaults = {
 //
 static int _ch_chirp_ref_count = 0;
 
-// .. c:var:: int _ch_chirp_sig_init
-//
-//    Signal handler was initialized
-//
-// .. code-block:: cpp
-//
-#ifndef CH_DISABLE_SIGNALS
-    static char _ch_chirp_sig_init = 0;
-#endif
-
 // .. c:var:: ch_chirp_t** _ch_chirp_instances
 //
 //    Signal handler was initialized
@@ -144,20 +134,30 @@ _ch_chirp_done(uv_async_t* handle);
 //
 //    Done callback calls the user supplied done callback.
 //
-//    :param uv_handle_t* handle: Async handler.
-//
 
 // .. c:function::
 static
 void
-_ch_chirp_sig_handler(int);
+_ch_chirp_init_signals(ch_chirp_t *chirp);
+//
+//    Setup signal handlers for chirp. Internally called from ch_chirp_init()
+//
+//   :param   ch_chirp_t* chrip: Instance of a chirp object
+
+
+// .. c:function::
+static
+void
+_ch_chirp_sig_handler(uv_signal_t* ,int);
 //
 //    Closes all chirp instances on sig int.
+//
+//    :param uv_signal_t* handle : The libuv signal handler structure
 //
 //    :param int signo: The signal number, that tells which signal should be
 //                      handled.
 //
-//
+
 // .. c:function::
 static
 void
@@ -400,6 +400,8 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&_ch_libchirp_mutex);
+    uv_signal_stop(&ichirp->signals[0]);
+    uv_signal_stop(&ichirp->signals[1]);
     uv_async_send(&chirp->_done);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
         uv_stop(ichirp->loop);
@@ -772,31 +774,60 @@ ch_chirp_init(
         (void*) loop
     );
 #   endif
-#   ifndef CH_DISABLE_SIGNALS
-        if(!_ch_chirp_sig_init) {
-            if(signal(SIGINT, _ch_chirp_sig_handler) == SIG_ERR) {
-                E(
-                    chirp,
-                    "Unable to set SIGINT handler. ch_chirp_t:%p",
-                    (void*) chirp
-                );
-            }
-            else
-                _ch_chirp_sig_init = 1; // We need at least sigint
-            if(signal(SIGTERM, _ch_chirp_sig_handler) == SIG_ERR) {
-                E(
-                    chirp,
-                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                    (void*) chirp
-                );
-            }
-        }
-        sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
-#   endif
+    _ch_chirp_init_signals(chirp);
     _ch_chirp_ref_count += 1;
     uv_async_send(&ichirp->start);
     uv_mutex_unlock(&_ch_libchirp_mutex);
     return CH_SUCCESS;
+}
+
+// .. c:function::
+static
+void
+_ch_chirp_init_signals(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_init_signals`
+//
+// .. code-block:: cpp
+//
+{
+#   ifndef CH_DISABLE_SIGNALS
+        uv_signal_init(chirp->_->loop, &chirp->_->signals[0]);
+        uv_signal_init(chirp->_->loop, &chirp->_->signals[1]);
+
+        /* This is only here to keep the linter happy. TODO: Find out a cleaner
+         * way to keep lines calling uv_signal_start() below 80chars
+         */
+        uv_signal_cb cb = &_ch_chirp_sig_handler;
+
+        if(uv_signal_start(
+                &chirp->_->signals[0],
+                &_ch_chirp_sig_handler,
+                SIGINT
+        )) {
+            E(
+                    chirp,
+                    "Unable to set SIGINT handler. ch_chirp_t:%p",
+                    (void*) chirp
+            );
+            return;
+        }
+
+        if(uv_signal_start(
+                &chirp->_->signals[1],
+                &_ch_chirp_sig_handler,
+                SIGTERM
+        )) {
+            uv_signal_stop(&chirp->_->signals[0]);
+            E(
+                    chirp,
+                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
+                    (void*) chirp
+            );
+        }
+        sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
+#   endif
 }
 
 // .. c:function::
@@ -891,7 +922,7 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
 // .. c:function::
 static
 void
-_ch_chirp_sig_handler(int signo)
+_ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 //    :noindex:
 //
 //    see: :c:func:`_ch_chirp_sig_handler`
@@ -899,9 +930,11 @@ _ch_chirp_sig_handler(int signo)
 // .. code-block:: cpp
 //
 {
+    A(handle, "Invlaid signal handler");
     ch_chirp_t* t;
     if(signo != SIGINT && signo != SIGTERM)
         return;
+
     struct sglib_ch_chirp_t_iterator it;
     for(
             t = sglib_ch_chirp_t_it_init(

@@ -120,6 +120,11 @@ typedef enum {
 //
 //       Asynchronous handler to close chirp on the main-loop.
 //
+//    .. c:member:: uv_signal_t signals[2]
+//
+//       Libuv handles for managing unix signals. We currently register two
+//       handlers, one for SIGINT, one for SIGTERM.
+//
 //    .. c:member:: uv_prepare_t close_check
 //
 //       Handle which will run the given callback (close callback, closes chirp
@@ -158,6 +163,7 @@ struct ch_chirp_int_s {
     uv_async_t      close;
     uv_async_t      start;
     ch_start_cb_t   start_cb;
+    uv_signal_t     signals[2];
     uv_prepare_t    close_check;
     ch_protocol_t   protocol;
     ch_encryption_t encryption;
