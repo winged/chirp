@@ -210,7 +210,7 @@ ch_msg_get_address(
 // .. c:function::
 extern
 ch_error_t
-ch_msg_init(struct ch_chirp_s* chirp, ch_message_t* message);
+ch_msg_init(ch_chirp_t* chirp, ch_message_t* message);
 //
 //    Initialize a message. Memory provided by caller (for performance).
 //
