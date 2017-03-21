@@ -413,7 +413,7 @@ _ch_pr_read(ch_connection_t* conn)
                 (void*) conn
             );
         }
-        ch_cn_shutdown(conn, tmp_err);
+        ch_cn_shutdown(conn, CH_TLS_ERROR);
         return;
     }
 }

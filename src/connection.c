@@ -212,7 +212,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
                 (void*) conn,
                 (void*) chirp
             );
-            ch_cn_shutdown(conn, tmp_err);
+            ch_cn_shutdown(conn, CH_TLS_ERROR);
             return;
         }
         int read = BIO_read(
