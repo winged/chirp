@@ -249,13 +249,6 @@ ch_chirp_init(
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
 //
-//    The done callback must call:
-//
-//    .. code-block: cpp
-//
-//       uv_close((uv_handle_t*) handle, NULL);
-//
-//
 
 // Definitions
 // ===========
