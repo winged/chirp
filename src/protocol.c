@@ -134,20 +134,20 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
                 protocol->connections
             );
             t != NULL;
-            t = sglib_ch_connection_t_it_next(&itt) // NOCOV TODO remove
+            t = sglib_ch_connection_t_it_next(&itt)
     ) {
         ch_cn_shutdown(t, CH_SHUTDOWN);
-    } // NOCOV TODO remove
+    }
     for(
             t = sglib_ch_connection_set_t_it_init(
                 &its,
                 protocol->old_connections
             );
             t != NULL;
-            t = sglib_ch_connection_set_t_it_next(&its) // NOCOV TODO remove
+            t = sglib_ch_connection_set_t_it_next(&its)
     ) {
         ch_cn_shutdown(t, CH_SHUTDOWN);
-    } // NOCOV TODO remove
+    }
     // Effectively we have cleared the list
     protocol->old_connections = NULL;
 }

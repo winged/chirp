@@ -202,9 +202,9 @@ ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
     /* TODO Should we not assert first, that the given handler buffer
      * actually IS not in the pool as free buffer?
      */
-    A(handler_buf->used == 1, "Double return of buffer.");
+    A(handler_buf->used == 1, "Double release of buffer.");
     handler_buf->used = 0;
-    A(handler_buf->used == 0, "Buffer pool inconsistent.");
+    A(pool->used_buffers == 0, "Buffer pool inconsistent.");
     pool->used_buffers -= 1;
     // Return the buffer
     pool->free_buffers |= (1 << (31 - handler_buf->id));

@@ -5,8 +5,8 @@ RULES
 * Mantra
    - Make it work
    - Make it 100% tested
-   - Make used by people
-   - Make if fast (only if really needed)
+   - Make it to be used by people
+   - Make it fast (only if really needed)
    - Make it beautiful
 * Log and assert a lot
 * The following are our given abstractions:

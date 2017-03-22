@@ -505,7 +505,7 @@ ch_cn_close_cb(uv_handle_t* handle)
     }
     if(conn->shutdown_tasks < 1) {
         if(ichirp->flags & CH_CHIRP_CLOSING)
-            chirp->_->closing_tasks -= 1;
+            ichirp->closing_tasks -= 1;
         if(conn->buffer_uv != NULL) {
             ch_free(conn->buffer_uv);
             if(conn->flags & CH_CN_ENCRYPTED) {
