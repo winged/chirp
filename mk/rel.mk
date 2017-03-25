@@ -1,7 +1,11 @@
 .PHONY += install uninstall
 
 ifneq ($(STRIP),True)
-	GGDBFLAG:=-ggdb3
+	GGDBFLAG := -ggdb3
+endif
+
+ifeq (,$(findstring -O,$(CFLAGS)))
+	OPTFLAG := -O2
 endif
 
 CFLAGS += \
@@ -14,7 +18,7 @@ CFLAGS += \
 	-ffunction-sections \
 	-fdata-sections \
 	-Wno-unused-function \
-	-O2 \
+	$(OPTFLAG) \
 	$(GGDBFLAG) \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
