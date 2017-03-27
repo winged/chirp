@@ -116,6 +116,14 @@ typedef enum {
 //       whether chirp is closing, already closed and if the loop shall be
 //       stopped when closing.
 //
+//    .. c:member:: uv_async_t start
+//
+//       Asynchronous handler called when chirp is ready.
+//
+//    .. c:member:: ch_start_cb_t start_cb
+//
+//       User supplied callback called when chirp is ready.
+//
 //    .. c:member:: uv_async_t close
 //
 //       Asynchronous handler to close chirp on the main-loop.
