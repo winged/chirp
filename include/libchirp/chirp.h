@@ -139,14 +139,14 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 // .. code-block:: cpp
 //
 struct ch_chirp_s {
-    ch_chirp_int_t*    _;
-    ch_log_cb_t        _log;
-    int                _init;
-    uv_async_t         _done;
-    ch_done_cb_t       _done_cb;
-    char               _color_field;
-    struct ch_chirp_s* _left;
-    struct ch_chirp_s* _right;
+    ch_chirp_int_t* _;
+    ch_log_cb_t  _log;
+    int          _init;
+    uv_async_t   _done;
+    ch_done_cb_t _done_cb;
+    char         _color_field;
+    ch_chirp_t*  _left;
+    ch_chirp_t*  _right;
 };
 
 // .. c:type:: ch_identity_t

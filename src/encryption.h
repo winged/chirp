@@ -59,7 +59,7 @@ typedef enum {
 //
 //    Encryption object.
 //
-//    .. c:member:: struct ch_chirp_s*
+//    .. c:member:: ch_chirp_t*
 //
 //       reference back to chirp
 //

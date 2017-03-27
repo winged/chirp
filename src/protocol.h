@@ -34,24 +34,24 @@
 //       The color of the current (protocol-) node. This may either be red or
 //       black, as receipts are built as a red-black tree.
 //
-//    .. c:member:: ch_receipt_s* left
+//    .. c:member:: ch_receipt_t* left
 //
 //       (Struct-) Pointer to the left child of the current receipt (node)
 //       in the red-black tree.
 //
-//    .. c:member:: ch_receipt_s* right
+//    .. c:member:: ch_receipt_t* right
 //
 //       (Struct-) Pointer to the right child of the current receipt (node)
 //       in the red-black tree.
 //
 // .. code-block:: cpp
 //
-typedef struct ch_receipt_s {
-    uint8_t              receipt[CH_ID_SIZE];
-    char                 color_field;
-    struct ch_receipt_s* left;
-    struct ch_receipt_s* right;
-} ch_receipt_t;
+struct ch_receipt_s {
+    uint8_t       receipt[CH_ID_SIZE];
+    char          color_field;
+    ch_receipt_t* left;
+    ch_receipt_t* right;
+};
 
 // .. c:type:: ch_protocol_t
 //

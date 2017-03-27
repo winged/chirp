@@ -21,9 +21,6 @@
 // Declarations
 // ============
 
-// Forward declaration
-struct ch_connection_s;
-
 // .. c:type:: ch_rd_state_t
 //
 //    Possible states of a reader.
@@ -128,7 +125,7 @@ typedef struct ch_reader_s {
 
 // .. c:function::
 void
-ch_rd_read(struct ch_connection_s* conn, void* buf, size_t read);
+ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
 //
 //    Implements the wire protocol reader part.
 //

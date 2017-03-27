@@ -30,6 +30,16 @@
 #include <stddef.h>
 #include <stdio.h>
 
+// Forward declarations
+// =====================
+//
+// .. code-block:: cpp
+
+struct ch_connection_s;
+typedef struct ch_connection_s ch_connection_t;
+struct ch_receipt_s;
+typedef struct ch_receipt_s ch_receipt_t;
+
 // Logging and assert macros
 // =========================
 //

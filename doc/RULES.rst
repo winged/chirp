@@ -39,7 +39,13 @@ RULES
 * Callback types end in _cb_t
 * Sort symbols alphabetically including underscores "_"
   - When independent
-  - Forward declarations go directly before being used
+
+* Forward declarations go to common.h. Example
+
+.. code-block:: cpp
+
+   struct ch_chirp_s;
+   typedef struct ch_chirp_s ch_chirp_t;
 
 * Basic layout, follow where feasible
 

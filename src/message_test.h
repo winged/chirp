@@ -23,12 +23,12 @@
 
 // .. c:function::
 ch_message_t*
-ch_test_gen_message(struct ch_chirp_s* chirp);
+ch_test_gen_message(ch_chirp_t* chirp);
 //
 //    Generate a message (ch_message_t*). The memoy allocated, tracked and
 //    freed by quickcheck.
 //
-//    :param struct ch_chirp_s* chirp: Pointer to chirp instance
+//    :param ch_chirp_t* chirp: Pointer to chirp instance
 //
 //    :rtype: ch_message_t*
 

@@ -22,11 +22,6 @@
 // Declarations
 // ============
 
-// Forward declarations
-// --------------------
-
-struct ch_connection_s;
-
 // Direct declarations
 // -------------------
 
@@ -80,7 +75,7 @@ ch_wr_free(ch_writer_t* writer);
 
 // .. c:function::
 void
-ch_wr_init(ch_writer_t* writer, struct ch_connection_s* conn);
+ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //
 //    Initialize the writer data structure.
 //

@@ -230,54 +230,54 @@ typedef enum {
 //       The color of the current (connection-) node. This may either be red or
 //       black, as connections are built as a red-black tree.
 //
-//    .. c:member:: struct ch_connection_s* left
+//    .. c:member:: ch_connection_t* left
 //
 //       (Struct-) Pointer to the left child of the current connection (node)
 //       in the red-black tree.
 //
-//    .. c:member:: struct ch_connection_s* right
+//    .. c:member:: ch_connection_t* right
 //
 //       (Struct-) Pointer to the right child of the current connection (node)
 //       in the red-black tree.
 //
 // .. code-block:: cpp
 //
-typedef struct ch_connection_s {
-    uint8_t                 ip_protocol;
-    uint8_t                 address[CH_IP_ADDR_SIZE];
-    int32_t                 port;
-    uint8_t                 remote_identity[CH_ID_SIZE];
-    float                   max_timeout;
-    uv_tcp_t                client;
-    uv_connect_t            connect;
-    ch_buf*                 buffer_uv;
-    ch_buf*                 buffer_wtls;
-    ch_buf*                 buffer_rtls;
-    uv_buf_t                buffer_uv_uv;
-    uv_buf_t                buffer_wtls_uv;
-    uv_buf_t                buffer_any_uv;
-    size_t                  buffer_size;
-    uv_write_cb             write_callback;
-    size_t                  write_written;
-    size_t                  write_size;
-    ch_buf*                 write_buffer;
-    ch_chirp_t*             chirp;
-    uv_shutdown_t           shutdown_req;
-    uv_write_t              write_req;
-    uv_timer_t              shutdown_timeout;
-    int8_t                  shutdown_tasks;
-    uint8_t                 flags;
-    SSL*                    ssl;
-    BIO*                    bio_ssl;
-    BIO*                    bio_app;
-    int                     tls_handshake_state;
-    float                   load;
-    ch_reader_t             reader;
-    ch_writer_t             writer;
-    char                    color_field;
-    struct ch_connection_s* left;
-    struct ch_connection_s* right;
-} ch_connection_t;
+struct ch_connection_s {
+    uint8_t          ip_protocol;
+    uint8_t          address[CH_IP_ADDR_SIZE];
+    int32_t          port;
+    uint8_t          remote_identity[CH_ID_SIZE];
+    float            max_timeout;
+    uv_tcp_t         client;
+    uv_connect_t     connect;
+    ch_buf*          buffer_uv;
+    ch_buf*          buffer_wtls;
+    ch_buf*          buffer_rtls;
+    uv_buf_t         buffer_uv_uv;
+    uv_buf_t         buffer_wtls_uv;
+    uv_buf_t         buffer_any_uv;
+    size_t           buffer_size;
+    uv_write_cb      write_callback;
+    size_t           write_written;
+    size_t           write_size;
+    ch_buf*          write_buffer;
+    ch_chirp_t*      chirp;
+    uv_shutdown_t    shutdown_req;
+    uv_write_t       write_req;
+    uv_timer_t       shutdown_timeout;
+    int8_t           shutdown_tasks;
+    uint8_t          flags;
+    SSL*             ssl;
+    BIO*             bio_ssl;
+    BIO*             bio_app;
+    int              tls_handshake_state;
+    float            load;
+    ch_reader_t      reader;
+    ch_writer_t      writer;
+    char             color_field;
+    ch_connection_t* left;
+    ch_connection_t* right;
+};
 
 typedef ch_connection_t ch_connection_set_t;
 
