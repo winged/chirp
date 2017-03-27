@@ -160,6 +160,7 @@ Development
 Test dependencies:
 
 * cppcheck
+* abi-compliance-checker
 
 Unix
 ----

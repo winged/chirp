@@ -26,6 +26,40 @@ _build = path.realpath(os.curdir)
 _baselen = len(_base)
 _include = re.compile('^\s*#\s*include\s*"\s*([^"]+\s*).*$')
 
+_abi_template = """
+<version>
+    %s
+</version>
+
+<headers>
+    %s
+</headers>
+
+<libs>
+    %s
+</libs>
+"""
+
+
+def write_abi_check():
+    """Write an abi check definition."""
+    file_ = path.join(_build, "abi-base.xml")
+    with codecs.open(file_, 'w', "UTF-8") as f:
+        f.write(_abi_template % (
+            "0.0.0",
+            path.join(_base, "include"),
+            _build
+        ))
+    print("Created abi-base.xml")
+    file_ = path.join(_build, "abi-cur.xml")
+    with codecs.open(file_, 'w', "UTF-8") as f:
+        f.write(_abi_template % (
+            _version,
+            path.join(_base, "include"),
+            _build
+        ))
+    print("Created abi-cur.xml")
+
 
 def match_files(base, pattern):
     """Match files in a base path."""
@@ -227,6 +261,20 @@ OSX:            brew install cppcheck
 """)
         else:
             print("ok")
+        sys.stdout.write("Checking for abi-compliance-checker: ")
+        if os.system("command -v abi-compliance-checker > /dev/null"):
+            print("""abi-compliance-checker was not found.
+
+Please install cppcheck:
+
+Alpine:         apk add abi-compliance-checker
+Debian-based:   apt install abi-compliance-checker
+Redhat-based:   yum install abi-compliance-checker
+Arch:           pacman -S abi-compliance-checker
+OSX:            brew install abi-compliance-checker
+""")
+        else:
+            print("ok")
 
 
 def copy_files(args):
@@ -402,6 +450,7 @@ if __name__ == "__main__":
     args = parse()
     write_makefile(args)
     write_config()
+    write_abi_check()
     copy_files(args)
-    test_depends(args)
     write_ide_files(args)
+    test_depends(args)

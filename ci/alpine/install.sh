@@ -21,4 +21,5 @@ apk add \
     cppcheck \
     openssl-dev \
     libuv-dev \
+    abi-compliance-checker \
     $ICLANG

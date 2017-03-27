@@ -1,5 +1,8 @@
 /Makefile
-/build
+/build/*
+!/build/abi_dumps
+/build/abi_dumps/chirp/*
+!/build/abi_dumps/chirp/chirp_0.0.0.abi.tar.gz
 /config.h
 tags
 /doc/inc
