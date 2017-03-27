@@ -190,7 +190,7 @@ typedef struct ch_msg_message_s {
 // The default actor is encoded as actor_len = 0
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_msg_get_address(
     const ch_message_t* message,
@@ -208,7 +208,7 @@ ch_msg_get_address(
 //    :rtype:  ch_error_t
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_msg_init(ch_chirp_t* chirp, ch_message_t* message);
 //

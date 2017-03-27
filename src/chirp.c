@@ -164,6 +164,7 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp);
 //
 // .. code-block:: cpp
 //
+CH_EXPORT
 char* ch_version = CH_VERSION;
 
 // Definitions
@@ -209,6 +210,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
 }
 
 // .. c:function::
+CH_EXPORT
 void
 ch_chirp_config_init(ch_config_t* config)
 //    :noindex:
@@ -303,6 +305,7 @@ ch_chirp_close_cb(uv_handle_t* handle)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_chirp_close_ts(ch_chirp_t* chirp)
 //    :noindex:
@@ -560,6 +563,7 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_identity_t
 ch_chirp_get_identity(ch_chirp_t* chirp)
 //    :noindex:
@@ -576,6 +580,7 @@ ch_chirp_get_identity(ch_chirp_t* chirp)
 }
 
 // .. c:function::
+CH_EXPORT
 uv_loop_t*
 ch_chirp_get_loop(ch_chirp_t* chirp)
 //    :noindex:
@@ -590,6 +595,7 @@ ch_chirp_get_loop(ch_chirp_t* chirp)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_chirp_init(
         ch_chirp_t* chirp,
@@ -785,6 +791,7 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
@@ -858,6 +865,7 @@ ch_chirp_run(
 }
 
 // .. c:function::
+CH_EXPORT
 void
 ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
 //    :noindex:
@@ -896,6 +904,7 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_libchirp_cleanup(void)
 //    :noindex:
@@ -909,6 +918,7 @@ ch_libchirp_cleanup(void)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_libchirp_init(void)
 //    :noindex:

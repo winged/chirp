@@ -15,12 +15,14 @@ CFLAGS += \
 	-ffunction-sections \
 	-fdata-sections \
 	-Wno-unused-function \
+	$(VISIBLITYFLAG) \
 	-O0 \
 	-ggdb3 \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)"
 
 LDFLAGS += \
+	$(VISIBLITYFLAG) \
 	-L"$(BUILD)" \
 	-luv \
 	-lssl \

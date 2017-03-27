@@ -164,7 +164,7 @@ typedef struct ch_identity_s {
 } ch_identity_t;
 
 // .. c:function::
-extern
+CH_EXPORT
 void
 ch_chirp_config_init(ch_config_t* config);
 //
@@ -173,7 +173,7 @@ ch_chirp_config_init(ch_config_t* config);
 //    :param ch_config_t* config: Pointer to a chirp configuration.
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_chirp_close_ts(ch_chirp_t* chirp);
 //
@@ -188,7 +188,7 @@ ch_chirp_close_ts(ch_chirp_t* chirp);
 //    :rtype: ch_error_t
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_identity_t
 ch_chirp_get_identity(ch_chirp_t* chirp);
 //
@@ -200,7 +200,7 @@ ch_chirp_get_identity(ch_chirp_t* chirp);
 //    :rtype:  ch_identity_t
 
 // .. c:function::
-extern
+CH_EXPORT
 uv_loop_t*
 ch_chirp_get_loop(ch_chirp_t* chirp);
 //
@@ -212,7 +212,7 @@ ch_chirp_get_loop(ch_chirp_t* chirp);
 //    :rtype:  uv_loop_t*
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_chirp_init(
         ch_chirp_t* chirp,
@@ -271,7 +271,7 @@ ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 }
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
@@ -300,7 +300,7 @@ ch_chirp_run(
 //    :rtype: ch_error_t
 
 // .. c:function::
-extern
+CH_EXPORT
 void
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
@@ -317,7 +317,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //                                 sending.
 
 // .. c:function::
-extern
+CH_EXPORT
 void
 ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //

@@ -13,7 +13,7 @@
 // ============
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_en_openssl_init(void);
 //
@@ -23,7 +23,7 @@ ch_en_openssl_init(void);
 //   :rtype:  ch_error_t
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_en_openssl_cleanup(void);
 //
@@ -33,6 +33,7 @@ ch_en_openssl_cleanup(void);
 //   :rtype:  ch_error_t
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_threading_cleanup(void);
 //
@@ -46,6 +47,7 @@ ch_en_openssl_threading_cleanup(void);
 //
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_threading_setup(void);
 //
@@ -59,7 +61,7 @@ ch_en_openssl_threading_setup(void);
 //
 
 // .. c:function::
-extern
+CH_EXPORT
 void
 ch_en_set_manual_openssl_init(void);
 //

@@ -60,7 +60,6 @@ _ch_cn_allocate_buffers(ch_connection_t* conn);
 //    :param ch_connection_t* conn: Connection
 //
 
-
 // .. c:function::
 static
 ch_inline

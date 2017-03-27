@@ -15,6 +15,7 @@
 #include "util.h"
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_msg_get_address(
     const ch_message_t* message,
@@ -47,6 +48,7 @@ ch_msg_get_address(
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_msg_init(ch_chirp_t* chirp, ch_message_t* message)
 //    :noindex:
@@ -66,6 +68,7 @@ ch_msg_init(ch_chirp_t* chirp, ch_message_t* message)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_msg_set_address(
     ch_message_t* message,

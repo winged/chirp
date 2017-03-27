@@ -107,6 +107,7 @@ _ch_en_locking_function(int mode, int n, const char *file, int line)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_init(void)
 //    :noindex:
@@ -125,6 +126,7 @@ ch_en_openssl_init(void)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_cleanup(void)
 //    :noindex:
@@ -154,6 +156,7 @@ ch_en_openssl_cleanup(void)
 }
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_threading_cleanup(void)
 //    :noindex:
@@ -183,6 +186,7 @@ ch_en_openssl_threading_cleanup(void)
 
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_en_openssl_threading_setup(void)
 //    :noindex:
@@ -214,6 +218,7 @@ ch_en_openssl_threading_setup(void)
 }
 
 // .. c:function::
+CH_EXPORT
 void
 ch_en_set_manual_openssl_init(void)
 //    :noindex:

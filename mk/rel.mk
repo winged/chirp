@@ -8,6 +8,14 @@ ifeq (,$(findstring -O,$(CFLAGS)))
 	OPTFLAG := -O2
 endif
 
+# Only define for known compilers
+ifeq ($(CC),clang)
+	VISIBLITYFLAG := -fvisibility=hidden
+endif
+ifeq ($(CC),gcc)
+	VISIBLITYFLAG := -fvisibility=hidden
+endif
+
 CFLAGS += \
 	-std=gnu99 \
 	-fPIC \
@@ -20,11 +28,13 @@ CFLAGS += \
 	-Wno-unused-function \
 	$(OPTFLAG) \
 	$(GGDBFLAG) \
+	$(VISIBLITYFLAG) \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)"
 
 LDFLAGS += \
+	$(VISIBLITYFLAG) \
 	-luv \
 	-lssl \
 	-lm \

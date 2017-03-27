@@ -16,9 +16,17 @@
 // Declarations
 // ============
 
-ch_free_cb_t _ch_free_cb = free;
-ch_alloc_cb_t _ch_alloc_cb = malloc;
-ch_realloc_cb_t _ch_realloc_cb = realloc;
+static
+ch_free_cb_t
+_ch_free_cb = free;
+
+static
+ch_alloc_cb_t
+_ch_alloc_cb = malloc;
+
+static
+ch_realloc_cb_t
+_ch_realloc_cb = realloc;
 
 // Definitions
 // ===========
@@ -70,6 +78,7 @@ ch_realloc(
 }
 
 // .. c:function::
+CH_EXPORT
 void
 ch_set_alloc_funcs(
         ch_alloc_cb_t alloc,

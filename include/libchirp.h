@@ -17,9 +17,11 @@
 //
 // .. code-block:: cpp
 //
+CH_EXPORT
 extern char* ch_version;
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_libchirp_cleanup(void);
 //
@@ -27,6 +29,7 @@ ch_libchirp_cleanup(void);
 //
 
 // .. c:function::
+CH_EXPORT
 ch_error_t
 ch_libchirp_init(void);
 //
@@ -34,6 +37,7 @@ ch_libchirp_init(void);
 //
 
 // .. c:function::
+CH_EXPORT
 void
 ch_set_alloc_funcs(
         ch_alloc_cb_t alloc,

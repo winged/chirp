@@ -329,7 +329,7 @@ endif
         f.write("LIB_OBJECTS := \\\n")
         lib_objs = [
             file_ for file_, _ in depends
-            if not file_.endswith("_etest.c")
+            if not file_.endswith("test.c")
         ]
         for file_ in lib_objs[:-1]:
             f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))

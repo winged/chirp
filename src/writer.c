@@ -550,6 +550,7 @@ _ch_wr_send_timeout_cb(uv_timer_t* handle)
 
 //
 // .. c:function::
+CH_EXPORT
 void
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:

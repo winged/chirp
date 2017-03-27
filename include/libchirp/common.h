@@ -15,6 +15,19 @@
 #include "libchirp/const.h"
 #include "libchirp/error.h"
 
+// Library export
+// ==============
+//
+// .. code-block:: cpp
+//
+#ifdef CH_BUILD
+#   if defined __GNUC__ || __clang__
+#       define CH_EXPORT __attribute__ ((visibility ("default")))
+#   endif
+#else // CH_BUILD
+#   define CH_EXPORT
+#endif
+
 // System includes
 // ===============
 //
