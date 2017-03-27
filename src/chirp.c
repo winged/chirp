@@ -796,10 +796,8 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         uv_signal_init(chirp->_->loop, &chirp->_->signals[0]);
         uv_signal_init(chirp->_->loop, &chirp->_->signals[1]);
 
-        /* This is only here to keep the linter happy. TODO: Find out a cleaner
-         * way to keep lines calling uv_signal_start() below 80chars
-         */
-        uv_signal_cb cb = &_ch_chirp_sig_handler;
+        chirp->_->signals[0].data = chirp;
+        chirp->_->signals[1].data = chirp;
 
         if(uv_signal_start(
                 &chirp->_->signals[0],
@@ -807,9 +805,9 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
                 SIGINT
         )) {
             E(
-                    chirp,
-                    "Unable to set SIGINT handler. ch_chirp_t:%p",
-                    (void*) chirp
+                chirp,
+                "Unable to set SIGINT handler. ch_chirp_t:%p",
+                (void*) chirp
             );
             return;
         }
@@ -821,9 +819,9 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         )) {
             uv_signal_stop(&chirp->_->signals[0]);
             E(
-                    chirp,
-                    "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                    (void*) chirp
+                chirp,
+                "Unable to set SIGTERM handler. ch_chirp_t:%p",
+                (void*) chirp
             );
         }
         sglib_ch_chirp_t_add(&_ch_chirp_instances, chirp);
@@ -930,23 +928,14 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 // .. code-block:: cpp
 //
 {
-    A(handle, "Invlaid signal handler");
-    ch_chirp_t* t;
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+
     if(signo != SIGINT && signo != SIGTERM)
         return;
 
-    struct sglib_ch_chirp_t_iterator it;
-    for(
-            t = sglib_ch_chirp_t_it_init(
-                &it,
-                _ch_chirp_instances
-            );
-            t != NULL;
-            t = sglib_ch_chirp_t_it_next(&it)
-    ) {
-        if(t->_->config.CLOSE_ON_SIGINT) {
-            ch_chirp_close_ts(t);
-        }
+    if(chirp->_->config.CLOSE_ON_SIGINT) {
+        ch_chirp_close_ts(chirp);
     }
 }
 
