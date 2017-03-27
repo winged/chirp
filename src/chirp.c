@@ -257,8 +257,12 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
         (void*) chirp
     );
     assert(ch_pr_stop(&ichirp->protocol) == CH_SUCCESS);
+    uv_signal_stop(&ichirp->signals[0]);
+    uv_signal_stop(&ichirp->signals[1]);
     uv_close((uv_handle_t*) &ichirp->close, ch_chirp_close_cb);
-    ichirp->closing_tasks += 1;
+    uv_close((uv_handle_t*) &ichirp->signals[0], ch_chirp_close_cb);
+    uv_close((uv_handle_t*) &ichirp->signals[1], ch_chirp_close_cb);
+    ichirp->closing_tasks += 3;
     assert(uv_prepare_init(ichirp->loop, &ichirp->close_check) == CH_SUCCESS);
     ichirp->close_check.data = chirp;
     /* We use a semaphore to wait until all callbacks are done:
@@ -375,8 +379,6 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     ch_chirp_t* chirp = handle->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    uv_signal_stop(&ichirp->signals[0]);
-    uv_signal_stop(&ichirp->signals[1]);
     uv_async_send(&chirp->_done);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
         uv_stop(ichirp->loop);
@@ -749,11 +751,12 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         uv_signal_init(chirp->_->loop, &chirp->_->signals[0]);
         uv_signal_init(chirp->_->loop, &chirp->_->signals[1]);
 
-        chirp->_->signals[0].data = chirp;
-        chirp->_->signals[1].data = chirp;
+        ch_chirp_int_t* ichirp = chirp->_;
+        ichirp->signals[0].data = chirp;
+        ichirp->signals[1].data = chirp;
 
         if(uv_signal_start(
-                &chirp->_->signals[0],
+                &ichirp->signals[0],
                 &_ch_chirp_sig_handler,
                 SIGINT
         )) {
@@ -766,11 +769,12 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         }
 
         if(uv_signal_start(
-                &chirp->_->signals[1],
+                &ichirp->signals[1],
                 &_ch_chirp_sig_handler,
                 SIGTERM
         )) {
-            uv_signal_stop(&chirp->_->signals[0]);
+            uv_signal_stop(&ichirp->signals[0]);
+            uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
             E(
                 chirp,
                 "Unable to set SIGTERM handler. ch_chirp_t:%p",
