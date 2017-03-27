@@ -52,15 +52,6 @@ static int _ch_en_lock_count = 0;
 //
 static uv_rwlock_t* _ch_en_lock_list = NULL;
 
-// .. c:var:: _ch_en_openssl_ref_count
-//
-//    Counts how many chirp instances are using openssl.
-//
-// .. code-block:: cpp
-//
-static int _ch_en_openssl_ref_count = 0;
-
-
 // .. c:function::
 static
 void
@@ -143,6 +134,10 @@ ch_en_openssl_cleanup(void)
 // .. code-block:: cpp
 //
 {
+    if(_ch_en_manual_openssl) {
+        return CH_SUCCESS;
+    }
+
     FIPS_mode_set(0);
     ENGINE_cleanup();
     CONF_modules_unload(1);
@@ -246,7 +241,6 @@ ch_en_start(ch_encryption_t* enc)
     ch_chirp_int_t* ichirp = chirp->_;
     if(!_ch_en_manual_openssl) {
         int tmp_err;
-        _ch_en_openssl_ref_count += 1;
         L(
             chirp,
             "Initializing the OpenSSL library. ch_chirp_t:%p",
@@ -422,17 +416,6 @@ ch_en_stop(ch_encryption_t* enc)
     CRYPTO_THREADID id;
     CRYPTO_THREADID_current(&id);
     ERR_remove_thread_state(&id);
-    if(!_ch_en_manual_openssl) {
-        _ch_en_openssl_ref_count -= 1;
-        if(_ch_en_openssl_ref_count == 0) {
-            L(
-                chirp,
-                "Uninitializing the OpenSSL library. ch_chirp_t:%p",
-                (void*) chirp
-            );
-            return ch_en_openssl_cleanup();
-        }
-    }
     return CH_SUCCESS;
 }
 

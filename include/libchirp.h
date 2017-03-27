@@ -20,19 +20,17 @@
 extern char* ch_version;
 
 // .. c:function::
-void
+ch_error_t
 ch_libchirp_cleanup(void);
 //
-//    Cleanup the libchirp mutex, used for thread-safety during
-//    ch_chirp_init and ch_chirp_close.
+//    Cleanup the global libchirp structures, including encryption/libssl
 //
 
 // .. c:function::
-void
+ch_error_t
 ch_libchirp_init(void);
 //
-//    Initialize the libchirp mutex, used for thread-safety during
-//    ch_chirp_init and ch_chirp_close.
+//    Initialize the global libchirp structures, including encryption/libssl
 //
 
 // .. c:function::
