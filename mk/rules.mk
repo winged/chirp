@@ -12,10 +12,7 @@ $(BUILD)/libchirp_test.a: $(TEST_OBJECTS)
 $(BUILD)/libchirp.so: $(LIB_OBJECTS)
 
 check: all
-	$(BUILD)/src/chirp_etest & \
-	PID=$$!; \
-	sleep 1; \
-	kill -2 $$PID
+	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 
 ifeq ($(DOC),True)
@@ -121,13 +118,24 @@ endif
 
 $(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp.a
 ifeq ($(VERBOSE),True)
-	$(CC) -o $@ $< $(BUILD)/libchirp_test.a $(BUILD)/libchirp.a $(LDFLAGS)
+	@if [ "$@" == "$(BUILD)/src/chirp_etest" ]; then \
+		LIBCHIRP="-L$(BUILD) -lchirp"; \
+	else \
+		LIBCHIRP="$(BUILD)/libchirp.a"; \
+	fi; \
+	echo $(CC) -o $@ $< $(BUILD)/libchirp_test.a $$LIBCHIRP $(LDFLAGS); \
+	$(CC) -o $@ $< $(BUILD)/libchirp_test.a $$LIBCHIRP $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 else
 	@echo LD $@
-	@$(CC) -o $@ $< $(BUILD)/libchirp_test.a $(BUILD)/libchirp.a $(LDFLAGS)
+	@if [ "$@" == "$(BUILD)/src/chirp_etest" ]; then \
+		LIBCHIRP="-L$(BUILD) -lchirp"; \
+	else \
+		LIBCHIRP="$(BUILD)/libchirp.a"; \
+	fi; \
+	$(CC) -o $@ $< $(BUILD)/libchirp_test.a $$LIBCHIRP $(LDFLAGS)
 ifeq ($(STRIP),True)
 	@echo STRIP $@
 	@$(STRPCMD) $@

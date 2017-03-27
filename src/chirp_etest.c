@@ -12,6 +12,13 @@
 //
 #include "libchirp.h"
 
+static
+void
+start(ch_chirp_t* chirp)
+{
+    ch_chirp_close_ts(chirp);
+}
+
 // .. c:function::
 int
 main(
@@ -39,7 +46,7 @@ main(
             &chirp,
             &config,
             &loop,
-            NULL,
+            start,
             NULL,
             NULL
     ) != CH_SUCCESS) {
