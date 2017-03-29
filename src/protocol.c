@@ -92,22 +92,6 @@ _ch_pr_read(ch_connection_t* conn);
 //
 //    :param ch_connection_t* conn: Pointer to a connection handle.
 
-// .. c:function::
-static
-void
-_ch_pr_read_data_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
-//
-//    Callback called from libuv when data was read on a stream.
-//    Reads nread bytes on either an encrypted or an unencrypted connection
-//    coming from the given stream handle.
-//
-//    :param uv_stream_t* stream: Pointer to the stream that data was read on.
-//    :param ssize_t nread: Number of bytes that were read on the stream.
-//    :param uv_buf_t* buf: Pointer to a libuv (data-) buffer. When nread < 0,
-//                          the buf parameter might not point to a valid
-//                          buffer; in that case buf.len and buf.base are both
-//                          set to 0.
-
 // Definitions
 // ===========
 
@@ -148,7 +132,7 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
     ) {
         ch_cn_shutdown(t, CH_SHUTDOWN);
     }
-    // Effectively we have cleared the list
+    /* Effectively we have cleared the list */
     protocol->old_connections = NULL;
 }
 
@@ -267,7 +251,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
-        int addr_len;
+        int addr_len = 0;
         struct sockaddr_storage addr;
         ch_text_address_t taddr;
         if(uv_tcp_getpeername(
@@ -337,7 +321,8 @@ ch_pr_conn_start(
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Could not initialize connection. ch_chirp_t:%p",
+            "Could not initialize connection (%d). ch_chirp_t:%p",
+            tmp_err,
             (void*) chirp
         );
         ch_free(conn);
@@ -345,10 +330,34 @@ ch_pr_conn_start(
         return tmp_err;
     }
     client->data = conn;
+    tmp_err = uv_tcp_nodelay(client, 1);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Could not set tcp nodelay on connection (%d). ch_chirp_t:%p",
+            tmp_err,
+            (void*) chirp
+        );
+        ch_free(conn);
+        uv_close((uv_handle_t*) client, NULL);
+        return tmp_err;
+    }
+    tmp_err = uv_tcp_keepalive(client, 1, CH_TCP_KEEPALIVE);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Could not set tcp keepalive on connection (%d). ch_chirp_t:%p",
+            tmp_err,
+            (void*) chirp
+        );
+        ch_free(conn);
+        uv_close((uv_handle_t*) client, NULL);
+        return tmp_err;
+    }
     uv_read_start(
         (uv_stream_t*) client,
         ch_cn_read_alloc_cb,
-        _ch_pr_read_data_cb
+        ch_pr_read_data_cb
     );
     if(conn->flags & CH_CN_ENCRYPTED) {
         if(accept)
@@ -359,7 +368,7 @@ ch_pr_conn_start(
         }
         conn->flags |= CH_CN_TLS_HANDSHAKE;
     } else
-        ch_rd_read(conn, NULL, 0); // Start reader
+        ch_rd_read(conn, NULL, 0); /* Start reader */
     return CH_SUCCESS;
 }
 
@@ -417,17 +426,131 @@ _ch_pr_read(ch_connection_t* conn)
         return;
     }
 }
+
 // .. c:function::
-static
+ch_error_t
+ch_pr_start(ch_protocol_t* protocol)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_start`
+//
+// .. code-block:: cpp
+//
+{
+    int tmp_err;
+    ch_text_address_t tmp_addr;
+    ch_chirp_t* chirp = protocol->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    ch_config_t* config = &ichirp->config;
+    // IPv4
+    uv_tcp_init(ichirp->loop, &protocol->serverv4);
+    protocol->serverv4.data = chirp;
+    if(uv_inet_ntop(
+            AF_INET, config->BIND_V4, tmp_addr.data, sizeof(ch_text_address_t)
+    ) < 0) {
+        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
+    }
+    if(uv_ip4_addr(tmp_addr.data, config->PORT, &protocol->addrv4) < 0) {
+        return CH_VALUE_ERROR; // NOCOV uv will just wrap bad port
+    }
+    tmp_err = ch_uv_error_map(uv_tcp_bind(
+            &protocol->serverv4,
+            (const struct sockaddr*)&protocol->addrv4,
+            0
+    ));
+    if(tmp_err != CH_SUCCESS) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot bind port (ipv4:%d). ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            config->PORT,
+            (void*) chirp
+        );
+        return tmp_err;  // NOCOV UV_EADDRINUSE can't happen in tcp_bind or
+                         // listen on my systems it happends in listen
+    }
+    if(uv_tcp_nodelay(&protocol->serverv4, 1) < 0) {
+        return CH_UV_ERROR;  // NOCOV don't know how to produce
+    }
+    if(uv_listen(
+            (uv_stream_t*) &protocol->serverv4,
+            config->BACKLOG,
+            _ch_pr_new_connection_cb
+    ) < 0) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot listen port (ipv4:%d). ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            config->PORT,
+            (void*) chirp
+        );
+        return CH_EADDRINUSE;
+    }
+
+    /* IPv6, as the dual stack feature doesn't work everywhere we bind both */
+    uv_tcp_init(ichirp->loop, &protocol->serverv6);
+    protocol->serverv6.data = chirp;
+    if(uv_inet_ntop(
+            AF_INET6, config->BIND_V6, tmp_addr.data, sizeof(ch_text_address_t)
+    ) < 0) {
+        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
+    }
+    if(uv_ip6_addr(tmp_addr.data, config->PORT, &protocol->addrv6) < 0) {
+        return CH_VALUE_ERROR; // NOCOV errors happend for IPV4
+    }
+    tmp_err = ch_uv_error_map(uv_tcp_bind(
+            &protocol->serverv6,
+            (const struct sockaddr*) &protocol->addrv6,
+            UV_TCP_IPV6ONLY
+    ));
+    if(tmp_err != CH_SUCCESS) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot bind port (ipv6:%d). ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            config->PORT,
+            (void*) chirp
+        );
+        return tmp_err; // NOCOV errors happend for IPV4
+    }
+    if(uv_tcp_nodelay(&protocol->serverv6, 1) < 0) {
+        return CH_UV_ERROR; // NOCOV errors happend for IPV4
+    }
+    if(uv_listen(
+            (uv_stream_t*) &protocol->serverv6,
+            config->BACKLOG,
+            _ch_pr_new_connection_cb
+    ) < 0) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot listen port (ipv6:%d). ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            config->PORT,
+            (void*) chirp
+        );
+        return CH_EADDRINUSE; // NOCOV errors happend for IPV4
+    }
+    protocol->receipts = NULL;
+    protocol->late_receipts = NULL;
+    protocol->connections = NULL;
+    return CH_SUCCESS;
+}
+
+// .. c:function::
 void
-_ch_pr_read_data_cb(
+ch_pr_read_data_cb(
         uv_stream_t* stream,
         ssize_t nread,
         const uv_buf_t* buf
 )
 //    :noindex:
 //
-//    see: :c:func:`_ch_pr_read_data_cb`
+//    see: :c:func:`ch_pr_read_data_cb`
 //
 // .. code-block:: cpp
 //
@@ -492,119 +615,6 @@ _ch_pr_read_data_cb(
         ch_rd_read(conn, buf->base, nread);
 }
 
-// .. c:function::
-ch_error_t
-ch_pr_start(ch_protocol_t* protocol)
-//    :noindex:
-//
-//    see: :c:func:`ch_pr_start`
-//
-// .. code-block:: cpp
-//
-{
-    int tmp_err;
-    ch_text_address_t tmp_addr;
-    ch_chirp_t* chirp = protocol->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    ch_config_t* config = &ichirp->config;
-    // IPv4
-    uv_tcp_init(ichirp->loop, &protocol->serverv4);
-    protocol->serverv4.data = chirp;
-    if(uv_inet_ntop(
-            AF_INET, config->BIND_V4, tmp_addr.data, sizeof(ch_text_address_t)
-    ) < 0) {
-        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
-    }
-    if(uv_ip4_addr(tmp_addr.data, config->PORT, &protocol->addrv4) < 0) {
-        return CH_VALUE_ERROR; // NOCOV uv will just wrap bad port
-    }
-    tmp_err = ch_uv_error_map(uv_tcp_bind(
-            &protocol->serverv4,
-            (const struct sockaddr*)&protocol->addrv4,
-            0
-    ));
-    if(tmp_err != CH_SUCCESS) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot bind port (ipv4:%d). ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            config->PORT,
-            (void*) chirp
-        );
-        return tmp_err;  // NOCOV UV_EADDRINUSE can happen in tcp_bind or
-                         // listen on my systems it happends in listen
-    }
-    if(uv_tcp_nodelay(&protocol->serverv4, 1) < 0) {
-        return CH_UV_ERROR;  // NOCOV don't know how to produce
-    }
-    if(uv_listen(
-            (uv_stream_t*) &protocol->serverv4,
-            config->BACKLOG,
-            _ch_pr_new_connection_cb
-    ) < 0) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot listen port (ipv4:%d). ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            config->PORT,
-            (void*) chirp
-        );
-        return CH_EADDRINUSE;
-    }
-
-    // IPv6, as the dual stack feature doesn't work everywhere we bind both
-    uv_tcp_init(ichirp->loop, &protocol->serverv6);
-    protocol->serverv6.data = chirp;
-    if(uv_inet_ntop(
-            AF_INET6, config->BIND_V6, tmp_addr.data, sizeof(ch_text_address_t)
-    ) < 0) {
-        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
-    }
-    if(uv_ip6_addr(tmp_addr.data, config->PORT, &protocol->addrv6) < 0) {
-        return CH_VALUE_ERROR; // NOCOV errors happend for IPV4
-    }
-    tmp_err = ch_uv_error_map(uv_tcp_bind(
-            &protocol->serverv6,
-            (const struct sockaddr*) &protocol->addrv6,
-            UV_TCP_IPV6ONLY
-    ));
-    if(tmp_err != CH_SUCCESS) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot bind port (ipv6:%d). ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            config->PORT,
-            (void*) chirp
-        );
-        return tmp_err; // NOCOV errors happend for IPV4
-    }
-    if(uv_tcp_nodelay(&protocol->serverv6, 1) < 0) {
-        return CH_UV_ERROR; // NOCOV errors happend for IPV4
-    }
-    if(uv_listen(
-            (uv_stream_t*) &protocol->serverv6,
-            config->BACKLOG,
-            _ch_pr_new_connection_cb
-    ) < 0) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot listen port (ipv6:%d). ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            config->PORT,
-            (void*) chirp
-        );
-        return CH_EADDRINUSE; // NOCOV errors happend for IPV4
-    }
-    protocol->receipts = NULL;
-    protocol->late_receipts = NULL;
-    protocol->connections = NULL;
-    return CH_SUCCESS;
-}
 
 // .. c:function::
 ch_error_t

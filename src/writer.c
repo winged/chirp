@@ -71,20 +71,6 @@ ch_wr_connect_cb(uv_connect_t* req, int status);
 
 // .. c:function::
 static
-ch_inline
-void
-_ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
-//
-//    Send the message after a connection has been established.
-//
-//    :param ch_connection_t* conn:  Connection to send the message over.
-//    :param ch_message_t msg:       The message to send. The memory of the
-//                                   message must stay valid until the callback
-//                                   is called.
-//
-
-// .. c:function::
-static
 void
 _ch_wr_send_actor_cb(uv_write_t* req, int status);
 //
@@ -247,7 +233,7 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
     ch_connection_t* conn = msg->_conn;
     ch_free(conn);
     if(msg->_send_cb) {
-        // The user may free the message in the cb
+        /* The user may free the message in the cb. */
         ch_send_cb_t cb = msg->_send_cb;
         msg->_send_cb = NULL;
         cb(msg, CH_CANNOT_CONNECT, -1);
@@ -279,8 +265,9 @@ ch_wr_connect_cb(uv_connect_t* req, int status)
             (void*) chirp,
             (void*) conn
         );
-        // Here we join the code called on accept
+        /* Here we join the code called on accept. */
         conn->writer.msg = msg;
+        conn->writer.send_msg = ch_wr_send;
         ch_pr_conn_start(chirp, conn, &conn->client, 0);
     } else {
         E(
@@ -299,10 +286,8 @@ ch_wr_connect_cb(uv_connect_t* req, int status)
 }
 
 // .. c:function::
-static
-ch_inline
 void
-_ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
+ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
 //    :noindex:
 //
 //    see: :c:func:`_ch_wr_send`
@@ -327,6 +312,7 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
      */
     ch_msg_message_t* net_msg = &writer->net_msg;
     writer->msg = msg;
+    // TODO reenable timeout
     /*tmp_err = uv_timer_start(
         &writer->send_timeout,
         _ch_wr_send_timeout_cb,
@@ -353,9 +339,10 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
         msg->identity,
         sizeof(net_msg->identity)
     );
-    net_msg->header_len = htons(msg->header_len);
-    net_msg->actor_len  = htons(msg->actor_len);
-    net_msg->data_len   = htonl(msg->data_len);
+    net_msg->message_type = msg->message_type;
+    net_msg->header_len   = htons(msg->header_len);
+    net_msg->actor_len    = htons(msg->actor_len);
+    net_msg->data_len     = htonl(msg->data_len);
     ch_cn_write(
         conn,
         net_msg,
@@ -434,7 +421,7 @@ _ch_wr_send_finish(
         A(msg != NULL, "Writer has no message");
         writer->msg = NULL;
         if(msg->_send_cb) {
-            // The user may free the message in the cb
+            /* The user may free the message in the cb. */
             ch_send_cb_t cb = msg->_send_cb;
             msg->_send_cb = NULL;
             cb(
@@ -563,7 +550,8 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
-    msg->_send_cb = send_cb;
+    msg->_send_cb     = send_cb;
+    msg->message_type = CH_MSG_REQ_ACK;
 
     /* TODO
      * 1. Create ichirp->_connecting_port, _connecting_addr, _message_queue
@@ -587,7 +575,6 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     );
     ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
     if(conn == NULL) {
-        printf("%d\n\n", (int) sizeof(ch_connection_t));
         conn = ch_alloc(sizeof(ch_connection_t));
         if(!conn) {
             E(
@@ -657,7 +644,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
         }
     } else
-        _ch_wr_send(conn, msg);
+        ch_wr_send(conn, msg);
 }
 
 // .. c:function::

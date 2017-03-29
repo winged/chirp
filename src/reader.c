@@ -14,6 +14,7 @@
 #include "chirp.h"
 #include "connection.h"
 #include "reader.h"
+#include "writer.h"
 #include "util.h"
 
 // Declarations
@@ -65,13 +66,29 @@ _ch_rd_handshake(
 // .. c:function::
 static
 ch_inline
+void
+_ch_rd_handle_msg(
+        ch_connection_t* conn,
+        ch_reader_t*     reader,
+        ch_message_t*    msg
+);
+//
+//    Send ack and call message-handler
+//
+//    :param ch_connection_t* conn:  Pointer to a connection instance.
+//    :param ch_reader_t* reader:    Pointer to a reader instance.
+//    :param ch_message_t* msg:      Message that was received
+//
+
+// .. c:function::
+static
+ch_inline
 int
 _ch_rd_read_buffer(
         ch_connection_t* conn,
         ch_reader_t*     reader,
         ch_buf*          source_buf,
         size_t           read,
-        size_t*          bytes_handled,
         ch_rd_state_t    state
 );
 //
@@ -89,11 +106,6 @@ _ch_rd_read_buffer(
 //    :param ch_buf* buf:           Buffer containing ``read`` bytes to be
 //                                  read, acting as data source.
 //    :param size_t read:           Number of bytes to read.
-//    :param size_t* bytes_handled: Bytes handled is used for the case when
-//                                  multiple data streams are coming in and the
-//                                  reader switches between various states as
-//                                  for example CH_RD_HANDSHAKE, CH_RD_WAIT or
-//                                  CH_RD_HEADER.
 //    :param ch_rd_state_t state:   The readers current state (finite-state
 //                                  machine).
 //
@@ -104,6 +116,21 @@ _ch_rd_read_buffer(
 
 // Definitions
 // ===========
+
+// .. c:type:: _ch_rd_state_names
+//
+//    Names of reader states for logging.
+//
+// .. code-block:: cpp
+//
+char* _ch_rd_state_names[] = {
+    "CH_RD_START",
+    "CH_RD_HANDSHAKE",
+    "CH_RD_WAIT",
+    "CH_RD_HEADER",
+    "CH_RD_ACTOR",
+    "CH_RD_DATA",
+};
 
 // .. c:function::
 static
@@ -210,6 +237,122 @@ _ch_rd_handshake(
         );
     }
 #   endif
+    ch_writer_t* writer = &conn->writer;
+    if(writer->send_msg != NULL) {
+        ch_wr_msg_cb_t cb = writer->send_msg;
+        writer->send_msg = NULL;
+        if(writer->msg != NULL)
+            cb(conn, writer->msg);
+    }
+}
+
+// .. c:function::
+static
+ch_inline
+void
+_ch_rd_handle_msg(
+        ch_connection_t* conn,
+        ch_reader_t*     reader,
+        ch_message_t*    msg
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_rd_handle_msg`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = conn->chirp;
+    /* Pause reading on last handler. */
+    if(reader->last)
+        uv_read_stop((uv_stream_t*) &conn->client);
+    reader->state = CH_RD_WAIT;
+
+    if(msg->message_type & CH_MSG_REQ_ACK) {
+        /* Send ack */
+        ch_message_t* ack_msg = &reader->ack_msg;
+        memset(ack_msg, 0, sizeof(ch_message_t));
+        memcpy(
+            ack_msg,
+            msg,
+            sizeof(ch_msg_message_t)
+        );
+        ack_msg->message_type = CH_MSG_ACK;
+        ack_msg->header_len = 0;
+        ack_msg->actor_len  = 0;
+        ack_msg->data_len   = 0;
+        ack_msg->chirp      = chirp;
+        ch_random_ints_as_bytes(
+            ack_msg->serial,
+            sizeof(ack_msg->serial)
+        );
+        ch_wr_send(conn, ack_msg);
+    } else if(msg->message_type & CH_MSG_ACK) {
+        ch_writer_t* writer = &conn->writer;
+        if(memcmp(
+                writer->msg->identity,
+                msg->identity,
+                CH_ID_SIZE
+        ) == 0) {
+            ch_message_t* wmsg = writer->msg;
+            if(wmsg->_send_cb) {
+                /* The user may free the message in the cb. */
+                ch_send_cb_t cb = wmsg->_send_cb;
+                wmsg->_send_cb = NULL;
+                cb(wmsg, CH_SUCCESS, conn->load);
+            }
+        } else {
+            E(
+                chirp,
+                "Received bad ack -> shutdown. "
+                "ch_chirp_t:%p, ch_connection_t:%p",
+                (void*) chirp,
+                (void*) conn
+            );
+            ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
+            return;
+        }
+    }
+    /* TODO call callback
+     * TODO release to done
+     */
+    ch_bf_release(&reader->pool, msg->_handler);
+
+#   ifndef NDEBUG
+        ch_text_address_t addr;
+        char id[33];
+        char serial[33];
+        uv_inet_ntop(
+            conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
+            conn->address,
+            addr.data,
+            sizeof(addr)
+        );
+        ch_bytes_to_hex(
+            msg->identity,
+            sizeof(msg->identity),
+            id,
+            sizeof(id)
+        );
+        ch_bytes_to_hex(
+            msg->serial,
+            sizeof(msg->serial),
+            serial,
+            sizeof(serial)
+        );
+        L(
+            chirp,
+            "Read message with id: %s, serial:%s from %s:%d type:%d "
+            "ch_chirp_t:%p, ch_connection_t:%p",
+            id,
+            serial,
+            addr.data,
+            conn->port,
+            msg->message_type,
+            (void*) chirp,
+            (void*) conn
+        );
+#   endif
 }
 
 // .. c:function::
@@ -222,8 +365,9 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
 // .. code-block:: cpp
 //
 {
-    ch_msg_message_t* msg;
-    ch_buf* buf = buffer; // Don't do pointer arithmetics on void*
+    ch_message_t* msg;
+    ch_bf_handler_t* handler;
+    ch_buf* buf = buffer; /* Don't do pointer arithmetics on void* */
 
     /* Bytes handled is used for the case when multiple data streams are
      * coming in and the reader switches between various states as for
@@ -235,6 +379,14 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ch_reader_t* reader = &conn->reader;
+    L(
+        chirp,
+        "Reader state: %s ch_chirp_t:%p, "
+        "ch_connection_t:%p",
+        _ch_rd_state_names[reader->state],
+        (void*) chirp,
+        (void*) conn
+    );
     do {
         switch(reader->state) {
             case CH_RD_START:
@@ -265,7 +417,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 reader->state = CH_RD_WAIT;
                 break;
             case CH_RD_WAIT:
-                // We expect that complete message header arrives at once
+                /* TODO partial read */
                 if(read + bytes_handled < sizeof(ch_msg_message_t)) {
                     E(
                         chirp,
@@ -277,8 +429,10 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
                     return;
                 }
-                // TODO change to message from buffer.h
-                msg = &reader->msg;
+
+                handler     = ch_bf_acquire(&reader->pool, &reader->last);
+                msg         = &handler->msg;
+                reader->msg = msg;
                 memcpy(
                     msg,
                     buf + bytes_handled,
@@ -287,73 +441,73 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 msg->header_len    = ntohs(msg->header_len);
                 msg->actor_len     = ntohs(msg->actor_len);
                 msg->data_len      = ntohl(msg->data_len);
+                msg->ip_protocol   = conn->ip_protocol;
+                msg->port          = conn->port;
+                memcpy(
+                    msg->address,
+                    conn->address,
+                    (
+                        msg->ip_protocol == CH_IPV6
+                    ) ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
+                );
                 bytes_handled     += sizeof(ch_msg_message_t);
-                reader->bytes_read = 0; // Reset partial buffer reads
-                // Direct jump to next read state
+                reader->bytes_read = 0; /* Reset partial buffer reads */
+                /* Direct jump to next read state */
                 if(msg->header_len > 0)
                     reader->state = CH_RD_HEADER;
                 else if(msg->actor_len > 0)
                     reader->state = CH_RD_ACTOR;
                 else if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
-                else {
-                    reader->state = CH_RD_WAIT;
-                    //TODO ack
-                }
+                else
+                    _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_HEADER:
-                msg = &reader->msg;
-                if(_ch_rd_read_buffer(
+                msg = reader->msg;
+                bytes_handled +=_ch_rd_read_buffer(
                     conn,
                     reader,
                     buf + bytes_handled,
                     read - bytes_handled,
-                    &bytes_handled,
                     CH_RD_HEADER
-                )) break;
-                reader->bytes_read = 0; // Reset partial buffer reads
-                // Direct jump to next read state
+                );
+                reader->bytes_read = 0; /* Reset partial buffer reads */
+                /* Direct jump to next read state */
                 if(msg->actor_len > 0)
                     reader->state = CH_RD_ACTOR;
                 else if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
-                else {
-                    reader->state = CH_RD_WAIT;
-                    //TODO ack
-                }
+                else
+                    _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_ACTOR:
-                msg = &reader->msg;
-                if(_ch_rd_read_buffer(
+                msg = reader->msg;
+                bytes_handled +=_ch_rd_read_buffer(
                     conn,
                     reader,
                     buf + bytes_handled,
                     read - bytes_handled,
-                    &bytes_handled,
-                    CH_RD_HEADER
-                )) break;
-                reader->bytes_read = 0; // Reset partial buffer reads
-                // Direct jump to next read state
+                    CH_RD_ACTOR
+                );
+                reader->bytes_read = 0; /* Reset partial buffer reads */
+                /* Direct jump to next read state */
                 if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
-                else {
-                    reader->state = CH_RD_WAIT;
-                    //TODO ack
-                }
+                else
+                    _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_DATA:
-                msg = &reader->msg;
-                if(_ch_rd_read_buffer(
+                msg = reader->msg;
+                bytes_handled +=_ch_rd_read_buffer(
                     conn,
                     reader,
                     buf + bytes_handled,
                     read - bytes_handled,
-                    &bytes_handled,
-                    CH_RD_HEADER
-                )) break;
-                reader->bytes_read = 0; // Reset partial buffer reads
-                reader->state = CH_RD_WAIT;
-                //TODO ack
+                    CH_RD_DATA
+                );
+                reader->bytes_read = 0; /* Reset partial buffer reads */
+                _ch_rd_handle_msg(conn, reader, msg);
+                break;
             default:
                 A(0, "Unknown reader state");
                 break;
@@ -370,7 +524,6 @@ _ch_rd_read_buffer(
         ch_reader_t* reader,
         ch_buf* source_buf,
         size_t read,
-        size_t *bytes_handled,
         ch_rd_state_t state
 
 )
@@ -384,10 +537,23 @@ _ch_rd_read_buffer(
 //
 {
     (void)(conn);
-    (void)(reader);
     (void)(source_buf);
     (void)(read);
-    (void)(bytes_handled);
-    (void)(state);
-    return 1;
+    int length = 0;
+    ch_message_t* msg = reader->msg;
+    switch(state) {
+        case CH_RD_HEADER:
+            length = msg->header_len;
+            break;
+        case CH_RD_ACTOR:
+            length = msg->actor_len;
+            break;
+        case CH_RD_DATA:
+            length = msg->data_len;
+            break;
+        default:
+            A(0, "Unknown buffer type.");
+            break;
+    }
+    return length;
 }

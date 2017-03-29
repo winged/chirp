@@ -3,12 +3,16 @@ RULES
 =====
 
 * Mantra
-   - Make it work
-   - Make it 100% tested
-   - Make it to be used by people
-   - Make it fast (only if really needed)
-   - Make it beautiful
+
+  - Make it work
+  - Make it 100% tested
+  - Make it to be used by people
+  - Make it fast (only if really needed)
+  - Make it beautiful
+
 * Log and assert a lot
+* Use C style comments for stuff that stays. C++-style for temporary stuff and
+  NCONV and #else
 * The following are our given abstractions:
 
   - libuv
@@ -21,13 +25,21 @@ RULES
       increase complexity. So unless we need this async-semaphore in 20+ places we
       just repeat the pattern, which keeps flexibility high and complexity low.
 
+* Long functions are more readable
+
+  - But long functions with complex control-flow or deeply nested ones are not
+  - Of course its always: reuse over long functions
+  - And when a short function is better for reasons, a short function is better
+
 * We use defined length integers ie. uint8_t for file-formates, wire-protocols
   and when plain int is really really wasteful
 * Buffers and chars:
-  * char* for C-strings
-  * void* for buffers (in interfaces)
-  * ch_buf* for buffer-instances (an alias for char*)
-  * uint8_t for bytes (for example the identity)
+
+  - char* for C-strings
+  - void* for buffers (in interfaces)
+  - ch_buf* for buffer-instances (an alias for char*)
+  - uint8_t for bytes (for example the identity)
+
 * Use one flags member instead of many bools (int)
 * Structs end in _s
 * All the structs have a typedef ending in _t
@@ -88,9 +100,11 @@ RULES
   - Use pointer where you have to because of forward declarations
 
 * Embrace libuv styles and use it for chirp API
-* Literate programming
+* Literate programming (kinda)
 * Local messages are sent to scheduler directly
+
   - Binding will send local messages to scheduler directly (not using chirp)
+
 * Localhost connections bypass TLS
 * Use C99 plus the extension used by libuv
 * PEP8 style in C is ok
@@ -98,7 +112,7 @@ RULES
 * Sending messages my not allocate memory
 
   - Only things that happen seldom may allocate
-  - Luckily chirp is already design that way
+  - Luckily chirp is already designed that way
 
 * The original chirp API may only be slightly changed
 * It must be possible for original chirp to adapt the new wire protocol
@@ -127,7 +141,7 @@ Performance
 * Since chirp is meant for multiprocessing, our performance goals refer to this
   configuration
 
-   - x must be able to send/receive 300'000+ message to/from a suitable N peers
+   - x should be able to send/receive 300'000+ msg/s to/from a suitable N peers
 
 .. graphviz::
 
@@ -149,7 +163,7 @@ Performance
       N -> x;
    }
 
-* For this configuration we just have to beat 10'000 messages of course the
+* For this configuration we just have to beat 10'000 msg/s of course the
   more the better
 
 .. graphviz::
@@ -160,10 +174,12 @@ Performance
       a -> x;
    }
 
-* Of course 300'000 msg is our stretch goal, 30'000 msg is ok too
+* Of course 300'000 msg/s is our stretch goal, 30'000 msg/s is ok too
+
+  - We reached 50'000 in non star-topology
 
 =========
 Questions
 =========
 
-Thing that aren't rules yet
+Things that aren't rules yet

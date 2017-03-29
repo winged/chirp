@@ -24,6 +24,22 @@
 
 // Direct declarations
 // -------------------
+//
+// .. c:type:: ch_wr_msg_cb_t
+//
+//    Callback called when chirp is started
+//
+//    .. c:member:: ch_connection_t* conn
+//
+//       Connection message should be sent on
+//
+//    .. c:member:: ch_message_t* msg
+//
+//       The message to send
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_wr_msg_cb_t)(ch_connection_t* conn, ch_message_t* msg);
 
 // .. c:type:: ch_writer_t
 //
@@ -62,6 +78,7 @@ typedef struct ch_writer_s {
     uv_timer_t       send_timeout;
     ch_message_t*    msg;
     ch_msg_message_t net_msg;
+    ch_wr_msg_cb_t   send_msg;
 } ch_writer_t;
 
 // .. c:function::
@@ -85,5 +102,17 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //
 //    :param ch_chirp_t* chirp:      Pointer to a chirp instance.
 //    :param ch_connection_t* conn:  Pointer to a connection instance.
+
+// .. c:function::
+void
+ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
+//
+//    Send the message after a connection has been established.
+//
+//    :param ch_connection_t* conn:  Connection to send the message over.
+//    :param ch_message_t msg:       The message to send. The memory of the
+//                                   message must stay valid until the callback
+//                                   is called.
+//
 
 #endif //ch_writer_h

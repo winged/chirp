@@ -631,7 +631,6 @@ ch_chirp_init(
         return tmp_err;
     }
 
-    // rand
     srand((unsigned int) time(NULL));
     unsigned int i = 0;
     while(
@@ -741,10 +740,10 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
 //
 {
 #   ifndef CH_DISABLE_SIGNALS
-        uv_signal_init(chirp->_->loop, &chirp->_->signals[0]);
-        uv_signal_init(chirp->_->loop, &chirp->_->signals[1]);
-
         ch_chirp_int_t* ichirp = chirp->_;
+        uv_signal_init(ichirp->loop, &ichirp->signals[0]);
+        uv_signal_init(ichirp->loop, &ichirp->signals[1]);
+
         ichirp->signals[0].data = chirp;
         ichirp->signals[1].data = chirp;
 

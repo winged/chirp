@@ -95,9 +95,9 @@ ch_is_local_addr(ch_text_address_t* addr)
     /* TODO move to util.c, create _ch_always_encrypt and change this code
      * accordingly.
      */
-    return (
-        strncmp("::1", addr->data, sizeof(ch_text_address_t)) ||
-        strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t))
+    return !(
+        strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||
+        strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t)) == 0
     );
 }
 

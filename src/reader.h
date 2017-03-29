@@ -53,7 +53,7 @@ typedef enum {
     CH_RD_WAIT      = 2,
     CH_RD_HEADER    = 3,
     CH_RD_ACTOR     = 4,
-    CH_RD_DATA      = 5
+    CH_RD_DATA      = 5,
 } ch_rd_state_t;
 
 // .. c:type:: ch_rd_handshake_t
@@ -118,9 +118,11 @@ typedef struct ch_rd_handshake_s {
 typedef struct ch_reader_s {
     ch_rd_state_t     state;
     ch_rd_handshake_t hs;
-    ch_msg_message_t  msg;
+    ch_message_t*     msg;
+    ch_message_t      ack_msg;
     ch_buffer_pool_t  pool;
     size_t            bytes_read;
+    int               last;
 } ch_reader_t;
 
 // .. c:function::

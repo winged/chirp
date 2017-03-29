@@ -52,6 +52,16 @@
 
 #define CH_BF_PREALLOC_DATA 512
 
+// TCP keep-alive time
+//
+// .. code-block:: cpp
+
+#define CH_TCP_KEEPALIVE 60
+
+// Log available ciphers. Used to debug connections failures.
+//
+// .. code-block:: cpp
+
 ////#define CH_CN_PRINT_CIPHERS
 
 #endif //ch_global_config_h

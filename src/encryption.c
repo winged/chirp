@@ -90,11 +90,11 @@ _ch_en_locking_function(int mode, int n, const char *file, int line)
     (void)(file);
     (void)(line);
     if(mode & CRYPTO_LOCK) {
-        if(mode & CRYPTO_WRITE)  // The user requested write
+        if(mode & CRYPTO_WRITE)  /* The user requested write */
             uv_rwlock_wrlock(&_ch_en_lock_list[n]);
-        else if(mode & CRYPTO_READ) // The user requested read
+        else if(mode & CRYPTO_READ) /* The user requested read */
             uv_rwlock_rdlock(&_ch_en_lock_list[n]);
-        else  // The user requested something bad, do a wrlock for safety
+        else  /* The user requested something bad, do a wrlock for safety */
             uv_rwlock_wrlock(&_ch_en_lock_list[n]);
     } else {
         if(mode & CRYPTO_WRITE)

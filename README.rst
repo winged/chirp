@@ -46,16 +46,16 @@ Features
 
 * Flow control
 
-   * Chirp won't overload peers out-of-the box, if you work with long requests
-     >2.5s adjust the timeout
-   * Peer-load is reported so you can implement load-balancing easily
+  * Chirp won't overload peers out-of-the box, if you work with long requests
+    >2.5s adjust the timeout
+  * Peer-load is reported so you can implement load-balancing easily
 
 * Easy message routing
 
 * Robust
 
-   * No message can be lost without an exception (or it is a bug)
-   * Due to retry it takes a very bad network for messages to be lost
+  * No message can be lost without an error (or it is a bug)
+  * Due to retry it takes a very bad network for messages to be lost
 
 * Very thin API
 
@@ -64,9 +64,10 @@ Features
 
 * Fast
 
-   * Up to TODO msg/s
-   * Using multiple channels multiplies throughput until another bottle-neck
-     kicks in
+  * Up to 50'000 msg/s on a single connection
+  * Up to TODO msg/s in star topology
+  * Using multiple channels multiplies throughput until another bottle-neck
+    kicks in
 
 Install
 =======
@@ -245,3 +246,10 @@ License
 =======
 
 AGPL 3.0
+
+Contribution
+============
+
+1. Ask first
+
+2. You have to agree, that we are free to change the license.

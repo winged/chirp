@@ -127,7 +127,7 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 {
     int i;
     A(max_buffers <= 32, "buffer.c can't handle more than 32 handlers");
-    memset(pool, 0, sizeof(*pool));
+    memset(pool, 0, sizeof(ch_buffer_pool_t));
     size_t pool_mem = max_buffers * sizeof(ch_bf_handler_t);
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;
@@ -157,13 +157,14 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 static
 ch_inline
 ch_bf_handler_t*
-ch_bf_acquire(ch_buffer_pool_t* pool)
+ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
 //
 //    Acquire and return a new handler buffer from the pool. If no handler can
 //    be reserved NULL is returned.
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure which the
 //                                   reservation shall be made from.
+//    :param int* last: Out param: This is the last handler buffer.
 //
 //   :return: a pointer to a reserved handler buffer from the given buffer
 //            pool. See :c:type:`ch_bf_handler_t`
@@ -173,13 +174,16 @@ ch_bf_acquire(ch_buffer_pool_t* pool)
 //
 {
     int free;
+    *last = 0;
     ch_bf_handler_t* handler_buf;
     if(pool->used_buffers < pool->max_buffers) {
         pool->used_buffers += 1;
+        if(pool->used_buffers == pool->max_buffers)
+            *last = 1;
         free = ch_msb32(pool->free_buffers);
-        // Reserve the buffer
+        /* Reserve the buffer. */
         pool->free_buffers &= ~(1 << (free - 1));
-        // The msb represents the first buffer. So the value is inverted.
+        /* The msb represents the first buffer. So the value is inverted. */
         handler_buf = &pool->handlers[32 - free];
         A(handler_buf->used == 0, "Handler buffer already used.");
         handler_buf->used = 1;
@@ -227,7 +231,7 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
         );
     }
     pool->used_buffers -= 1;
-    // Release the buffer
+    /* Release the buffer. */
     handler_buf->used = 0;
     pool->free_buffers |= (1 << (31 - id));
 }

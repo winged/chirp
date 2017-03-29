@@ -41,7 +41,7 @@
 //
 // .. code-block:: cpp
 
-typedef char ch_buf; // Used to show it is not a c-string but a buffer
+typedef char ch_buf; /* Used to show it is not a c-string but a buffer. */
 
 // .. c:type:: ch_text_address_t
 //

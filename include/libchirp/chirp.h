@@ -174,8 +174,9 @@ CH_EXPORT
 ch_error_t
 ch_chirp_close_ts(ch_chirp_t* chirp);
 //
-//    Clean up chirp object. This will remove all callbacks. Pending outs will
-//    be ignored after calling free.
+//    Clean up chirp object. Close all connections. The chirp object can be
+//    freed after the done callback passed to :c:func:`ch_chirp_init` was
+//    called.
 //
 //    This function is thread-safe.
 //

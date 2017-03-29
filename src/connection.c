@@ -235,7 +235,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
     );
     L(
         chirp,
-        "Called uv_write with %d handshake bytes. "
+        "Called uv_write with %d bytes. "
         "ch_chirp_t:%p, ch_connection_t:%p",
         (int) bytes_read,
         (void*) chirp,
@@ -403,7 +403,9 @@ _ch_cn_write_cb(uv_write_t* req, int status)
             (void*) chirp,
             (void*) conn
         );
-        conn->write_callback(req, status);
+        uv_write_cb cb = conn->write_callback;
+        conn->write_callback = NULL;
+        cb(req, status);
         ch_cn_shutdown(conn, status);
         return;
     }
@@ -429,8 +431,11 @@ _ch_cn_write_cb(uv_write_t* req, int status)
                 (void*) conn
             );
             conn->write_size = 0;
-            if(conn->write_callback != NULL)
-                conn->write_callback(req, status);
+            if(conn->write_callback != NULL) {
+                uv_write_cb cb = conn->write_callback;
+                conn->write_callback = NULL;
+                cb(req, status);
+            }
         } else {
 #           ifndef NDEBUG
                 conn->flags |= CH_CN_WRITE_PENDING;
@@ -688,7 +693,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
     int pending = BIO_pending(conn->bio_app);
     if(pending < 1) {
         if(!(conn->flags & CH_CN_TLS_HANDSHAKE))
-            ch_rd_read(conn, NULL, 0); // Start reader
+            ch_rd_read(conn, NULL, 0); /* Start reader */
         return;
     }
     A(!(conn->flags & CH_CN_BUF_WTLS_USED), "The wtls buffer is still used");
@@ -738,7 +743,7 @@ ch_cn_shutdown(
     if(msg != NULL) {
         writer->msg = NULL;
         if(msg->_send_cb != NULL) {
-            // The user may free the message in the cb
+            /* The user may free the message in the cb */
             ch_send_cb_t cb = msg->_send_cb;
             msg->_send_cb = NULL;
             cb(
@@ -779,7 +784,7 @@ ch_cn_shutdown(
                 (void*) chirp
             );
         }
-        // If we have a valid SSL connection send a shutdown to the remote
+        /* If we have a valid SSL connection send a shutdown to the remote */
         if(SSL_is_init_finished(conn->ssl)) {
             if(SSL_shutdown(conn->ssl) < 0) {
                 E(
@@ -871,7 +876,7 @@ ch_cn_write(
             (uv_stream_t*) &conn->client,
             &conn->buffer_any_uv,
             1,
-            _ch_cn_write_cb
+            callback
         );
         L(
             chirp,

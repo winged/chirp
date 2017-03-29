@@ -58,8 +58,8 @@ ch_gen_plan(ch_buf* data)
     /* A plan is a list of acquire and release actions on the buffer pool*/
     int* plan = (int*) mem->data;
     int override_index = mem->count * override_len;
-    /* Full are not very probable, so we override the plan to make ensure that
-     * the pool is sometimes empty/full.
+    /* Full pools are not very probable, so we override the plan to make ensure
+     * that the pool is sometimes empty/full.
      */
     if(override)
         for(int i = override_index; i < mem->count; i++)
@@ -101,7 +101,6 @@ ch_plan_works(ch_buf* data)
     int size = fsize * 40;
     if(size > 32)
         size = 32;
-//    printf("%f\n", fsize);
     ch_bf_init(&pool, size);
     int* plan = (int*) mem->data;
     int count = 0;
@@ -109,16 +108,17 @@ ch_plan_works(ch_buf* data)
         int action = plan[i];
         /* We execute acquire/release according to the plan */
         if(action) {
-            ch_bf_handler_t* handler = ch_bf_acquire(&pool);
+            int last = 0;
+            ch_bf_handler_t* handler = ch_bf_acquire(&pool, &last);
             if(count < size) {
                 if(handler == NULL) {
-                    printf("No handler, before size was reached\n");
+                    printf("No handler, before size was reached.\n");
                     ret = 0;
                     break;
                 }
             } else {
                 if(handler != NULL) {
-                    printf("Got handler, after size was reached\n");
+                    printf("Got handler, after size was reached.\n");
                     ret = 0;
                     break;
                 }
@@ -128,6 +128,18 @@ ch_plan_works(ch_buf* data)
                 buffer->handler = handler;
                 sglib_ch_buffer_t_add(&buffers, buffer);
                 count += 1;
+                if(last) {
+                    if(count != size) {
+                        printf("Last flag not set correctly.\n");
+                        ret = 0;
+                        break;
+                    }
+                    if(ch_bf_acquire(&pool, &last) != NULL) {
+                        printf("Got buffer after last.\n");
+                        ret = 0;
+                        break;
+                    }
+                }
             }
         } else {
             if(count > 0) {
