@@ -251,7 +251,7 @@ ch_qc_gen_double(ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    double x =  ch_qc_tgen_double();
+    double x = ch_qc_tgen_double();
 
     ch_qc_return(double, x);
 }

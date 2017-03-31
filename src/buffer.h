@@ -183,6 +183,8 @@ ch_bf_acquire(ch_buffer_pool_t* pool)
         handler_buf = &pool->handlers[32 - free];
         A(handler_buf->used == 0, "Handler buffer already used.");
         handler_buf->used = 1;
+        memset(&handler_buf->msg, 0, sizeof(handler_buf->msg));
+        handler_buf->msg._handler = handler_buf->id;
         return handler_buf;
     }
     return NULL;
@@ -192,7 +194,7 @@ ch_bf_acquire(ch_buffer_pool_t* pool)
 static
 ch_inline
 void
-ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
+ch_bf_release(ch_buffer_pool_t* pool, int id)
 //
 //    Set given handler buffer as unused in the buffer pool structure and
 //    (re-)add it to the list of free buffers.
@@ -202,18 +204,32 @@ ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure containing the
 //                                   handler buffer
-//    :param ch_bf_handler_t* handler_buf: The handler buffer which shall be
-//                                         marked as free
+//    :param int id: The id of the buffer that should be marked free
 //
 // .. code-block:: cpp
 //
 {
+    ch_bf_handler_t* handler_buf =  &pool->handlers[id];
     A(handler_buf->used == 1, "Double release of buffer.");
     A(pool->used_buffers > 0, "Buffer pool inconsistent.");
+    A(handler_buf->id == id, "Id changed.");
+    A(handler_buf->msg._handler == id, "Id changed.");
+    int in_pool = pool->free_buffers & (1 << (31 - id));
+    A(!in_pool, "Buffer already in pool");
+    if(in_pool) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Double release of handler buffer. "
+            "ch_buffer_pool_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) pool
+        );
+    }
     pool->used_buffers -= 1;
-    // Return the buffer
+    // Release the buffer
     handler_buf->used = 0;
-    pool->free_buffers |= (1 << (31 - handler_buf->id));
+    pool->free_buffers |= (1 << (31 - id));
 }
 
 #endif //ch_buffer_h

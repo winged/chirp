@@ -101,6 +101,7 @@ ch_plan_works(ch_buf* data)
     int size = fsize * 40;
     if(size > 32)
         size = 32;
+//    printf("%f\n", fsize);
     ch_bf_init(&pool, size);
     int* plan = (int*) mem->data;
     int count = 0;
@@ -138,7 +139,7 @@ ch_plan_works(ch_buf* data)
                     ret = 0;
                     break;
                 }
-                ch_bf_release(&pool, buffer->handler);
+                ch_bf_release(&pool, buffer->handler->id);
                 sglib_ch_buffer_t_delete(&buffers, buffer);
                 ch_free(buffer);
                 count -= 1;
