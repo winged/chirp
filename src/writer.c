@@ -310,11 +310,11 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
 // .. code-block:: cpp
 //
 {
-    int tmp_err;
+    //int tmp_err;
 
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
+    //ch_chirp_int_t* ichirp = chirp->_;
     ch_writer_t* writer = &conn->writer;
     /* Use the writers net message structure to write the actual message over
      * the connection. The net message structure is of type
@@ -327,7 +327,7 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
      */
     ch_msg_message_t* net_msg = &writer->net_msg;
     writer->msg = msg;
-    tmp_err = uv_timer_start(
+    /*tmp_err = uv_timer_start(
         &writer->send_timeout,
         _ch_wr_send_timeout_cb,
         ichirp->config.TIMEOUT * 1000,
@@ -342,7 +342,7 @@ _ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
             (void*) conn,
             (void*) chirp
         );
-    }
+    }*/
     memcpy(
         net_msg->serial,
         msg->serial,

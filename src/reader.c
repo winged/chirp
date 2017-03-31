@@ -277,6 +277,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
                     return;
                 }
+                // TODO change to message from buffer.h
                 msg = &reader->msg;
                 memcpy(
                     msg,

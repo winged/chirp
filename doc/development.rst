@@ -53,6 +53,7 @@ Test binaries
    :maxdepth: 2
    :includehidden:
 
+   src/buffer_etest.c.rst
    src/chirp_etest.c.rst
    src/message_etest.c.rst
    src/quickcheck_etest.c.rst

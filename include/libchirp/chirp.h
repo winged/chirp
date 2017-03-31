@@ -144,9 +144,6 @@ struct ch_chirp_s {
     int          _init;
     uv_async_t   _done;
     ch_done_cb_t _done_cb;
-    char         _color_field;
-    ch_chirp_t*  _left;
-    ch_chirp_t*  _right;
 };
 
 // .. c:type:: ch_identity_t

@@ -35,7 +35,7 @@ ch_gen_odd(ch_buf* data)
 }
 
 static
-bool
+int
 ch_is_rand_double_range(ch_buf* data)
 {
     double x = ch_qc_args(double, 0, double);
@@ -44,7 +44,7 @@ ch_is_rand_double_range(ch_buf* data)
 }
 
 static
-bool
+int
 ch_is_odd(ch_buf* data)
 {
     int n = ch_qc_args(int, 0, int);
@@ -53,7 +53,7 @@ ch_is_odd(ch_buf* data)
 }
 
 static
-bool
+int
 ch_is_ascii_string(ch_buf* data)
 {
     ch_qc_mem_track_t* item = ch_qc_args(
@@ -78,10 +78,7 @@ ch_is_ascii_string(ch_buf* data)
 
 // .. c:function::
 int
-main(
-    int argc,
-    char *argv[]
-)
+main()
 //    :noindex:
 //
 //    Test quickcheck.
@@ -89,8 +86,6 @@ main(
 // .. code-block:: cpp
 //
 {
-    (void)(argc); // I hate incomplete main signatures
-    (void)(argv); // I hate incomplete main signatures
     int ret = 0;
     ch_qc_init();
     ch_qc_gen gs0[] = { ch_gen_odd };

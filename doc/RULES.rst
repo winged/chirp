@@ -94,6 +94,7 @@ RULES
 * Localhost connections bypass TLS
 * Use C99 plus the extension used by libuv
 * PEP8 style in C is ok
+* Tests don't have to be documented, so people can write tests fast and in flow.
 * Sending messages my not allocate memory
 
   - Only things that happen seldom may allocate

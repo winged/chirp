@@ -58,6 +58,9 @@ $(BASE)/build/abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz: libchirp.so
 etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
+	$(BUILD)/src/buffer_etest
+	valgrind --suppressions=$(BASE)/ci/memcheck-musl.supp \
+		$(BUILD)/src/buffer_etest
 
 cppcheck:  ## Static analysis
 	cppcheck -v \

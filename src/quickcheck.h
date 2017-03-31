@@ -24,14 +24,14 @@
 //
 // .. code-block:: cpp
 //
-//    bool is_odd(ch_buf data);
+//    int is_odd(ch_buf data);
 //
 // In order to handle arbitrarily-typed property functions, qc uses a special
 // protocol, ch_qc_args,  to pass test values to the property function.
 //
 // .. code-block:: cpp
 //
-//    bool is_odd(ch_buf data) {
+//    int is_odd(ch_buf data) {
 //        int n = ch_qc_args(int, 0, int);
 //
 //        return n % 2 == 1;
@@ -259,7 +259,7 @@ typedef void (*ch_qc_print)(ch_buf*);
 //
 // .. code-block:: cpp
 //
-typedef bool (*ch_qc_prop)(ch_buf*);
+typedef int (*ch_qc_prop)(ch_buf*);
 
 // Functions
 // ---------
@@ -536,7 +536,7 @@ ch_qc_tgen_char(void)
 // .. c:function::
 static
 ch_inline
-uint8_t
+double
 ch_qc_tgen_double(void)
 //
 //    Generate float of type double.

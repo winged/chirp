@@ -87,7 +87,7 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
         1042 * 1042,
         &message->data
     );
-    bool ipv6 = ch_qc_tgen_bool();
+    int ipv6 = ch_qc_tgen_bool();
     ipv6 = 0; // TODO remove
     if(ipv6)
         ch_msg_set_address(

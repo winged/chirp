@@ -56,19 +56,6 @@
 //
 #include "sglib.h"
 
-// Sglib Prototypes
-// ================
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_chirp_t,
-    _left,
-    _right,
-    _color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
-
 // Declarations
 // ============
 

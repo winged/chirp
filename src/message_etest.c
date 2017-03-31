@@ -109,10 +109,7 @@ _ch_test_run_chirp(void* arg)
 
 // .. c:function::
 int
-main(
-    int argc,
-    char *argv[]
-)
+main()
 //    :noindex:
 //
 //    Test quickcheck.
@@ -121,8 +118,6 @@ main(
 //
 {
     // TODO test with and without encryption
-    (void)(argc); // I hate incomplete main signatures
-    (void)(argv); // I hate incomplete main signatures
     ch_test_chirp_thread_t sender_thread;
     //ch_test_chirp_thread_t echo_thread;
     sender_thread.port = 59731;

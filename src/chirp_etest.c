@@ -21,10 +21,7 @@ start(ch_chirp_t* chirp)
 
 // .. c:function::
 int
-main(
-    int argc,
-    char *argv[]
-)
+main()
 //    :noindex:
 //
 //    Run chirp
@@ -32,8 +29,6 @@ main(
 // .. code-block:: cpp
 //
 {
-    (void)(argc); // I hate incomplete main signatures
-    (void)(argv); // I hate incomplete main signatures
     ch_chirp_t chirp;
     uv_loop_t loop;
     ch_config_t config;

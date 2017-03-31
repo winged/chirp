@@ -77,17 +77,17 @@ _ch_qc_for_all(
 
     values = ch_alloc(arglen * max_size);
 
-    for (i = 0; i < 100; i++) {
-        for (j = 0; j < arglen; j++) {
+    for(i = 0; i < 100; i++) {
+        for(j = 0; j < arglen; j++) {
             gs[j](values + j * max_size);
         }
 
-        bool holds = property(values);
+        int holds = property(values);
 
         if (!holds) {
             printf("*** Failed!\n");
 
-            for (j = 0; j < arglen; j++) {
+            for(j = 0; j < arglen; j++) {
                 printf("Arg %02d: ", (int) j);
                 ps[j](values + j * max_size);
                 printf("\n");
@@ -175,7 +175,7 @@ _ch_qc_tgen_array(
 
     size_t i;
 
-    for (i = 0; i < (size_t) len; i++) {
+    for(i = 0; i < (size_t) len; i++) {
         g(arr + i * size);
     }
     return item;

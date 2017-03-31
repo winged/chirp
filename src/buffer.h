@@ -15,6 +15,7 @@
 //
 // .. code-block:: cpp
 //
+#include "libchirp/message.h"
 #include "util.h"
 #include "config.h"
 
@@ -24,6 +25,10 @@
 // .. c:type:: ch_bf_handler_t
 //
 //    Preallocated buffer for a chirp handler.
+//
+//    .. c:member:: ch_message_t
+//
+//       Preallocated message.
 //
 //    .. c:member:: ch_buf* header
 //
@@ -48,6 +53,7 @@
 // .. code-block:: cpp
 //
 typedef struct ch_bf_handler_s {
+    ch_message_t msg;
     ch_buf* header[CH_BF_PREALLOC_HEADER];
     char*   actor[CH_BF_PREALLOC_ACTOR];
     ch_buf* data[CH_BF_PREALLOC_DATA];
@@ -121,9 +127,12 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 {
     int i;
     A(max_buffers <= 32, "buffer.c can't handle more than 32 handlers");
+    memset(pool, 0, sizeof(*pool));
+    size_t pool_mem = max_buffers * sizeof(ch_bf_handler_t);
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;
-    pool->handlers     = ch_alloc(max_buffers * sizeof(ch_bf_handler_t));
+    pool->handlers     = ch_alloc(pool_mem);
+    memset(pool->handlers, 0, pool_mem);
     if(!pool->handlers) {
         fprintf(
             stderr,
@@ -199,14 +208,11 @@ ch_bf_release(ch_buffer_pool_t* pool, ch_bf_handler_t* handler_buf)
 // .. code-block:: cpp
 //
 {
-    /* TODO Should we not assert first, that the given handler buffer
-     * actually IS not in the pool as free buffer?
-     */
     A(handler_buf->used == 1, "Double release of buffer.");
-    handler_buf->used = 0;
-    A(pool->used_buffers == 0, "Buffer pool inconsistent.");
+    A(pool->used_buffers > 0, "Buffer pool inconsistent.");
     pool->used_buffers -= 1;
     // Return the buffer
+    handler_buf->used = 0;
     pool->free_buffers |= (1 << (31 - handler_buf->id));
 }
 

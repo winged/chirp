@@ -14,6 +14,7 @@ $(BUILD)/libchirp.so: $(LIB_OBJECTS)
 check: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
+	$(BUILD)/src/buffer_etest
 
 ifeq ($(DOC),True)
 doc: doc_files

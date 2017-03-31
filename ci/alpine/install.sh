@@ -22,4 +22,5 @@ apk add \
     openssl-dev \
     libuv-dev \
     abi-compliance-checker \
+    valgrind \
     $ICLANG
