@@ -252,4 +252,6 @@ Contribution
 
 1. Ask first
 
-2. You have to agree, that we are free to change the license.
+2. You must sign-over the changes to the Concrete Clouds Project
+
+3. So you usually just want to open change-requests
