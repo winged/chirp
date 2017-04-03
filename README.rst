@@ -64,10 +64,11 @@ Features
 
 * Fast
 
-  * Up to 50'000 msg/s on a single connection
-  * Up to TODO msg/s in star topology
-  * Using multiple channels multiplies throughput until another bottle-neck
-    kicks in
+  * Up to 50'000 msg/s on a single-connection (encrypted 35'000 msg/s)
+  * Up to 100'000 msg/s in star-topology (encrypted same)
+
+    * Which shows that chirp is highly optimized, but still if the network delay
+      is bigger star-topology is the way to go.
 
 Install
 =======

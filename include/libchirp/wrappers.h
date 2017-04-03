@@ -16,6 +16,22 @@
 //
 #include "common.h"
 
+// Declarations
+// ============
+
+// .. c:function::
+CH_EXPORT
+int
+ch_loop_init(uv_loop_t* loop);
+//
+//    An alias for uv_loop_init. Please refer to the libuv documentation.
+//
+//    :param uv_loop_t* loop: Loop struct allocated by user.
+//
+//    :return: the status of the initialization.
+//    :rtype:  int
+//
+
 // Definitions
 // ===========
 
@@ -48,25 +64,6 @@ ch_loop_close(uv_loop_t* loop)
     );
 #endif
     return tmp_err;
-}
-
-// .. c:function::
-static
-ch_inline
-int
-ch_loop_init(uv_loop_t* loop)
-//
-//    An alias for uv_loop_init. Please refer to the libuv documentation.
-//
-//    :param uv_loop_t* loop: Loop struct allocated by user.
-//
-//    :return: the status of the initialization.
-//    :rtype:  int
-//
-// .. code-block:: cpp
-//
-{
-    return uv_loop_init(loop);
 }
 
 // .. c:function::

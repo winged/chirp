@@ -12,6 +12,11 @@
 #include "quickcheck_test.h"
 #include "buffer.h"
 
+// Definitions
+// ===========
+//
+// .. code-block:: cpp
+//
 typedef struct ch_safe_max_s {
     double a;
     void* b;
@@ -42,8 +47,6 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
 
 // Test functions
 // ==============
-//
-// Not documented on purpose.
 //
 // .. code-block:: cpp
 
@@ -164,16 +167,11 @@ ch_plan_works(ch_buf* data)
 
 // Runner
 // ======
-
-// .. c:function::
-int
-main()
-//    :noindex:
-//
-//    Test buffer pool.
 //
 // .. code-block:: cpp
-//
+
+int
+main()
 {
     ch_qc_init();
     ch_qc_gen gs0[] = { ch_gen_plan, ch_qc_gen_double };

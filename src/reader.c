@@ -62,6 +62,18 @@ _ch_rd_handshake(
 //    :param ch_buf* buf:           Buffer containing bytes read, acts as data
 //                                  source
 //    :param size_t read:           Count of bytes read
+//
+// .. c:function::
+static
+void
+_ch_rd_handshake_cb(uv_write_t* req, int status);
+//
+//    Called when handshake is sent.
+//
+//    :param uv_write_t* req: Write request type, holding the
+//                            connection handle
+//    :param int status: Send status
+//
 
 // .. c:function::
 static
@@ -356,6 +368,35 @@ _ch_rd_handle_msg(
 }
 
 // .. c:function::
+static
+void
+_ch_rd_handshake_cb(uv_write_t* req, int status)
+//    :noindex:
+//
+//    see: :c:func:`_ch_rd_handshake_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = req->data;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    if(status < 0) {
+        L(
+            chirp,
+            "Sending handshake failed. ch_chirp_t:%p, ch_connection_t:%p",
+            (void*) chirp,
+            (void*) conn
+        );
+        ch_cn_shutdown(conn, status);
+        return;
+    }
+    /* Check if we already have a message (just after handshake) */
+    if(conn->flags & CH_CN_ENCRYPTED)
+        ch_pr_read(conn);
+}
+
+// .. c:function::
 void
 ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
 //    :noindex:
@@ -399,7 +440,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     conn,
                     &reader->hs,
                     sizeof(ch_rd_handshake_t),
-                    NULL
+                    _ch_rd_handshake_cb
                 );
                 reader->state = CH_RD_HANDSHAKE;
                 break;

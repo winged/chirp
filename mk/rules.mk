@@ -142,3 +142,6 @@ ifeq ($(STRIP),True)
 	@$(STRPCMD) $@
 endif
 endif
+ifeq ($(DEV),True)
+	@command -v setfattr > /dev/null && setfattr -n user.pax.flags -v "emr" $@
+endif

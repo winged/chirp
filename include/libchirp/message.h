@@ -54,8 +54,8 @@
 //
 //    .. c:member:: uint16_t actor_len
 //
-//       Length of the actor. Defines the encoding of the actor. The default
-//       actor is encoded as :code:`actor_len = 0`.
+//       Length of the actor. The default actor is defined as
+//       :code:`actor_len = 0`.
 //
 //    .. c:member:: uint32_t data_len
 //
@@ -110,24 +110,14 @@
 //       The port that the will be used reading/writing a message over a
 //       connection.
 //
-//    .. c:member:: int8_t free_header
-//
-//       Unused.
-//       .. todo:: Unused.
-//
-//    .. c:member:: int8_t free_actor
-//
-//       Unused.
-//       .. todo:: Unused.
-//
-//    .. c:member:: int8_t free_data
-//
-//       Unused.
-//       .. todo:: Unused.
-//
 //    .. c:member:: ch_chirp_t* chirp
 //
 //       Pointer to chirp instance.
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Pointer to user data, can be used to access user-data in the
+//       send-callback.
 //
 // .. code-block:: cpp
 //
@@ -142,10 +132,9 @@ struct ch_message_s {
     uint8_t      ip_protocol;
     uint8_t      address[CH_IP_ADDR_SIZE];  // 16
     int32_t      port;
-    int8_t       free_header;
-    int8_t       free_actor;
-    int8_t       free_data;
     ch_chirp_t*  chirp;
+    void*        user_data;
+    uint8_t      _flags;
     ch_send_cb_t _send_cb;
     void*        _conn;
     int          _handler;

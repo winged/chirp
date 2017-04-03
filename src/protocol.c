@@ -82,16 +82,6 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status);
 //                                communication channel) of the server,
 //                                containig a chirp object.
 
-// .. c:function::
-static
-ch_inline
-void
-_ch_pr_read(ch_connection_t* conn);
-//
-//    Reads data over SSL on the given connection.
-//
-//    :param ch_connection_t* conn: Pointer to a connection handle.
-
 // Definitions
 // ===========
 
@@ -373,13 +363,11 @@ ch_pr_conn_start(
 }
 
 // .. c:function::
-static
-ch_inline
 void
-_ch_pr_read(ch_connection_t* conn)
+ch_pr_read(ch_connection_t* conn)
 //    :noindex:
 //
-//    see: :c:func:`_ch_pr_read`
+//    see: :c:func:`ch_pr_read`
 //
 // .. code-block:: cpp
 //
@@ -388,12 +376,11 @@ _ch_pr_read(ch_connection_t* conn)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     int tmp_err;
     // Handshake done, normal operation
-    tmp_err = SSL_read(
-        conn->ssl,
-        conn->buffer_rtls,
-        conn->buffer_size
-    );
-    if(tmp_err > 0) {
+    while((tmp_err = SSL_read(
+            conn->ssl,
+            conn->buffer_rtls,
+            conn->buffer_size
+    )) > 0) {;
         L(
             chirp,
             "Read %d bytes. ch_chirp_t:%p, ch_connection_t:%p",
@@ -402,7 +389,9 @@ _ch_pr_read(ch_connection_t* conn)
             (void*) conn
         );
         ch_rd_read(conn, conn->buffer_rtls, tmp_err);
-    } else {
+    }
+    tmp_err = SSL_get_error(conn->ssl, tmp_err);
+    if(tmp_err != SSL_ERROR_WANT_READ) {
         if(tmp_err < 0) {
 #           ifndef NDEBUG
                 ERR_print_errors_fp(stderr);
@@ -423,7 +412,6 @@ _ch_pr_read(ch_connection_t* conn)
             );
         }
         ch_cn_shutdown(conn, CH_TLS_ERROR);
-        return;
     }
 }
 
@@ -609,7 +597,7 @@ ch_pr_read_data_cb(
             if(conn->flags & CH_CN_TLS_HANDSHAKE)
                 _ch_pr_do_handshake(conn);
             else
-                _ch_pr_read(conn);
+                ch_pr_read(conn);
         } while(bytes_decrypted < snread);
     } else
         ch_rd_read(conn, buf->base, nread);

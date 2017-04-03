@@ -76,12 +76,11 @@ static
 void
 _ch_cn_send_pending_cb(uv_write_t* req, int status);
 //
-//    Called during handshake by libuv when pending data has been sent
+//    Called during handshake by libuv when pending data is sent.
 //
 //    :param uv_write_t* req: Write request type, holding the
 //                            connection handle
-//    :param int status: The status after the shutdown. 0 in case of
-//                       success, < 0 otherwise
+//    :param int status: Send status
 //
 
 // .. c:function::
@@ -203,6 +202,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
             conn->write_buffer + bytes_encrypted + conn->write_written,
             conn->write_size - bytes_encrypted - conn->write_written
         );
+        A(tmp_err > -1, "SSL_write failure unexpected");
         if(tmp_err < 0) {
             E(
                 chirp,
@@ -219,6 +219,18 @@ _ch_cn_partial_write(ch_connection_t* conn)
             conn->buffer_wtls + bytes_read,
             conn->buffer_size - bytes_read
         );
+        A(read > 0, "BIO_read failure unexpected");
+        if(read < 1) {
+            E(
+                chirp,
+                "SSL error reading from BIO, shutting down connection. "
+                "ch_connection_t:%p ch_chirp_t:%p",
+                (void*) conn,
+                (void*) chirp
+            );
+            ch_cn_shutdown(conn, CH_TLS_ERROR);
+            return;
+        }
         bytes_encrypted += tmp_err;
         bytes_read += read;
     } while(
@@ -693,7 +705,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
     int pending = BIO_pending(conn->bio_app);
     if(pending < 1) {
         if(!(conn->flags & CH_CN_TLS_HANDSHAKE))
-            ch_rd_read(conn, NULL, 0); /* Start reader */
+            ch_rd_read(conn, NULL, 0); /* Start the reader */
         return;
     }
     A(!(conn->flags & CH_CN_BUF_WTLS_USED), "The wtls buffer is still used");
@@ -740,6 +752,12 @@ ch_cn_shutdown(
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
+    L(
+        chirp,
+        "Shutdown connection. ch_connection_t:%p, ch_chirp_t:%p",
+        (void*) conn,
+        (void*) chirp
+    );
     if(msg != NULL) {
         writer->msg = NULL;
         if(msg->_send_cb != NULL) {
@@ -832,12 +850,6 @@ ch_cn_shutdown(
             (void*) chirp
         );
     }
-    L(
-        chirp,
-        "Shutdown connection. ch_connection_t:%p, ch_chirp_t:%p",
-        (void*) conn,
-        (void*) chirp
-    );
     return CH_SUCCESS;
 }
 

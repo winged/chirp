@@ -31,6 +31,15 @@
 
 // Declarations
 // ============
+//
+// .. c:var:: uv_mutex_t _ch_chirp_init_lock
+//
+//    It seems that initializing signals accesses a shared data-structure. We
+//    lock during init, just to be sure.
+//
+// .. code-block:: cpp
+//
+static uv_mutex_t _ch_chirp_init_lock;
 
 // .. c:var:: ch_config_t ch_config_defaults
 //
@@ -600,6 +609,7 @@ ch_chirp_init(
 //
 {
     int tmp_err;
+    uv_mutex_lock(&_ch_chirp_init_lock);
     chirp->_done_cb = done;
     memset(chirp, 0, sizeof(ch_chirp_t));
     chirp->_init            = CH_CHIRP_MAGIC;
@@ -612,6 +622,7 @@ ch_chirp_init(
             __LINE__,
             (void*) chirp
         );
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_ENOMEM;
     }
     memset(ichirp, 0, sizeof(ch_chirp_int_t));
@@ -628,6 +639,7 @@ ch_chirp_init(
     tmp_err = _ch_chirp_verify_cfg(chirp);
     if(tmp_err != CH_SUCCESS) {
         chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return tmp_err;
     }
 
@@ -651,6 +663,7 @@ ch_chirp_init(
         );
         ch_free(ichirp);
         chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR; // NOCOV
     }
     if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
@@ -661,6 +674,7 @@ ch_chirp_init(
         );
         ch_free(ichirp);
         chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR; // NOCOV
     }
     chirp->_done.data = chirp;
@@ -672,6 +686,7 @@ ch_chirp_init(
         );
         ch_free(ichirp);
         chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR; // NOCOV
     }
     ichirp->start.data = chirp;
@@ -687,6 +702,7 @@ ch_chirp_init(
         );
         ch_free(ichirp);
         chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
         return tmp_err;
     }
     if(!ichirp->config.DISABLE_ENCRYPTION) {
@@ -704,6 +720,7 @@ ch_chirp_init(
             );
             ch_free(ichirp);
             chirp->_init = 0;
+            uv_mutex_unlock(&_ch_chirp_init_lock);
             return tmp_err;
         }
     }
@@ -725,6 +742,7 @@ ch_chirp_init(
 #   endif
     _ch_chirp_init_signals(chirp);
     uv_async_send(&ichirp->start);
+    uv_mutex_unlock(&_ch_chirp_init_lock);
     return CH_SUCCESS;
 }
 
@@ -773,6 +791,8 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
                 (void*) chirp
             );
         }
+#   else
+        (void)(chirp);
 #   endif
 }
 
@@ -891,6 +911,24 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 
 // .. c:function::
 CH_EXPORT
+int
+ch_loop_init(uv_loop_t* loop)
+//    :noindex:
+//
+//    see: :c:func:`ch_loop_init`
+//
+// .. code-block:: cpp
+//
+{
+    int tmp_err;
+    uv_mutex_lock(&_ch_chirp_init_lock);
+    tmp_err = uv_loop_init(loop);
+    uv_mutex_unlock(&_ch_chirp_init_lock);
+    return tmp_err;
+}
+
+// .. c:function::
+CH_EXPORT
 ch_error_t
 ch_libchirp_cleanup(void)
 //    :noindex:
@@ -900,6 +938,7 @@ ch_libchirp_cleanup(void)
 // .. code-block:: cpp
 //
 {
+    uv_mutex_destroy(&_ch_chirp_init_lock);
     return ch_en_openssl_cleanup();
 }
 
@@ -914,5 +953,6 @@ ch_libchirp_init(void)
 // .. code-block:: cpp
 //
 {
+    uv_mutex_init(&_ch_chirp_init_lock);
     return ch_en_openssl_init();
 }

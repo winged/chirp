@@ -90,16 +90,16 @@ _ch_en_locking_function(int mode, int n, const char *file, int line)
     (void)(file);
     (void)(line);
     if(mode & CRYPTO_LOCK) {
-        if(mode & CRYPTO_WRITE)  /* The user requested write */
+        if(!(mode & CRYPTO_READ))  /* The user requested write */
             uv_rwlock_wrlock(&_ch_en_lock_list[n]);
-        else if(mode & CRYPTO_READ) /* The user requested read */
+        else if(!(mode & CRYPTO_WRITE)) /* The user requested read */
             uv_rwlock_rdlock(&_ch_en_lock_list[n]);
         else  /* The user requested something bad, do a wrlock for safety */
             uv_rwlock_wrlock(&_ch_en_lock_list[n]);
     } else {
-        if(mode & CRYPTO_WRITE)
+        if(!(mode & CRYPTO_READ))
             uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
-        else if(mode & CRYPTO_READ)
+        else if(!(mode & CRYPTO_WRITE))
             uv_rwlock_rdunlock(&_ch_en_lock_list[n]);
         else
             uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
@@ -181,7 +181,7 @@ ch_en_openssl_threading_cleanup(void)
         uv_rwlock_destroy(&_ch_en_lock_list[i]);
     ch_free(_ch_en_lock_list);
     _ch_en_lock_list = NULL;
-    return 0;
+    return CH_SUCCESS;
 }
 
 
@@ -214,7 +214,7 @@ ch_en_openssl_threading_setup(void)
         uv_rwlock_init(&_ch_en_lock_list[i]);
     CRYPTO_set_id_callback(_ch_en_thread_id_function);
     CRYPTO_set_locking_callback(_ch_en_locking_function);
-    return 0;
+    return CH_SUCCESS;
 }
 
 // .. c:function::
@@ -244,23 +244,6 @@ ch_en_start(ch_encryption_t* enc)
     ch_chirp_t* chirp = enc->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    if(!_ch_en_manual_openssl) {
-        int tmp_err;
-        L(
-            chirp,
-            "Initializing the OpenSSL library. ch_chirp_t:%p",
-            (void*) chirp
-        );
-        tmp_err = ch_en_openssl_init();
-        if(tmp_err != CH_SUCCESS) {
-            L(
-                chirp,
-                "Could not initialize the OpenSSL library. ch_chirp_t:%p",
-                (void*) chirp
-            );
-            return tmp_err;
-        }
-    }
     const SSL_METHOD* method = TLSv1_2_method();
     if(method == NULL) {
         E(

@@ -16,8 +16,6 @@
 // Test functions
 // ==============
 //
-// Not documented on purpose.
-//
 // .. code-block:: cpp
 
 static
@@ -75,16 +73,11 @@ ch_is_ascii_string(ch_buf* data)
 
 // Runner
 // ======
-
-// .. c:function::
-int
-main()
-//    :noindex:
-//
-//    Test quickcheck.
 //
 // .. code-block:: cpp
 //
+int
+main()
 {
     int ret = 0;
     ch_qc_init();

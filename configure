@@ -331,6 +331,8 @@ def write_makefile(args):
             f.write("DOC := True\n")
         if args.ignore_coverage:
             f.write("IGNORE_COV := True\n")
+        if args.dev:
+            f.write("DEV := True\n")
         f.write("\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
         depends, files = read_depends()

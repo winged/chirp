@@ -171,6 +171,15 @@ ch_pr_conn_start(
 //
 
 // .. c:function::
+void
+ch_pr_read(ch_connection_t* conn);
+//
+//    Reads data over SSL on the given connection. Returns 1 if something was
+//    read, 0 otherwise.
+//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
+
+// .. c:function::
 ch_error_t
 ch_pr_start(ch_protocol_t* protocol);
 //

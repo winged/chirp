@@ -21,14 +21,18 @@
 //
 #include <unistd.h>
 
+// Declarations
+// ============
+//
+// .. code-block:: cpp
+//
+
 static
 void
-send_message(ch_chirp_t* chirp);
+ch_send_message(ch_chirp_t* chirp);
 
 // Test functions
 // ==============
-//
-// Not documented on purpose.
 //
 // .. code-block:: cpp
 //
@@ -37,14 +41,13 @@ static char _data[] = "hello";
 static ch_message_t _msg;
 
 typedef struct ch_test_chirp_thread_s {
-    ch_chirp_t* chirp;
     int port;
     ch_start_cb_t init;
 } ch_test_chirp_thread_t;
 
 static
 void
-simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
+ch_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 {
     ch_msg_init(chirp, msg);
     ch_msg_set_address(
@@ -59,22 +62,22 @@ simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 
 static
 void
-sent(ch_message_t* msg, int status, float load)
+ch_sent(ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
     (void)(msg);
-    ch_qc_free_mem();
+    //ch_qc_free_mem();
     _msgs += 1;
-    if(_msgs < 1000000)
-        send_message(msg->chirp);
+    if(_msgs < 100000)
+        ch_send_message(msg->chirp);
     else
         exit(0);
 }
 
 static
 void
-send_message(ch_chirp_t* chirp)
+ch_send_message(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
 
@@ -82,12 +85,12 @@ send_message(ch_chirp_t* chirp)
     simple = 1; // TODO remove
 
     if(simple) {
-        simple_msg(chirp, &_msg);
+        ch_simple_msg(chirp, &_msg);
         _msg.port = 59732;
         ch_chirp_send(
                 chirp,
                 &_msg,
-                sent
+                ch_sent
         );
     } else {
         ch_message_t* msg = ch_test_gen_message(chirp);
@@ -95,7 +98,7 @@ send_message(ch_chirp_t* chirp)
         ch_chirp_send(
                 chirp,
                 msg,
-                sent
+                ch_sent
         );
     }
 }
@@ -105,7 +108,7 @@ void
 sender_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    send_message(chirp);
+    ch_send_message(chirp);
 }
 
 static
@@ -125,7 +128,6 @@ _ch_test_run_chirp(void* arg)
     ch_config_t config;
     ch_chirp_config_init(&config);
     config.PORT = args->port;
-    args->chirp = &chirp;
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM = "./dh.pem";
     ch_loop_init(&loop);
@@ -148,16 +150,11 @@ _ch_test_run_chirp(void* arg)
 
 // Runner
 // ======
-
-// .. c:function::
-int
-main()
-//    :noindex:
-//
-//    Test quickcheck.
 //
 // .. code-block:: cpp
-//
+
+int
+main()
 {
     // TODO test with and without encryption
     ch_test_chirp_thread_t sender_thread;
