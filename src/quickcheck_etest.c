@@ -11,7 +11,7 @@
 //
 // .. code-block:: cpp
 //
-#include "quickcheck.h"
+#include "quickcheck_test.h"
 
 // Test functions
 // ==============

@@ -27,8 +27,6 @@ Internal API
    src/message.c.rst
    src/protocol.h.rst
    src/protocol.c.rst
-   src/quickcheck.h.rst
-   src/quickcheck.c.rst
    src/reader.h.rst
    src/reader.c.rst
    src/util.h.rst
@@ -45,7 +43,9 @@ Test code
 
    src/message_test.h.rst
    src/message_test.c.rst
-   src/sds.h.rst
+   src/quickcheck_test.h.rst
+   src/quickcheck_test.c.rst
+   src/sds_test.h.rst
    src/sds_test.c.rst
 
 Test binaries

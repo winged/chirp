@@ -82,8 +82,8 @@
 //
 // .. code-block:: cpp
 
-#ifndef ch_quickcheck_h
-#define ch_quickcheck_h
+#ifndef ch_quickcheck_test_h
+#define ch_quickcheck_test_h
 
 // Project includes
 // ================
@@ -567,4 +567,4 @@ ch_qc_tgen_int(void)
 
 // .. code-block:: cpp
 
-#endif //ch_quickcheck_h
+#endif //ch_quickcheck_test_h

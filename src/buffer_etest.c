@@ -9,7 +9,7 @@
 //
 // .. code-block:: cpp
 //
-#include "quickcheck.h"
+#include "quickcheck_test.h"
 #include "buffer.h"
 
 typedef struct ch_safe_max_s {

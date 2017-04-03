@@ -16,7 +16,7 @@
 //
 // .. code-block:: cpp
 //
-#include "quickcheck.h"
+#include "quickcheck_test.h"
 #include "util.h"
 
 // System includes

@@ -11,7 +11,7 @@
 //
 #include "libchirp.h"
 #include "common.h"
-#include "quickcheck.h"
+#include "quickcheck_test.h"
 #include "message_test.h"
 
 // System includes
