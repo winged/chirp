@@ -18,6 +18,7 @@ RULES
   - libuv
   - sglib
   - openssl
+  - sds (for tests only)
   - We try not do add our own abstractions, to keep complexity low
 
     - For example we use a async-semaphore pattern to await multiple callbacks,

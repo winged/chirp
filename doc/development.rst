@@ -45,6 +45,8 @@ Test code
 
    src/message_test.h.rst
    src/message_test.c.rst
+   src/sds.h.rst
+   src/sds_test.c.rst
 
 Test binaries
 =============
@@ -66,4 +68,5 @@ External Libs
    :includehidden:
 
    src/sglib.h.rst
+   sds.rst
 
