@@ -735,8 +735,8 @@ ch_cn_send_if_pending(ch_connection_t* conn)
 // .. c:function::
 ch_error_t
 ch_cn_shutdown(
-    ch_connection_t* conn,
-    int reason
+        ch_connection_t* conn,
+        int reason
 )
 //    :noindex:
 //

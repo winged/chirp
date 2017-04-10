@@ -25,10 +25,10 @@ static
 ch_inline
 int
 _ch_wr_check_send_error(
-    ch_chirp_t* chirp,
-    ch_writer_t* writer,
-    ch_connection_t* conn,
-    int status
+        ch_chirp_t* chirp,
+        ch_writer_t* writer,
+        ch_connection_t* conn,
+        int status
 );
 //
 //    Check if the given status is erroneous (that is, there was an error
@@ -132,9 +132,9 @@ static
 ch_inline
 void
 _ch_wr_send_finish(
-    ch_chirp_t* chirp,
-    ch_writer_t* writer,
-    ch_connection_t* conn
+        ch_chirp_t* chirp,
+        ch_writer_t* writer,
+        ch_connection_t* conn
 );
 //
 //    Sends a protocol error over the connections load when acknowledging of
@@ -189,10 +189,10 @@ static
 ch_inline
 int
 _ch_wr_check_send_error(
-    ch_chirp_t* chirp,
-    ch_writer_t* writer,
-    ch_connection_t* conn,
-    int status
+        ch_chirp_t* chirp,
+        ch_writer_t* writer,
+        ch_connection_t* conn,
+        int status
 )
 //    :noindex:
 //
@@ -403,9 +403,9 @@ static
 ch_inline
 void
 _ch_wr_send_finish(
-    ch_chirp_t* chirp,
-    ch_writer_t* writer,
-    ch_connection_t* conn
+        ch_chirp_t* chirp,
+        ch_writer_t* writer,
+        ch_connection_t* conn
 )
 //    :noindex:
 //

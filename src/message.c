@@ -18,8 +18,8 @@
 CH_EXPORT
 ch_error_t
 ch_msg_get_address(
-    const ch_message_t* message,
-    ch_text_address_t* address
+        const ch_message_t* message,
+        ch_text_address_t* address
 )
 //    :noindex:
 //
@@ -71,10 +71,10 @@ ch_msg_init(ch_chirp_t* chirp, ch_message_t* message)
 CH_EXPORT
 ch_error_t
 ch_msg_set_address(
-    ch_message_t* message,
-    ch_ip_protocol_t ip_protocol,
-    const char* address,
-    int32_t port
+        ch_message_t* message,
+        ch_ip_protocol_t ip_protocol,
+        const char* address,
+        int32_t port
 )
 //    :noindex:
 //

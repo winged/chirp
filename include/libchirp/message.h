@@ -183,8 +183,8 @@ typedef struct ch_msg_message_s {
 CH_EXPORT
 ch_error_t
 ch_msg_get_address(
-    const ch_message_t* message,
-    ch_text_address_t* address
+        const ch_message_t* message,
+        ch_text_address_t* address
 );
 //
 //    Get the messages' address which is an IP-address. The port and
@@ -214,10 +214,10 @@ ch_msg_init(ch_chirp_t* chirp, ch_message_t* message);
 extern
 ch_error_t
 ch_msg_set_address(
-    ch_message_t* message,
-    ch_ip_protocol_t ip_protocol,
-    const char* address,
-    int32_t port
+        ch_message_t* message,
+        ch_ip_protocol_t ip_protocol,
+        const char* address,
+        int32_t port
 );
 //
 //    Set the messages' address in terms of IP-address and port.
