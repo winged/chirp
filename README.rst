@@ -244,7 +244,7 @@ for cpp, so \*.h would not get checked.
 .. code-block:: bash
 
    let g:syntastic_c_checkers = ['make']
-   au BufNewFile,BufRead *.h set ft=c
+   au BufNewFile,BufRead \*.h set ft=c
 
 With this setting syntastic will check the following:
 
@@ -262,6 +262,23 @@ If you use clang complete, we recommend
    let g:clang_auto_select     = 1
    let g:clang_snippets        = 1
    let g:clang_snippets_engine = 'clang_complete'
+
+FAQ
+===
+
+Why isn't chirp demand-driven?
+------------------------------
+
+Chirp is meant as an adapter to all kinds of existing systems. The flow-control
+already implements a soft demand-driven strategy, it throttles emitting systems.
+But since chirp is only a transport, we cannot simply stop if there is no
+demand, because is there really no demand? Is the network down? Or our peer
+died?  We need to return an error after a timeout. If you want to use chirp
+demand-driven nothing stops you. If we want to be able to plug chirp into
+existing systems like nagios, demand-driven behavior has to be an option, or we
+would block nagios in case of failures! This is one of the major reasons chirp
+was created: we don't impose anything on the user, even flow-control can be
+disabled.
 
 License
 =======
