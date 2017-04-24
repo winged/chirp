@@ -48,13 +48,13 @@ update-abi: all  ## Update the ABI file
 		-dump "$(BUILD)/abi-base.xml"
 
 check-abi: $(BASE)/build/abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz  ## Check the ABI
+	cd "$(BASE)/build" && abi-compliance-checker -lib chirp  \
+		-old abi_dumps/chirp/chirp_0.0.0.abi.tar.gz \
+		-new abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz
 
 $(BASE)/build/abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz: libchirp.so
 	cd "$(BASE)/build" && abi-compliance-checker -lib chirp \
 		-dump "$(BUILD)/abi-cur.xml"
-	cd "$(BASE)/build" && abi-compliance-checker -lib chirp  \
-		-old abi_dumps/chirp/chirp_0.0.0.abi.tar.gz \
-		-new abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz
 
 etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
