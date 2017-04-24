@@ -32,7 +32,7 @@ LDFLAGS += \
 	-lcrypto
 
 ifeq ($(ALPINE_AND_CLANG),True)
-test: all cppcheck check-abi todo  ## Test everything
+test: etests cppcheck check-abi todo  ## Test everything
 	@echo Note: Alpine Linux clang does not support coverage
 else
 CFLAGS += --coverage
