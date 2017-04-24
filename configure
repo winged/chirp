@@ -437,15 +437,16 @@ def write_ide_files(args):
                 print("ok")
         except Exception:
             print("failed")
-        sys.stdout.write("Creating Makefile for syntastic: ")
-        try:
-            shutil.copy(
-                path.join(_base, "mk", "vim.mk"),
-                path.join(_base, "Makefile"),
-            )
-            print("ok")
-        except Exception:
-            print("failed")
+        if _base != _build:
+            sys.stdout.write("Creating Makefile for syntastic: ")
+            try:
+                shutil.copy(
+                    path.join(_base, "mk", "vim.mk"),
+                    path.join(_base, "Makefile"),
+                )
+                print("ok")
+            except Exception:
+                print("failed")
 
 
 if __name__ == "__main__":
