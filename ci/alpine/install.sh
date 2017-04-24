@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 cd /etc/apk
 ln -s /outside/ci/alpine/.cache cache
 cat > /etc/apk/repositories <<EOF

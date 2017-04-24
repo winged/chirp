@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 SCRIPT="$(pwd -P)/$0"
 BASE="${SCRIPT%/*}"
 echo Running alpine docker test at $BASE
