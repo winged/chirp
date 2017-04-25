@@ -21,7 +21,24 @@
 //
 // .. code-block:: cpp
 //
+#include <string.h>
 #include <openssl/ssl.h>
+
+// Determine OpenSSL API
+// =====================
+//
+// .. code-block:: cpp
+
+#ifdef LIBRESSL_VERSION_NUMBER
+#   define CH_OPENSSL_10_API
+#   define CH_LIBRESSL
+#else
+#   define CH_OPENSSL
+#   if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
+#       define CH_OPENSSL_10_API
+#   endif
+#endif
+
 
 // Declarations
 // ============

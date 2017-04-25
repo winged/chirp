@@ -69,7 +69,7 @@ ch_sent(ch_message_t* msg, int status, float load)
     (void)(msg);
     //ch_qc_free_mem();
     _msgs += 1;
-    if(_msgs < 100000)
+    if(_msgs < 10)
         ch_send_message(msg->chirp);
     else
         exit(0);

@@ -35,13 +35,14 @@
 //
 static char _ch_en_manual_openssl = 0;
 
+#ifdef CH_OPENSSL_10_API
 // .. c:var:: _ch_en_lock_count
 //
 //    The count of locks created for openssl.
 //
 // .. code-block:: cpp
 //
-static int _ch_en_lock_count = 0;
+    static int _ch_en_lock_count = 0;
 
 // .. c:var:: _ch_en_lock_list
 //
@@ -50,12 +51,12 @@ static int _ch_en_lock_count = 0;
 //
 // .. code-block:: cpp
 //
-static uv_rwlock_t* _ch_en_lock_list = NULL;
+    static uv_rwlock_t* _ch_en_lock_list = NULL;
 
 // .. c:function::
-static
-void
-_ch_en_locking_function(int mode, int n, const char *file, int line);
+    static
+    void
+    _ch_en_locking_function(int mode, int n, const char *file, int line);
 //
 //    Called by openssl to lock a mutex.
 //
@@ -66,50 +67,53 @@ _ch_en_locking_function(int mode, int n, const char *file, int line);
 //
 
 // .. c:function::
-static
-unsigned long
-_ch_en_thread_id_function(void);
+    static
+    unsigned long
+    _ch_en_thread_id_function(void);
 //
 //    Called by openssl to get the current thread it.
 //
+#endif //CH_OPENSSL_10_API
 
 // Definitions
 // ===========
 
+#ifdef CH_OPENSSL_10_API
 // .. c:function::
-static
-void
-_ch_en_locking_function(int mode, int n, const char *file, int line)
+    static
+    void
+    _ch_en_locking_function(int mode, int n, const char *file, int line)
 //    :noindex:
 //
 //    see: :c:func:`_ch_en_locking_function`
 //
 // .. code-block:: cpp
 //
-{
-    (void)(file);
-    (void)(line);
-    if(mode & CRYPTO_LOCK) {
-        if(!(mode & CRYPTO_READ))  /* The user requested write */
-            uv_rwlock_wrlock(&_ch_en_lock_list[n]);
-        else if(!(mode & CRYPTO_WRITE)) /* The user requested read */
-            uv_rwlock_rdlock(&_ch_en_lock_list[n]);
-        else  /* The user requested something bad, do a wrlock for safety */
-            uv_rwlock_wrlock(&_ch_en_lock_list[n]);
-    } else {
-        if(!(mode & CRYPTO_READ))
-            uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
-        else if(!(mode & CRYPTO_WRITE))
-            uv_rwlock_rdunlock(&_ch_en_lock_list[n]);
-        else
-            uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+    {
+        (void)(file);
+        (void)(line);
+        if(mode & CRYPTO_LOCK) {
+            if(!(mode & CRYPTO_READ))  /* The user requested write */
+                uv_rwlock_wrlock(&_ch_en_lock_list[n]);
+            else if(!(mode & CRYPTO_WRITE)) /* The user requested read */
+                uv_rwlock_rdlock(&_ch_en_lock_list[n]);
+            else  /* The user requested something bad, do a wrlock for safety */
+                uv_rwlock_wrlock(&_ch_en_lock_list[n]);
+        } else {
+            if(!(mode & CRYPTO_READ))
+                uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+            else if(!(mode & CRYPTO_WRITE))
+                uv_rwlock_rdunlock(&_ch_en_lock_list[n]);
+            else
+                uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+        }
     }
-}
+#endif //CH_OPENSSL_10_API
 
 // .. c:function::
-CH_EXPORT
-ch_error_t
-ch_en_openssl_init(void)
+    CH_EXPORT
+    ch_error_t
+    ch_en_openssl_init(void)
 //    :noindex:
 //
 //    see: :c:func:`ch_en_openssl_init`
@@ -117,12 +121,19 @@ ch_en_openssl_init(void)
 // .. code-block:: cpp
 //
 {
-    SSL_library_init();
-    OpenSSL_add_all_algorithms();
-    SSL_load_error_strings();
-    OPENSSL_config("chirp");
+#   ifdef CH_OPENSSL_10_API
+        SSL_library_init();
+        OpenSSL_add_all_algorithms();
+        SSL_load_error_strings();
+        OPENSSL_config("chirp");
 
-    return ch_en_openssl_threading_setup();
+        return ch_en_openssl_threading_setup();
+#   else
+        if(OPENSSL_init_ssl(0, NULL) == 0) {
+            return CH_TLS_ERROR;
+        }
+        return CH_SUCCESS;
+#   endif
 }
 
 // .. c:function::
@@ -140,16 +151,20 @@ ch_en_openssl_cleanup(void)
         return CH_SUCCESS;
     }
 
+#   ifdef CH_OPENSSL
     FIPS_mode_set(0);
+#   endif
     ENGINE_cleanup();
     CONF_modules_unload(1);
     ERR_free_strings();
     CONF_modules_free();
     EVP_cleanup();
     CRYPTO_cleanup_all_ex_data();
-    CRYPTO_THREADID id;
-    CRYPTO_THREADID_current(&id);
-    ERR_remove_thread_state(&id);
+#   ifdef CH_OPENSSL_10_API
+        CRYPTO_THREADID id;
+        CRYPTO_THREADID_current(&id);
+        ERR_remove_thread_state(&id);
+#   endif
     ASN1_STRING_TABLE_cleanup();
 
     return ch_en_openssl_threading_cleanup();
@@ -166,21 +181,23 @@ ch_en_openssl_threading_cleanup(void)
 // .. code-block:: cpp
 //
 {
-    if(!_ch_en_lock_list) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Threading not setup.\n",
-            __FILE__,
-            __LINE__
-        );
-        return CH_VALUE_ERROR;
-    }
-    CRYPTO_set_id_callback(NULL);
-    CRYPTO_set_locking_callback(NULL);
-    for(int i = 0;  i < _ch_en_lock_count;  i++)
-        uv_rwlock_destroy(&_ch_en_lock_list[i]);
-    ch_free(_ch_en_lock_list);
-    _ch_en_lock_list = NULL;
+#   ifdef CH_OPENSSL_10_API
+        if(!_ch_en_lock_list) {
+            fprintf(
+                stderr,
+                "%s:%d Fatal: Threading not setup.\n",
+                __FILE__,
+                __LINE__
+            );
+            return CH_VALUE_ERROR;
+        }
+        CRYPTO_set_id_callback(NULL);
+        CRYPTO_set_locking_callback(NULL);
+        for(int i = 0;  i < _ch_en_lock_count;  i++)
+            uv_rwlock_destroy(&_ch_en_lock_list[i]);
+        ch_free(_ch_en_lock_list);
+        _ch_en_lock_list = NULL;
+#   endif //CH_OPENSSL_10_API
     return CH_SUCCESS;
 }
 
@@ -196,24 +213,26 @@ ch_en_openssl_threading_setup(void)
 // .. code-block:: cpp
 //
 {
-    int lock_count = CRYPTO_num_locks();
-    _ch_en_lock_list = ch_alloc(
-        lock_count * sizeof(uv_rwlock_t)
-    );
-    if(!_ch_en_lock_list) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Could not allocate memory for locking.\n",
-            __FILE__,
-            __LINE__
+#   ifdef CH_OPENSSL_10_API
+        int lock_count = CRYPTO_num_locks();
+        _ch_en_lock_list = ch_alloc(
+            lock_count * sizeof(uv_rwlock_t)
         );
-        return CH_ENOMEM;
-    }
-    _ch_en_lock_count = lock_count;
-    for(int i = 0;  i < lock_count;  i++)
-        uv_rwlock_init(&_ch_en_lock_list[i]);
-    CRYPTO_set_id_callback(_ch_en_thread_id_function);
-    CRYPTO_set_locking_callback(_ch_en_locking_function);
+        if(!_ch_en_lock_list) {
+            fprintf(
+                stderr,
+                "%s:%d Fatal: Could not allocate memory for locking.\n",
+                __FILE__,
+                __LINE__
+            );
+            return CH_ENOMEM;
+        }
+        _ch_en_lock_count = lock_count;
+        for(int i = 0;  i < lock_count;  i++)
+            uv_rwlock_init(&_ch_en_lock_list[i]);
+        CRYPTO_set_id_callback(_ch_en_thread_id_function);
+        CRYPTO_set_locking_callback(_ch_en_locking_function);
+#   endif //CH_OPENSSL_10_API
     return CH_SUCCESS;
 }
 
@@ -244,7 +263,11 @@ ch_en_start(ch_encryption_t* enc)
     ch_chirp_t* chirp = enc->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
-    const SSL_METHOD* method = TLSv1_2_method();
+#   ifdef CH_OPENSSL_10_API
+        const SSL_METHOD* method = TLSv1_2_method();
+#   else
+        const SSL_METHOD* method = TLS_method();
+#   endif
     if(method == NULL) {
         E(
             chirp,
@@ -269,10 +292,17 @@ ch_en_start(ch_encryption_t* enc)
     );
     SSL_CTX_set_options(enc->ssl_ctx, SSL_OP_NO_COMPRESSION);
     SSL_CTX_set_verify(
-            enc->ssl_ctx,
-            SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-            NULL
+        enc->ssl_ctx,
+        SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+        NULL
     );
+#   ifndef CH_OPENSSL_10_API // NOT DEF!
+        SSL_CTX_set_min_proto_version(
+
+            enc->ssl_ctx,
+            TLS1_2_VERSION
+        );
+#   endif
     SSL_CTX_set_verify_depth(enc->ssl_ctx, 5);
     if(SSL_CTX_load_verify_locations(
                 enc->ssl_ctx,
@@ -401,23 +431,27 @@ ch_en_stop(ch_encryption_t* enc)
     ch_chirp_t* chirp = enc->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     SSL_CTX_free(enc->ssl_ctx);
-    CRYPTO_THREADID id;
-    CRYPTO_THREADID_current(&id);
-    ERR_remove_thread_state(&id);
+#   ifdef CH_OPENSSL_10_API
+        CRYPTO_THREADID id;
+        CRYPTO_THREADID_current(&id);
+        ERR_remove_thread_state(&id);
+#   endif //CH_OPENSSL_10_API
     return CH_SUCCESS;
 }
 
+#ifdef CH_OPENSSL_10_API
 // .. c:function::
-static
-unsigned long
-_ch_en_thread_id_function(void)
+    static
+    unsigned long
+    _ch_en_thread_id_function(void)
 //    :noindex:
 //
 //    see: :c:func:`_ch_en_thread_id_function`
 //
 // .. code-block:: cpp
 //
-{
-    uv_thread_t self = uv_thread_self();
-    return (unsigned long)self;
-}
+    {
+        uv_thread_t self = uv_thread_self();
+        return (unsigned long)self;
+    }
+#endif //CH_OPENSSL_10_API
