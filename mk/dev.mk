@@ -47,10 +47,14 @@ update-abi: all  ## Update the ABI file
 	cd "$(BASE)/build" && abi-compliance-checker -lib chirp \
 		-dump "$(BUILD)/abi-base.xml"
 
+ifeq ($(CI_DISTRO),arch)
+check-abi:
+else
 check-abi: $(BASE)/build/abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz  ## Check the ABI
 	cd "$(BASE)/build" && abi-compliance-checker -lib chirp  \
 		-old abi_dumps/chirp/chirp_0.0.0.abi.tar.gz \
 		-new abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz
+endif
 
 $(BASE)/build/abi_dumps/chirp/chirp_$(VERSION).abi.tar.gz: libchirp.so
 	cd "$(BASE)/build" && abi-compliance-checker -lib chirp \
