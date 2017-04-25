@@ -12,9 +12,16 @@ if [ -z "$CC" ]; then
     export CC=gcc
 fi
 
-sudo docker run \
+if [ "$1" = "shell" ]; then
+    export TESTSHELL=True
+else
+    export TESTSHELL=False
+fi
+
+sudo docker run -it \
     -e "HUID=$(id -u)" \
     -e "CC=$CC" \
+    -e "TESTSHELL=$TESTSHELL" \
     -v "$(pwd -P)/..":/outside \
     --rm \
     alpine:edge \

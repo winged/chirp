@@ -199,6 +199,15 @@ use the docker based tests.
 Travis will also run this script, so you can also use it to reproduce errors on
 travis.
 
+You can also run a shell.
+
+.. code-block:: bash
+
+   ./ci/alpine.sh shell
+
+.. code-block:: bash
+
+   ./ci/arch.sh shell
 
 Windows
 -------
