@@ -270,7 +270,7 @@ Please install cppcheck:
 Alpine:         apk add abi-compliance-checker
 Debian-based:   apt install abi-compliance-checker
 Redhat-based:   yum install abi-compliance-checker
-Arch:           pacman -S abi-compliance-checker
+Arch:           yaourt -S abi-compliance-checker
 OSX:            brew install abi-compliance-checker
 """)
         else:
