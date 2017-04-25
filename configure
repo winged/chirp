@@ -265,7 +265,7 @@ OSX:            brew install cppcheck
         if os.system("command -v abi-compliance-checker > /dev/null"):
             print("""abi-compliance-checker was not found.
 
-Please install cppcheck:
+Please install abi-compliance-checker:
 
 Alpine:         apk add abi-compliance-checker
 Debian-based:   apt install abi-compliance-checker
