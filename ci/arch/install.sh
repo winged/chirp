@@ -2,9 +2,6 @@
 
 set -e
 
-cd /var/cache/pacman
-rm -d pkg
-ln -s /outside/ci/arch/.cache pkg
 if [ "$CC" = "clang" ]; then
     ICLANG=clang
 fi

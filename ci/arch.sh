@@ -16,6 +16,7 @@ sudo docker run \
     -e "HUID=$(id -u)" \
     -e "CC=$CC" \
     -v "$(pwd -P)/..":/outside \
+    -v "$(pwd -P)/arch/.cache":/var/cache/pacman/pkg \
     --rm \
     base/archlinux:latest \
     /outside/ci/arch/run.sh
