@@ -16,5 +16,6 @@ sudo docker run \
     -e "HUID=$(id -u)" \
     -e "CC=$CC" \
     -v "$(pwd -P)/..":/outside \
+    --rm \
     alpine:edge \
     /outside/ci/alpine/run.sh
