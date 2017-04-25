@@ -9,7 +9,7 @@ http://dl-4.alpinelinux.org/alpine/edge/main
 http://dl-4.alpinelinux.org/alpine/edge/community
 http://dl-4.alpinelinux.org/alpine/edge/testing
 EOF
-if [ "$CC" == "clang" ]; then
+if [ "$CC" = "clang" ]; then
     ICLANG=clang
 fi
 apk update
