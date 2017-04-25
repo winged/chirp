@@ -14,18 +14,14 @@ before_cache:
 matrix:
   include:
     - os: linux
-      env: CC=gcc
+      env: CC=gcc CI_DISTRO=alpine
       services: docker
       script: ./ci/alpine.sh
     - os: linux
-      env: CC=clang
+      env: CC=clang CI_DISTRO=alpine
       services: docker
       script: ./ci/alpine.sh
     - os: linux
-      env: CC=gcc
-      services: docker
-      script: ./ci/arch.sh
-    - os: linux
-      env: CC=clang
+      env: CC=gcc CI_DISTRO=arch
       services: docker
       script: ./ci/arch.sh
