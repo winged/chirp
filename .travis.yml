@@ -5,9 +5,11 @@ language: generic
 cache:
   directories:
     - ci/alpine/.cache/
+    - ci/arch/.cache/
 
 before_cache:
     - ./ci/alpine/clean-cache.sh
+    - ./ci/arch/clean-cache.sh
 
 matrix:
   include:
@@ -19,3 +21,11 @@ matrix:
       env: CC=clang
       services: docker
       script: ./ci/alpine.sh
+    - os: linux
+      env: CC=gcc
+      services: docker
+      script: ./ci/arch.sh
+    - os: linux
+      env: CC=clang
+      services: docker
+      script: ./ci/arch.sh
