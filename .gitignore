@@ -10,5 +10,6 @@ tags
 /doc/_build
 /.clang_complete
 /ci/alpine/.cache
+/ci/arch/.cache
 /Makefile
 /.floo*
