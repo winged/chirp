@@ -197,6 +197,8 @@ ch_en_openssl_threading_cleanup(void)
             uv_rwlock_destroy(&_ch_en_lock_list[i]);
         ch_free(_ch_en_lock_list);
         _ch_en_lock_list = NULL;
+#   else
+        OPENSSL_thread_stop();
 #   endif //CH_OPENSSL_10_API
     return CH_SUCCESS;
 }
@@ -414,7 +416,9 @@ ch_en_start(ch_encryption_t* enc)
         "Created SSL context for chirp. ch_chirp_t:%p",
         (void*) chirp
     );
-    ch_free(dh);
+#   ifdef CH_OPENSSL_10_API
+        ch_free(dh); // Well no comment, just use libressl
+#   endif
     return CH_SUCCESS;
 }
 

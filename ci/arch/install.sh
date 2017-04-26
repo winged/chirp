@@ -17,3 +17,6 @@ pacman -S --noconfirm \
     libuv \
     valgrind \
     $ICLANG
+if [ "$TESTSHELL" = "True" ]; then
+    pacman -S --noconfirm gdb
+fi

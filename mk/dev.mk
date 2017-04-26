@@ -4,6 +4,7 @@ ALPINE_AND_CLANG := $(shell \
 	[ -f /etc/apk/world ] && [ "$(CC)" == "clang" ] \
 		&& echo True \
 )
+MEMCHECK := valgrind --tool=memcheck
 
 CFLAGS += \
 	-std=gnu99 \
@@ -64,7 +65,7 @@ etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(BUILD)/src/buffer_etest
-	valgrind --suppressions=$(BASE)/ci/memcheck-musl.supp \
+	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
 		$(BUILD)/src/buffer_etest
 
 cppcheck:  ## Static analysis

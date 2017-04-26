@@ -12,6 +12,12 @@ EOF
 if [ "$CC" = "clang" ]; then
     ICLANG=clang
 fi
+
+if [ "$TLS" = "openssl" ]; then
+    ITLS=openssl-dev
+else
+    ITLS=libressl-dev
+fi
 apk update
 apk upgrade
 apk add \
@@ -21,8 +27,11 @@ apk add \
     py-sphinx_rtd_theme \
     graphviz \
     cppcheck \
-    openssl-dev \
     libuv-dev \
     abi-compliance-checker \
     valgrind \
+    $ITLS \
     $ICLANG
+if [ "$TESTSHELL" = "True" ]; then
+    apk add gdb
+fi

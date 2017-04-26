@@ -11,6 +11,10 @@ if [ -z "$CC" ]; then
     echo Set CC=gcc since CC is undefined
     export CC=gcc
 fi
+if [ -z "$TLS" ]; then
+    echo Set TLS=libressl since TLS is undefined
+    export TLS=libressl
+fi
 
 if [ "$1" = "shell" ]; then
     export TESTSHELL=True
@@ -21,6 +25,7 @@ fi
 sudo docker run -it \
     -e "HUID=$(id -u)" \
     -e "CC=$CC" \
+    -e "TLS=$TLS" \
     -e "TESTSHELL=$TESTSHELL" \
     -v "$(pwd -P)/..":/outside \
     --rm \

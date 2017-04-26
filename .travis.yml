@@ -14,7 +14,11 @@ before_cache:
 matrix:
   include:
     - os: linux
-      env: CC=gcc CI_DISTRO=alpine
+      env: CC=gcc CI_DISTRO=alpine TLS=openssl
+      services: docker
+      script: ./ci/alpine.sh
+    - os: linux
+      env: CC=gcc CI_DISTRO=alpine TLS=libressl
       services: docker
       script: ./ci/alpine.sh
     - os: linux
