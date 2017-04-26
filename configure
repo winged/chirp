@@ -211,11 +211,11 @@ OSX:            brew install libuv
 
 Please install openssl:
 
-Alpine:         apk add openssl-dev
+Alpine:         apk add libressl-dev
 Debian-based:   apt install libssl-dev
 Redhat-based:   yum install openssl-devel
 Arch:           pacman -S openssl
-OSX:            brew install openssl
+OSX:            brew install libressl
 """)
         failure = True
     else:

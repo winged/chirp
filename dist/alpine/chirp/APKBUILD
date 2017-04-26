@@ -7,12 +7,10 @@ pkgdesc="Message-passing and actor-based programming for everyone"
 url="https://github.com/concretecloud/chirp"
 arch="all"
 license="AGPL"
-depends_dev="libuv-dev openssl-dev"
+depends_dev="libuv-dev libressl-dev"
 makedepends="$depends_dev py-sphinx py-sphinx_rtd_theme graphviz cppcheck"
 subpackages="$pkgname-dev $pkgname-doc $pkgname-dbg"
 source="chirp-$pkgver.tar.gz::https://github.com/concretecloud/chirp/archive/$pkgver.tar.gz"
-# A testbuild differs therefore we build the test in a different directory than
-# the release build
 builddir="$srcdir/chirp-$pkgver/build"
 
 build() {
