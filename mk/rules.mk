@@ -117,7 +117,7 @@ ifeq ($(STRIP),True)
 endif
 endif
 
-$(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp.a
+$(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp_test.a libchirp.a
 ifeq ($(VERBOSE),True)
 	@if [ "$@" == "$(BUILD)/src/chirp_etest" ]; then \
 		LIBCHIRP="-L$(BUILD) -lchirp"; \

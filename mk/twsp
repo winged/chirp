@@ -12,8 +12,9 @@ _sphinx_link = re.compile(".. [^:]+: http")
 
 in_comment = False
 slash_comment = 0
-line = 0
+line = ""
 ret = 0
+i = 0
 
 file_ = os.path.abspath(sys.argv[1])
 if file_.endswith("sglib.h"):
