@@ -256,7 +256,7 @@ If you use clang complete, we recommend
 License
 =======
 
-AGPL 3.0
+LGPL 3.0
 
 Contribution
 ============

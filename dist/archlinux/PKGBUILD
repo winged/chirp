@@ -6,7 +6,7 @@ pkgrel=0
 pkgdesc="Message-passing and actor-based programming for everyone"
 url="https://github.com/concretecloud/chirp"
 arch=("i686" "x86_64")
-license=("AGPL")
+license=("LGPL")
 provides=('chirp')
 makedepends=("libuv"
              "openssl"
