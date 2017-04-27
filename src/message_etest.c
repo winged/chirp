@@ -182,7 +182,7 @@ main()
     sender_thread.port = 59731;
     sender_thread.init = sender_init_handler;
     echo_thread.port   = 59732;
-    echo_thread.init = echo_init_handler;
+    echo_thread.init   = echo_init_handler;
     uv_thread_t echo;
     uv_thread_t sender;
     ch_libchirp_init();
