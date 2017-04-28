@@ -241,10 +241,10 @@ Syntastic
 By default vim will treat \*.h files as cpp, but syntastic has no make-checker
 for cpp, so \*.h would not get checked.
 
-.. code-block:: bash
+.. code-block:: vim
 
    let g:syntastic_c_checkers = ['make']
-   au BufNewFile,BufRead \*.h set ft=c
+   au BufNewFile,BufRead *.h set ft=c
 
 With this setting syntastic will check the following:
 
@@ -257,7 +257,7 @@ Clang complete
 
 If you use clang complete, we recommend
 
-.. code-block:: bash
+.. code-block:: vim
 
    let g:clang_auto_select     = 1
    let g:clang_snippets        = 1
