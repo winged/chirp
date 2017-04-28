@@ -94,6 +94,23 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 typedef void (*ch_send_cb_t)(ch_message_t* msg, int status, float load);
 
+// .. c:type:: ch_recv_cb_t
+//
+//    Called by chirp when message is received.
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Chirp object received
+//
+//    .. c:member:: ch_message_t* msg
+//
+//       Received message. The address is the remote address, so changing only
+//       the user_data and send it, will send the message back to the sender.
+//
+// .. code-block:: cpp
+//
+typedef void (*ch_recv_cb_t)(ch_chirp_t* chirp, ch_message_t* msg);
+
 // .. c:type:: ch_start_cb_t
 //
 //    Callback called when chirp is started

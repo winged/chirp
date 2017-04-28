@@ -151,6 +151,7 @@ struct ch_chirp_s {
     int          _init;
     uv_async_t   _done;
     ch_done_cb_t _done_cb;
+    ch_recv_cb_t _recv_cb;
 };
 
 // .. c:type:: ch_identity_t
@@ -359,5 +360,22 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
 // .. code-block:: cpp
+
+// .. c:function::
+static
+ch_inline
+void
+ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
+//
+//    Register a callback for receiving a message.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_message_t* msg: The message which was received.
+//
+// .. code-block:: cpp
+//
+{
+    chirp->_recv_cb = recv_cb;
+}
 
 #endif //ch_libchirp_chirp_h

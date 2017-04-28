@@ -324,8 +324,18 @@ _ch_rd_handle_msg(
             return;
         }
     }
-    /* TODO call callback
-     * TODO release to done */
+    /* TODO release to done */
+    if(chirp->_recv_cb != NULL) {
+        (chirp->_recv_cb)(chirp, msg);
+    } else {
+        E(
+            chirp,
+            "No receiving callback function registered. "
+            "ch_chirp_t:%p",
+            (void*) chirp
+        );
+    }
+
     ch_bf_release(&reader->pool, msg->_handler);
 
 #   ifndef NDEBUG
