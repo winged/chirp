@@ -191,9 +191,13 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
      * an error.
      */
     if(ichirp->closing_tasks < 1) {
-        assert(uv_prepare_stop(handle) == CH_SUCCESS);
-        if(!ichirp->config.DISABLE_ENCRYPTION)
-            assert(ch_en_stop(&ichirp->encryption) == CH_SUCCESS);
+        int tmp_err;
+        tmp_err = uv_prepare_stop(handle);
+        A(tmp_err == CH_SUCCESS, "Could not stop prepare callback");
+        if(!ichirp->config.DISABLE_ENCRYPTION) {
+            tmp_err = ch_en_stop(&ichirp->encryption);
+            A(tmp_err == CH_SUCCESS, "Could not stop encryption");
+        }
         uv_close((uv_handle_t*) handle, _ch_chirp_closing_down_cb);
     }
     if(ichirp->closing_tasks < 0) {
@@ -230,6 +234,7 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
 // .. code-block:: cpp
 //
 {
+    int tmp_err;
     ch_chirp_t* chirp = handle->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(chirp->_ == NULL) {
@@ -254,14 +259,16 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
         "Chirp closing callback called. ch_chirp_t:%p",
         (void*) chirp
     );
-    assert(ch_pr_stop(&ichirp->protocol) == CH_SUCCESS);
+    tmp_err = ch_pr_stop(&ichirp->protocol);
+    A(tmp_err == CH_SUCCESS, "Could not stop protocol");
     uv_signal_stop(&ichirp->signals[0]);
     uv_signal_stop(&ichirp->signals[1]);
     uv_close((uv_handle_t*) &ichirp->close, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->signals[0], ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->signals[1], ch_chirp_close_cb);
     ichirp->closing_tasks += 3;
-    assert(uv_prepare_init(ichirp->loop, &ichirp->close_check) == CH_SUCCESS);
+    tmp_err = uv_prepare_init(ichirp->loop, &ichirp->close_check);
+    A(tmp_err == CH_SUCCESS, "Could not init prepare callback");
     ichirp->close_check.data = chirp;
     /* We use a semaphore to wait until all callbacks are done:
      * 1. Every time a new callback is scheduled we do
@@ -272,10 +279,11 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
      * -> if we reach 0 all callbacks are done and we continue freeing memory
      * etc.
      */
-    assert(uv_prepare_start(
+    tmp_err = uv_prepare_start(
         &ichirp->close_check,
         _ch_chirp_check_closing_cb
-    ) == CH_SUCCESS);
+    );
+    A(tmp_err == CH_SUCCESS, "Could not start prepare callback");
 }
 
 // .. c:function::
