@@ -167,6 +167,11 @@ struct ch_chirp_int_s {
     uv_loop_t*      loop;
     uint8_t         identity[CH_ID_SIZE];
     uint16_t        public_port;
+    ch_message_t*   send_ts_queue;
+    ch_message_t*   send_ts_queue_end;
+    uv_async_t      send_ts;
+    uv_mutex_t      send_ts_queue_lock;
+
 };
 
 // .. c:function::

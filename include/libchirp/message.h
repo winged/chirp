@@ -125,19 +125,21 @@ struct ch_message_s {
     // Network data, has to be sent in network order
     CH_WIRE_MESSAGE;
     // These fields follow the message in this order (see _len above)
-    ch_buf*      header;
-    char*        actor;
-    ch_buf*      data;
-    // Local     only data
-    uint8_t      ip_protocol;
-    uint8_t      address[CH_IP_ADDR_SIZE];  // 16
-    int32_t      port;
-    ch_chirp_t*  chirp;
-    void*        user_data;
-    uint8_t      _flags;
-    ch_send_cb_t _send_cb;
-    void*        _conn;
-    int          _handler;
+    ch_buf*        header;
+    char*          actor;
+    ch_buf*        data;
+    // Local       only data
+    uint8_t        ip_protocol;
+    uint8_t        address[CH_IP_ADDR_SIZE];  // 16
+    int32_t        port;
+    ch_chirp_t*    chirp;
+    void*          user_data;
+    uint8_t        _flags;
+    ch_send_cb_t   _send_cb;
+    void*          _conn;
+    int            _handler;
+    ch_message_t*  _next;
+    ch_message_t*  _prev;
 };
 
 // .. c:type:: ch_msg_message_t

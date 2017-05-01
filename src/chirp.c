@@ -263,10 +263,11 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     A(tmp_err == CH_SUCCESS, "Could not stop protocol");
     uv_signal_stop(&ichirp->signals[0]);
     uv_signal_stop(&ichirp->signals[1]);
+    uv_close((uv_handle_t*) &ichirp->send_ts, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->close, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->signals[0], ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->signals[1], ch_chirp_close_cb);
-    ichirp->closing_tasks += 3;
+    ichirp->closing_tasks += 4;
     tmp_err = uv_prepare_init(ichirp->loop, &ichirp->close_check);
     A(tmp_err == CH_SUCCESS, "Could not init prepare callback");
     ichirp->close_check.data = chirp;
@@ -396,6 +397,7 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
             (void*) chirp
         );
     }
+    uv_mutex_destroy(&ichirp->send_ts_queue_lock);
     chirp->_ = NULL;
     ch_free(ichirp);
     L(chirp, "Closed. ch_chirp_t:%p", (void*) chirp);
@@ -698,6 +700,19 @@ ch_chirp_init(
         return CH_UV_ERROR; // NOCOV
     }
     ichirp->start.data = chirp;
+    if(uv_async_init(loop, &ichirp->send_ts, _ch_wr_send_ts_cb) < 0) {
+        E(
+            chirp,
+            "Could not initialize send_ts handler. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
+        return CH_UV_ERROR; // NOCOV
+    }
+    ichirp->send_ts.data = chirp;
+    uv_mutex_init(&ichirp->send_ts_queue_lock);
 
     ch_pr_init(chirp, protocol);
     tmp_err = ch_pr_start(protocol);

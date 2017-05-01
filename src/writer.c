@@ -17,6 +17,18 @@
 #include "protocol.h"
 #include "util.h"
 
+// Sglib Prototypes
+// ================
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_DL_LIST_FUNCTIONS( // NOCOV
+    ch_message_t,
+    SGLIB_NUMERIC_COMPARATOR,
+    _prev,
+    _next
+)
+
 // Declarations
 // ============
 
@@ -535,7 +547,37 @@ _ch_wr_send_timeout_cb(uv_timer_t* handle)
     uv_timer_stop(&writer->send_timeout);
 }
 
+// .. c:function::
+void
+_ch_wr_send_ts_cb(uv_async_t* handle)
+//    :noindex:
 //
+//    see: :c:func:`_ch_wr_send_ts_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_message_t* t;
+    struct sglib_ch_message_t_iterator it;
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    uv_mutex_lock(&ichirp->send_ts_queue_lock);
+    for(
+            t = sglib_ch_message_t_it_init(
+                &it,
+                ichirp->send_ts_queue_end
+            );
+            t != NULL;
+            t = sglib_ch_message_t_it_next(&it)
+    ) {
+        ch_chirp_send(chirp, t, t->_send_cb);
+    }
+    ichirp->send_ts_queue = NULL;
+    ichirp->send_ts_queue_end = NULL;
+    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
+}
+
 // .. c:function::
 CH_EXPORT
 void
@@ -645,6 +687,28 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         }
     } else
         ch_wr_send(conn, msg);
+}
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_send_ts`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    uv_mutex_lock(&ichirp->send_ts_queue_lock);
+    msg->_send_cb = send_cb;
+    sglib_ch_message_t_add(&ichirp->send_ts_queue, msg);
+    if(ichirp->send_ts_queue_end == NULL)
+        ichirp->send_ts_queue_end = msg;
+    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
+    uv_async_send(&ichirp->send_ts);
 }
 
 // .. c:function::

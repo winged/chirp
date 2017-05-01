@@ -18,6 +18,19 @@
 #include "common.h"
 #include "libchirp/callbacks.h"
 #include "libchirp/message.h"
+#include "sglib.h"
+
+// Sglib Prototypes
+// ================
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_DL_LIST_PROTOTYPES( // NOCOV
+    ch_message_t,
+    SGLIB_NUMERIC_COMPARATOR,
+    _prev,
+    _next
+)
 
 // Declarations
 // ============
@@ -114,5 +127,14 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
 //                                   message must stay valid until the callback
 //                                   is called.
 //
+
+// .. c:function::
+void
+_ch_wr_send_ts_cb(uv_async_t* handle);
+//
+//    Send all messages in the message queue.
+//
+//    :param uv_async_t* handle: Async handler used to trigger sending message
+//                               queue.
 
 #endif //ch_writer_h

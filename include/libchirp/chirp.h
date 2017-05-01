@@ -324,6 +324,26 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 // .. c:function::
 CH_EXPORT
 void
+ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
+//
+//    Send a message. Messages can be sent in parallel to different nodes.
+//    Messages to the same node will block if you don't wait for the callback.
+//
+//    If you don't want to allocate messages on sending, we recommend to use a
+//    pool of messages.
+//
+//    This function is thread-safe. ATTENTION: Callback will be called by the
+//    uv-loop-thread.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_message_t msg: The message to send. The memory of the message
+//                             must stay valid until the callback is called.
+//    :param ch_send_cb_t send_cb: The callback, that will be called after
+//                                 sending.
+
+// .. c:function::
+CH_EXPORT
+void
 ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //
 //    Tells chirp to stop the uv-loop when closing (by setting the

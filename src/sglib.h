@@ -564,6 +564,7 @@
 
 #define SGLIB_DL_LIST_ADD(type, list, elem, previous, next) {\
   SGLIB_DL_LIST_ADD_BEFORE(type, list, elem, previous, next)\
+  (list) = (elem);\
 }
 
 #define SGLIB___DL_LIST_GENERIC_ADD_IF_NOT_MEMBER(type, list, elem, comparator, previous, next, member, the_add_operation) {\
