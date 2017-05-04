@@ -20,7 +20,7 @@ build() {
 	cd "$pkgname-$pkgver"
 	./configure \
 		--doc \
-		--prefix "$pkgdir" \
+		--prefix "/usr" \
 		|| return 1
 	make || return 1
 	make doc || return 1
@@ -28,6 +28,6 @@ build() {
 
 package() {
 	cd "$pkgname-$pkgver"
-	make install
+	make install DEST="$pkgdir"
 }
 
