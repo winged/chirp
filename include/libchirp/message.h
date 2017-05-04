@@ -114,7 +114,7 @@
 //
 //       Pointer to chirp instance.
 //
-//    .. c:member:: ch_chirp_t* chirp
+//    .. c:member:: void* user_data
 //
 //       Pointer to user data, can be used to access user-data in the
 //       send-callback.
@@ -124,7 +124,7 @@
 struct ch_message_s {
     // Network data, has to be sent in network order
     CH_WIRE_MESSAGE;
-    // These fields follow the message in this order (see _len above)
+    // These fields follow the message in this order (see *_len above)
     ch_buf*        header;
     char*          actor;
     ch_buf*        data;
@@ -139,7 +139,10 @@ struct ch_message_s {
     void*          _conn;
     int            _handler;
     ch_message_t*  _next;
-    ch_message_t*  _prev;
+    ch_message_t*  _qend;
+    char           _color_field;
+    ch_message_t*  _left;
+    ch_message_t*  _right;
 };
 
 // .. c:type:: ch_msg_message_t

@@ -71,6 +71,15 @@
 //
 //       Indicates that the remote has refused the connection or has timed out.
 //
+//    .. c:member:: CH_QUEUED
+//
+//       Indicates that the message as been placed in the send queue.
+//
+//    .. c:member:: CH_USED
+//
+//       Indicates that the message is already in use. The message will not be
+//       sent.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -87,6 +96,8 @@ typedef enum {
     CH_ENOMEM         = 10,
     CH_SHUTDOWN       = 11,
     CH_CANNOT_CONNECT = 12,
+    CH_QUEUED         = 13,
+    CH_USED           = 14,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

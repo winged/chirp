@@ -760,16 +760,12 @@ ch_cn_shutdown(
     );
     if(msg != NULL) {
         writer->msg = NULL;
-        if(msg->_send_cb != NULL) {
-            /* The user may free the message in the cb */
-            ch_send_cb_t cb = msg->_send_cb;
-            msg->_send_cb = NULL;
-            cb(
-                msg,
-                reason,
-                conn->load
-            );
-        }
+        ch_chirp_message_finish(
+            chirp,
+            msg,
+            reason,
+            conn->load
+        );
     }
     if(conn->flags & CH_CN_SHUTTING_DOWN) {
         E(

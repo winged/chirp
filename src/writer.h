@@ -20,18 +20,6 @@
 #include "libchirp/message.h"
 #include "sglib.h"
 
-// Sglib Prototypes
-// ================
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_DL_LIST_PROTOTYPES( // NOCOV
-    ch_message_t,
-    SGLIB_NUMERIC_COMPARATOR,
-    _prev,
-    _next
-)
-
 // Declarations
 // ============
 
@@ -88,10 +76,10 @@ typedef void (*ch_wr_msg_cb_t)(ch_connection_t* conn, ch_message_t* msg);
 // .. code-block:: cpp
 //
 typedef struct ch_writer_s {
-    uv_timer_t       send_timeout;
-    ch_message_t*    msg;
-    ch_msg_message_t net_msg;
-    ch_wr_msg_cb_t   send_msg;
+    uv_timer_t         send_timeout;
+    ch_message_t*      msg;
+    ch_msg_message_t   net_msg;
+    ch_wr_msg_cb_t     send_msg;
 } ch_writer_t;
 
 // .. c:function::

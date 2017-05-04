@@ -80,7 +80,7 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 //    .. c:member:: int status
 //
-//       Is CH_SUCCESS, CH_TIMEOUT, TODO list errors
+//       Error code: CH_SUCCESS, CH_TIMEOUT, CH_CANNOT_CONNECT
 //
 //    .. c:member:: float load
 //

@@ -29,6 +29,19 @@
 #   include <unistd.h>
 #endif
 
+// Sglib Prototypes
+// ================
+
+// .. code-block:: cpp
+//
+SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
+    ch_message_dest_t,
+    _left,
+    _right,
+    _color_field,
+    CH_MESSAGE_DEST_CMP
+)
+
 // Declarations
 // ============
 //
@@ -210,20 +223,6 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
 }
 
 // .. c:function::
-CH_EXPORT
-void
-ch_chirp_config_init(ch_config_t* config)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_close_cb`
-//
-// .. code-block:: cpp
-//
-{
-    *config = _ch_config_defaults;
-}
-
-// .. c:function::
 static
 void
 _ch_chirp_close_async_cb(uv_async_t* handle)
@@ -313,70 +312,6 @@ ch_chirp_close_cb(uv_handle_t* handle)
 }
 
 // .. c:function::
-CH_EXPORT
-ch_error_t
-ch_chirp_close_ts(ch_chirp_t* chirp)
-//    :noindex:
-//
-//    see: :c:func:`ch_chirp_close_ts`
-//
-//    This function is thread-safe.
-//
-// .. code-block:: cpp
-//
-{
-    char chirp_closed = 0;
-    ch_chirp_int_t* ichirp;
-    if(chirp == NULL || chirp->_init != CH_CHIRP_MAGIC) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: chirp is not initialzed. ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) chirp
-        );
-        return CH_UNINIT; // NOCOV  TODO can be tested
-    }
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    if(chirp->_ != NULL) {
-        ichirp = chirp->_;
-        if(ichirp->flags & CH_CHIRP_CLOSED)
-            chirp_closed = 1;
-    } else
-        chirp_closed = 1;
-    if(chirp_closed) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: chirp is already closed. ch_chirp_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) chirp
-        );
-        return CH_FATAL;
-    }
-    if(ichirp->flags & CH_CHIRP_CLOSING) {
-        E(
-            chirp,
-            "Close already in progress. ch_chirp_t:%p",
-            (void*) chirp
-        );
-        return CH_IN_PRORESS;
-    }
-    ichirp->flags |= CH_CHIRP_CLOSING;
-    ichirp->close.data = chirp;
-    L(chirp, "Closing chirp via callback. ch_chirp_t:%p", (void*) chirp);
-    if(uv_async_send(&ichirp->close) < 0) {
-        E(
-            chirp,
-            "Could not call close callback. ch_chirp_t:%p",
-            (void*) chirp
-        );
-        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
-    }
-    return CH_SUCCESS;
-}
-
-// .. c:function::
 static
 void
 _ch_chirp_closing_down_cb(uv_handle_t* handle)
@@ -423,6 +358,80 @@ _ch_chirp_done(uv_async_t* handle)
     if(chirp->_done_cb != NULL)
         chirp->_done_cb(chirp);
 }
+
+// .. c:function::
+static
+void
+_ch_chirp_init_signals(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_init_signals`
+//
+// .. code-block:: cpp
+//
+{
+#   ifndef CH_DISABLE_SIGNALS
+        ch_chirp_int_t* ichirp = chirp->_;
+        if(ichirp->config.DISABLE_SIGNALS)
+            return;
+        uv_signal_init(ichirp->loop, &ichirp->signals[0]);
+        uv_signal_init(ichirp->loop, &ichirp->signals[1]);
+
+        ichirp->signals[0].data = chirp;
+        ichirp->signals[1].data = chirp;
+
+        if(uv_signal_start(
+                &ichirp->signals[0],
+                &_ch_chirp_sig_handler,
+                SIGINT
+        )) {
+            E(
+                chirp,
+                "Unable to set SIGINT handler. ch_chirp_t:%p",
+                (void*) chirp
+            );
+            return;
+        }
+
+        if(uv_signal_start(
+                &ichirp->signals[1],
+                &_ch_chirp_sig_handler,
+                SIGTERM
+        )) {
+            uv_signal_stop(&ichirp->signals[0]);
+            uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
+            E(
+                chirp,
+                "Unable to set SIGTERM handler. ch_chirp_t:%p",
+                (void*) chirp
+            );
+        }
+#   else
+        (void)(chirp);
+#   endif
+}
+
+
+// .. c:function::
+static
+void
+_ch_chirp_sig_handler(uv_signal_t* handle, int signo)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_sig_handler`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = handle->data;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+
+    if(signo != SIGINT && signo != SIGTERM)
+        return;
+
+    ch_chirp_close_ts(chirp);
+}
+
 
 // .. c:function::
 static
@@ -569,6 +578,84 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
         conf->BUFFER_SIZE
     );
     return CH_SUCCESS;
+}
+
+// .. c:function::
+CH_EXPORT
+ch_error_t
+ch_chirp_close_ts(ch_chirp_t* chirp)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_close_ts`
+//
+//    This function is thread-safe.
+//
+// .. code-block:: cpp
+//
+{
+    char chirp_closed = 0;
+    ch_chirp_int_t* ichirp;
+    if(chirp == NULL || chirp->_init != CH_CHIRP_MAGIC) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: chirp is not initialzed. ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) chirp
+        );
+        return CH_UNINIT; // NOCOV  TODO can be tested
+    }
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    if(chirp->_ != NULL) {
+        ichirp = chirp->_;
+        if(ichirp->flags & CH_CHIRP_CLOSED)
+            chirp_closed = 1;
+    } else
+        chirp_closed = 1;
+    if(chirp_closed) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: chirp is already closed. ch_chirp_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) chirp
+        );
+        return CH_FATAL;
+    }
+    if(ichirp->flags & CH_CHIRP_CLOSING) {
+        E(
+            chirp,
+            "Close already in progress. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        return CH_IN_PRORESS;
+    }
+    ichirp->flags |= CH_CHIRP_CLOSING;
+    ichirp->close.data = chirp;
+    L(chirp, "Closing chirp via callback. ch_chirp_t:%p", (void*) chirp);
+    if(uv_async_send(&ichirp->close) < 0) {
+        E(
+            chirp,
+            "Could not call close callback. ch_chirp_t:%p",
+            (void*) chirp
+        );
+        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
+    }
+    return CH_SUCCESS;
+}
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_config_init(ch_config_t* config)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_close_cb`
+//
+// .. code-block:: cpp
+//
+{
+    *config = _ch_config_defaults;
 }
 
 // .. c:function::
@@ -773,55 +860,72 @@ ch_chirp_init(
 }
 
 // .. c:function::
-static
 void
-_ch_chirp_init_signals(ch_chirp_t* chirp)
+ch_chirp_message_finish(
+        ch_chirp_t* chirp,
+        ch_message_t* msg,
+        int status,
+        float load
+)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_init_signals`
+//    see: :c:func:`ch_chirp_message_finish`
 //
 // .. code-block:: cpp
 //
 {
-#   ifndef CH_DISABLE_SIGNALS
-        ch_chirp_int_t* ichirp = chirp->_;
-        if(ichirp->config.DISABLE_SIGNALS)
-            return;
-        uv_signal_init(ichirp->loop, &ichirp->signals[0]);
-        uv_signal_init(ichirp->loop, &ichirp->signals[1]);
-
-        ichirp->signals[0].data = chirp;
-        ichirp->signals[1].data = chirp;
-
-        if(uv_signal_start(
-                &ichirp->signals[0],
-                &_ch_chirp_sig_handler,
-                SIGINT
-        )) {
-            E(
-                chirp,
-                "Unable to set SIGINT handler. ch_chirp_t:%p",
-                (void*) chirp
-            );
-            return;
-        }
-
-        if(uv_signal_start(
-                &ichirp->signals[1],
-                &_ch_chirp_sig_handler,
-                SIGTERM
-        )) {
-            uv_signal_stop(&ichirp->signals[0]);
-            uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
-            E(
-                chirp,
-                "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                (void*) chirp
-            );
-        }
+    ch_chirp_int_t* ichirp = chirp->_;
+    ch_message_t* base_msg = NULL;
+#   ifdef NDEBUG
+    if(sglib_ch_message_dest_t_delete_if_member(
+        &ichirp->message_queue,
+        msg
+    ) == 0) {
+        E(
+            chirp,
+            "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+    }
 #   else
-        (void)(chirp);
+        base_msg = sglib_ch_message_dest_t_find_member(
+            ichirp->message_queue,
+            msg
+        );
+        A(
+            base_msg == msg,
+            "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        sglib_ch_message_dest_t_delete(
+            &ichirp->message_queue,
+            msg
+        );
 #   endif
+    if(msg->_next != NULL) {
+        // move the next message to front of queue
+        L(
+            chirp,
+            "Dequeued message. ch_chirp_t:%p, ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        ch_message_t* next = msg->_next;
+        next->_qend = msg->_qend;
+        msg->_qend = NULL;
+        msg->_next = NULL;
+        next->_flags &= ~CH_MSG_QUEUED;
+        ch_chirp_send(chirp, next, next->_send_cb);
+    }
+    msg->_flags &= ~CH_MSG_USED;
+    if(msg->_send_cb != NULL) {
+        /* The user may free the message in the cb */
+        ch_send_cb_t cb = msg->_send_cb;
+        msg->_send_cb = NULL;
+        cb(msg, status, load);
+    }
 }
 
 // .. c:function::
@@ -913,26 +1017,6 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     chirp->_->flags |= CH_CHIRP_AUTO_STOP;
-}
-
-// .. c:function::
-static
-void
-_ch_chirp_sig_handler(uv_signal_t* handle, int signo)
-//    :noindex:
-//
-//    see: :c:func:`_ch_chirp_sig_handler`
-//
-// .. code-block:: cpp
-//
-{
-    ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-
-    if(signo != SIGINT && signo != SIGTERM)
-        return;
-
-    ch_chirp_close_ts(chirp);
 }
 
 // .. c:function::

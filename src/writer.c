@@ -17,18 +17,6 @@
 #include "protocol.h"
 #include "util.h"
 
-// Sglib Prototypes
-// ================
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_DL_LIST_FUNCTIONS( // NOCOV
-    ch_message_t,
-    SGLIB_NUMERIC_COMPARATOR,
-    _prev,
-    _next
-)
-
 // Declarations
 // ============
 
@@ -63,7 +51,8 @@ _ch_wr_check_send_error(
 
 // .. c:function::
 static
-void _ch_wr_close_failed_conn_cb(uv_handle_t* handle);
+void
+_ch_wr_close_failed_conn_cb(uv_handle_t* handle);
 //
 //    Called by libuv when failed connection is close.
 //
@@ -72,13 +61,26 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle);
 
 
 // .. c:function::
+static
 void
-ch_wr_connect_cb(uv_connect_t* req, int status);
+_ch_wr_connect_cb(uv_connect_t* req, int status);
 //
 //    Called by libuv after trying to connect. Contains the connection status.
 //
 //    :param uv_connect_t* req: Connect request, containing the connection.
 //    :param int status:        Status of the connection.
+//
+
+// .. c:function::
+static
+ch_inline
+int
+_ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg);
+//
+//    Queue the message if needed. Return CH_QUEUED if the message was queued.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_message_t* msg: The message to queue.
 //
 
 // .. c:function::
@@ -244,20 +246,20 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_connection_t* conn = msg->_conn;
     ch_free(conn);
-    if(msg->_send_cb) {
-        /* The user may free the message in the cb. */
-        ch_send_cb_t cb = msg->_send_cb;
-        msg->_send_cb = NULL;
-        cb(msg, CH_CANNOT_CONNECT, -1);
-    }
+    ch_chirp_message_finish(
+        chirp,
+        msg,
+        CH_CANNOT_CONNECT,
+        -1
+    );
 }
 
 // .. c:function::
 void
-ch_wr_connect_cb(uv_connect_t* req, int status)
+_ch_wr_connect_cb(uv_connect_t* req, int status)
 //    :noindex:
 //
-//    see: :c:func:`ch_wr_connect_cb`
+//    see: :c:func:`_ch_wr_connect_cb`
 //
 // .. code-block:: cpp
 //
@@ -294,6 +296,44 @@ ch_wr_connect_cb(uv_connect_t* req, int status)
         );
         conn->client.data = msg;
         uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
+    }
+}
+
+// .. c:function::
+static
+ch_inline
+int
+_ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg)
+//    :noindex:
+//
+//    see: :c:func:`_ch_wr_queue_message`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_int_t* ichirp  = chirp->_;
+    ch_message_t* base_msg = NULL;
+    base_msg = sglib_ch_message_dest_t_find_member(
+        ichirp->message_queue,
+        msg
+    );
+    if(base_msg != NULL) {
+        base_msg->_qend->_next = msg;
+        base_msg->_qend = msg;
+        L(
+            chirp,
+            "Queued message. ch_chirp_t:%p, ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        return CH_QUEUED;
+    } else {
+        msg->_qend = msg;
+        sglib_ch_message_dest_t_add(
+            &ichirp->message_queue,
+            msg
+        );
+        return CH_SUCCESS;
     }
 }
 
@@ -432,16 +472,12 @@ _ch_wr_send_finish(
         ch_message_t* msg = writer->msg;
         A(msg != NULL, "Writer has no message");
         writer->msg = NULL;
-        if(msg->_send_cb) {
-            /* The user may free the message in the cb. */
-            ch_send_cb_t cb = msg->_send_cb;
-            msg->_send_cb = NULL;
-            cb(
-                writer->msg,
-                CH_SUCCESS,
-                conn->load
-            );
-        }
+        ch_chirp_message_finish(
+            chirp,
+            msg,
+            CH_SUCCESS,
+            conn->load
+        );
     }
 }
 
@@ -557,21 +593,17 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
 // .. code-block:: cpp
 //
 {
-    ch_message_t* t;
-    struct sglib_ch_message_t_iterator it;
     ch_chirp_t* chirp = handle->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
-    for(
-            t = sglib_ch_message_t_it_init(
-                &it,
-                ichirp->send_ts_queue_end
-            );
-            t != NULL;
-            t = sglib_ch_message_t_it_next(&it)
-    ) {
-        ch_chirp_send(chirp, t, t->_send_cb);
+    ch_message_t* cur = ichirp->send_ts_queue;
+    while(cur != NULL) {
+        ch_message_t* tmp = cur;
+        cur = cur->_next;
+        tmp->_next = NULL; // Share pointer with message queue
+        tmp->_flags &= ~CH_MSG_QUEUED;
+        ch_chirp_send(chirp, tmp, tmp->_send_cb);
     }
     ichirp->send_ts_queue = NULL;
     ichirp->send_ts_queue_end = NULL;
@@ -580,7 +612,7 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
 
 // .. c:function::
 CH_EXPORT
-void
+int
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
@@ -592,16 +624,23 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
+    if(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED) {
+        E(
+            chirp,
+            "Message already used. ch_chirp_t:%p ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        return CH_USED;
+    }
     msg->_send_cb     = send_cb;
     msg->message_type = CH_MSG_REQ_ACK;
-
-    /* TODO
-     * 1. Create ichirp->_connecting_port, _connecting_addr, _message_queue
-     * 2. If connecting_port is not zero queue the message by port/addr key
-     * 3. Of course cleanup and reset port on connect_cb
-     */
-
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    if(_ch_wr_queue_message(chirp, msg) == CH_QUEUED) {
+        msg->_flags |= CH_MSG_QUEUED;
+        return CH_QUEUED;
+    }
+    msg->_flags |= CH_MSG_USED;
     ch_chirp_int_t* ichirp  = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     search_conn.ip_protocol = msg->ip_protocol;
@@ -626,7 +665,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
             if(send_cb != NULL)
                 send_cb(msg, CH_ENOMEM, -1);
-            return;
+            return CH_ENOMEM;
         }
         memset(conn, 0, sizeof(ch_connection_t));
         msg->_conn         = conn;
@@ -654,7 +693,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 &conn->connect,
                 &conn->client,
                 (struct sockaddr*) &addr,
-                ch_wr_connect_cb
+                _ch_wr_connect_cb
             );
         } else {
             A(msg->ip_protocol == CH_IPV4, "Unknown IP protocol");
@@ -664,7 +703,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 &conn->connect,
                 &conn->client,
                 (struct sockaddr*) &addr,
-                ch_wr_connect_cb
+                _ch_wr_connect_cb
             );
         }
         L(
@@ -687,11 +726,12 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         }
     } else
         ch_wr_send(conn, msg);
+    return CH_SUCCESS;
 }
 
 // .. c:function::
 CH_EXPORT
-void
+int
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
@@ -703,12 +743,25 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
+    if(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED) {
+        E(
+            chirp,
+            "Message already used. ch_chirp_t:%p ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        return CH_USED;
+    }
+    msg->_flags |= CH_MSG_QUEUED;
     msg->_send_cb = send_cb;
-    sglib_ch_message_t_add(&ichirp->send_ts_queue, msg);
-    if(ichirp->send_ts_queue_end == NULL)
-        ichirp->send_ts_queue_end = msg;
+    if(ichirp->send_ts_queue == NULL)
+        ichirp->send_ts_queue = msg;
+    if(ichirp->send_ts_queue_end != NULL)
+        ichirp->send_ts_queue_end->_next = msg;
+    ichirp->send_ts_queue_end = msg;
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
     uv_async_send(&ichirp->send_ts);
+    return CH_SUCCESS;
 }
 
 // .. c:function::

@@ -161,7 +161,7 @@ _ch_rd_handshake(
 // .. code-block:: cpp
 //
 {
-    ch_connection_t* old_conn;
+    ch_connection_t* old_conn = NULL;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
@@ -196,7 +196,7 @@ _ch_rd_handshake(
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection
      */
-    if(old_conn) {
+    if(old_conn != NULL) {
         /* Since we reuse the tree members we have to delete the connection
          * from the old data-structure, before adding it to the new.
          */
@@ -307,12 +307,13 @@ _ch_rd_handle_msg(
                 CH_ID_SIZE
         ) == 0) {
             ch_message_t* wmsg = writer->msg;
-            if(wmsg->_send_cb) {
-                /* The user may free the message in the cb. */
-                ch_send_cb_t cb = wmsg->_send_cb;
-                wmsg->_send_cb = NULL;
-                cb(wmsg, CH_SUCCESS, conn->load);
-            }
+            writer->msg = NULL;
+            ch_chirp_message_finish(
+                chirp,
+                wmsg,
+                CH_SUCCESS,
+                conn->load
+            );
         } else {
             E(
                 chirp,

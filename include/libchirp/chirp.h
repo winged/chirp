@@ -300,7 +300,7 @@ ch_chirp_run(
 
 // .. c:function::
 CH_EXPORT
-void
+int
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
@@ -309,15 +309,19 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //    If you don't want to allocate messages on sending, we recommend to use a
 //    pool of messages.
 //
+//    Returns CH_SUCCESS when has being sent and CH_QUEUED when the message has
+//    been placed in the send queue. CH_USED if the message is already used
+//    elsewhere, the message will not be sent.
+//
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
-//    :param ch_message_t msg: The message to send. The memory of the message
-//                             must stay valid until the callback is called.
+//    :param ch_message_t* msg: The message to send. The memory of the message
+//                              must stay valid until the callback is called.
 //    :param ch_send_cb_t send_cb: The callback, that will be called after
 //                                 sending.
 
 // .. c:function::
 CH_EXPORT
-void
+int
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
@@ -328,6 +332,10 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    This function is thread-safe. ATTENTION: Callback will be called by the
 //    uv-loop-thread.
+//
+//    Returns CH_SUCCESS when the message has been successfully queue and
+//    CH_USED if the message is already used elsewhere, the message will not be
+//    sent.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_message_t msg: The message to send. The memory of the message
