@@ -430,10 +430,11 @@ def write_ide_files(args):
         sys.stdout.write("Creating .clang_complete: ")
         try:
             with codecs.open(path.join(_base, ".clang_complete"), "w") as f:
-                f.write("-I%s\n-L%s" % (
+                f.write("-I%s\n-L%s\n" % (
                     path.join(_base, "include"),
                     _build
                 ))
+                f.write("-DCH_BUILD\n")
                 print("ok")
         except Exception:
             print("failed")
