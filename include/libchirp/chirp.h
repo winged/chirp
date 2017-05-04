@@ -235,19 +235,13 @@ ch_chirp_init(
 //    callback has been called or if chirp is set to auto-stop, after the loop
 //    has finished.
 //
-//    Please call
-//
-//    .. code-block: cpp
-//
-//       ch_loop_close(loop)
-//
-//    before freeing the loop. Of course if the loop will continue to run, feel
-//    free not to close/free the loop.
+//    Please call `ch_loop_close(loop)` before freeing the loop. Of course if
+//    the loop will continue to run, feel free not to close/free the loop.
 //
 //    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
 //    :param ch_config_t* config: Pointer to a chirp configration.
 //    :param uv_loop_t* loop: Reference to a libuv loop.
-//    :param ch_start_cb_t done: Called when chirp is started, can be NULL.
+//    :param ch_start_cb_t start: Called when chirp is started, can be NULL.
 //    :param ch_done_cb_t done: Called when chirp is finished, can be NULL.
 //    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //
