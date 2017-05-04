@@ -30,7 +30,7 @@ ifeq ($(VERBOSE),True)
 	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
 else
 	@echo DOC
-	@make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out > /dev/null
+	@make -C $(BASE)/doc html 2>&1 | grep -v intersphinx | tee $(DTMP)/doc.out > /dev/null
 	@! grep -E "WARNING|ERROR" $(DTMP)/doc.out
 endif
 else
@@ -151,27 +151,27 @@ install: all doc
 else
 install: all  ## Install chirp
 endif
-	mkdir -p $(PREFIX)/usr/lib
-	cp -f $(BUILD)/libchirp.a $(PREFIX)/usr/lib
-	cp -f $(BUILD)/libchirp.so $(PREFIX)/usr/lib/libchirp.so.$(VERSION)
-	mkdir -p $(PREFIX)/usr/include
-	cp -f $(BASE)/include/libchirp.h $(PREFIX)/usr/include/libchirp.h
-	rm -rf $(PREFIX)/usr/include/libchirp/
-	cp -rf $(BASE)/include/libchirp/ $(PREFIX)/usr/include/libchirp/
-	cd $(PREFIX)/usr/lib && ln -sf libchirp.so.$(VERSION) libchirp.so
-	cd $(PREFIX)/usr/lib && ln -sf libchirp.so.$(VERSION) libchirp.so.$(MAJOR)
+	mkdir -p $(DEST)$(PREFIX)/lib
+	cp -f $(BUILD)/libchirp.a $(DEST)$(PREFIX)/lib
+	cp -f $(BUILD)/libchirp.so $(DEST)$(PREFIX)/lib/libchirp.so.$(VERSION)
+	mkdir -p $(DEST)$(PREFIX)/include
+	cp -f $(BASE)/include/libchirp.h $(DEST)$(PREFIX)/include/libchirp.h
+	rm -rf $(DEST)$(PREFIX)/include/libchirp/
+	cp -rf $(BASE)/include/libchirp/ $(DEST)$(PREFIX)/include/libchirp/
+	cd $(DEST)$(PREFIX)/lib && ln -sf libchirp.so.$(VERSION) libchirp.so
+	cd $(DEST)$(PREFIX)/lib && ln -sf libchirp.so.$(VERSION) libchirp.so.$(MAJOR)
 ifeq ($(DOC),True)
-	rm -rf $(PREFIX)/usr/share/doc/chirp
-	mkdir -p $(PREFIX)/usr/share/doc/chirp
-	cp -R $(BASE)/doc/_build/html/* $(PREFIX)/usr/share/doc/chirp/
+	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
+	mkdir -p $(DEST)$(PREFIX)/share/doc/chirp
+	cp -R $(BASE)/doc/_build/html/* $(DEST)$(PREFIX)/share/doc/chirp/
 endif
 
 
 uninstall:  ## Uninstall chirp
-	rm -f $(PREFIX)/usr/lib/libchirp.a
-	rm -f $(PREFIX)/usr/lib/libchirp.so.$(VERSION)
-	rm -f $(PREFIX)/usr/lib/libchirp.so
-	rm -f $(PREFIX)/usr/lib/libchirp.so.$(MAJOR)
-	rm -f $(PREFIX)/usr/include/libchirp.h
-	rm -rf $(PREFIX)/usr/include/libchirp/
-	rm -rf $(PREFIX)/usr/share/doc/chirp
+	rm -f $(DEST)$(PREFIX)/lib/libchirp.a
+	rm -f $(DEST)$(PREFIX)/lib/libchirp.so.$(VERSION)
+	rm -f $(DEST)$(PREFIX)/lib/libchirp.so
+	rm -f $(DEST)$(PREFIX)/lib/libchirp.so.$(MAJOR)
+	rm -f $(DEST)$(PREFIX)/include/libchirp.h
+	rm -rf $(DEST)$(PREFIX)/include/libchirp/
+	rm -rf $(DEST)$(PREFIX)/share/doc/chirp

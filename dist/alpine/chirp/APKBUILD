@@ -18,19 +18,19 @@ build() {
 	../configure \
 		--doc \
 		--no-strip \
-		--prefix "$pkgdir" \
-		|| return 1
-	make || return 1
-	make doc || return 1
+		--prefix "/usr"
+	make
+	make doc
 }
 
 check() {
 	cd "$builddir"
-	make check || return 1
+	make check
 }
 package() {
 	cd "$builddir"
-	make install || return 1
+	echo"$pkgdir"
+	make install DEST="$pkgdir"
 }
 
 
