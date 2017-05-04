@@ -1,7 +1,7 @@
 # Contributor: Jean-Louis Fuchs <ganwell@fangorn.ch>
 # Maintainer: Jean-Louis Fuchs <ganwell@fangorn.ch>
 pkgname=chirp
-pkgver=0.1.41571
+pkgver=0.1.41572
 pkgrel=0
 pkgdesc="Message-passing and actor-based programming for everyone"
 url="https://github.com/concretecloud/chirp"
@@ -29,11 +29,10 @@ check() {
 }
 package() {
 	cd "$builddir"
-	echo"$pkgdir"
 	make install DEST="$pkgdir"
 }
 
 
-md5sums="f08eb3bfef5321953fa55fe30adae497  chirp-0.1.41571.tar.gz"
-sha256sums="9b49591e5f11a16d7dd1e89fb471d41b20c8642848b78d2b2c25a52213aa02f6  chirp-0.1.41571.tar.gz"
-sha512sums="e6c32eb4500d8f5d12e820ca185ee7b2729b50e1296de0a3ffd7c46743752c582dfadb70af2ae9f5bc5a81e512f02ce0172d44ecd1698519f21138a760245788  chirp-0.1.41571.tar.gz"
+md5sums="18aa811198cfcc1d99304f505c577c20  chirp-0.1.41572.tar.gz"
+sha256sums="ec1717f257213061c89807aa39db75446da704bbeff0a5e740c570536131ae01  chirp-0.1.41572.tar.gz"
+sha512sums="51678c5555627b3731f9bcf81c6d325c030387c675c8f92ebe498c9e2cd5cfc01e5a99a2d1c0ebd76ce723febe460b6bf0b8eaee6f70ad67dc87e8bc297af6fb  chirp-0.1.41572.tar.gz"
