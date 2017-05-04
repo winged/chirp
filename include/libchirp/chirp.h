@@ -64,9 +64,9 @@
 //       Flow control prevents overloading of a node in a chain for workers.
 //       Default: 1.
 //
-//    .. c:member:: char CLOSE_ON_SIGINT
+//    .. c:member:: char DISABLE_SIGNALS
 //
-//       By default chirp closes on SIGINT (Ctrl-C).
+//       By default chirp closes on SIGINT (Ctrl-C) and SIGTERM.
 //
 //    .. c:member:: uint32_t BUFFER_SIZE
 //
@@ -110,7 +110,7 @@ struct ch_config_s {
     uint8_t         MAX_HANDLERS;
     char            ACKNOWLEDGE;
     char            FLOW_CONTROL;
-    char            CLOSE_ON_SIGINT;
+    char            DISABLE_SIGNALS;
     uint32_t        BUFFER_SIZE;
     uint8_t         BIND_V6[CH_IP_ADDR_SIZE];
     uint8_t         BIND_V4[CH_IP4_ADDR_SIZE];

@@ -56,7 +56,7 @@ static ch_config_t _ch_config_defaults = {
     .MAX_HANDLERS       = 16,
     .FLOW_CONTROL       = 1,
     .ACKNOWLEDGE        = 1,
-    .CLOSE_ON_SIGINT    = 1,
+    .DISABLE_SIGNALS    = 0,
     .BUFFER_SIZE        = 0,
     .BIND_V6            = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     .BIND_V4            = {0, 0, 0, 0},
@@ -261,13 +261,16 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     );
     tmp_err = ch_pr_stop(&ichirp->protocol);
     A(tmp_err == CH_SUCCESS, "Could not stop protocol");
-    uv_signal_stop(&ichirp->signals[0]);
-    uv_signal_stop(&ichirp->signals[1]);
+    if(!ichirp->config.DISABLE_SIGNALS) {
+        uv_signal_stop(&ichirp->signals[0]);
+        uv_signal_stop(&ichirp->signals[1]);
+        uv_close((uv_handle_t*) &ichirp->signals[0], ch_chirp_close_cb);
+        uv_close((uv_handle_t*) &ichirp->signals[1], ch_chirp_close_cb);
+        ichirp->closing_tasks += 2;
+    }
     uv_close((uv_handle_t*) &ichirp->send_ts, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &ichirp->close, ch_chirp_close_cb);
-    uv_close((uv_handle_t*) &ichirp->signals[0], ch_chirp_close_cb);
-    uv_close((uv_handle_t*) &ichirp->signals[1], ch_chirp_close_cb);
-    ichirp->closing_tasks += 4;
+    ichirp->closing_tasks += 2;
     tmp_err = uv_prepare_init(ichirp->loop, &ichirp->close_check);
     A(tmp_err == CH_SUCCESS, "Could not init prepare callback");
     ichirp->close_check.data = chirp;
@@ -782,6 +785,8 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
 {
 #   ifndef CH_DISABLE_SIGNALS
         ch_chirp_int_t* ichirp = chirp->_;
+        if(ichirp->config.DISABLE_SIGNALS)
+            return;
         uv_signal_init(ichirp->loop, &ichirp->signals[0]);
         uv_signal_init(ichirp->loop, &ichirp->signals[1]);
 
@@ -927,9 +932,7 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
     if(signo != SIGINT && signo != SIGTERM)
         return;
 
-    if(chirp->_->config.CLOSE_ON_SIGINT) {
-        ch_chirp_close_ts(chirp);
-    }
+    ch_chirp_close_ts(chirp);
 }
 
 // .. c:function::
