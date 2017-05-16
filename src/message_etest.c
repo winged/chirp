@@ -27,6 +27,11 @@
 // .. code-block:: cpp
 //
 
+#define ch_tr_other_chirp(x) \
+    ( \
+        (ch_test_chirp_thread_t*)(x)->user_data \
+    )->other->chirp
+
 static
 void
 ch_send_message(ch_chirp_t* chirp);
@@ -40,10 +45,15 @@ int _msgs = 0;
 static char _data[] = "hello";
 static ch_message_t _msg;
 
-typedef struct ch_test_chirp_thread_s {
+struct ch_test_chirp_thread_s;
+typedef struct ch_test_chirp_thread_s ch_test_chirp_thread_t;
+
+struct ch_test_chirp_thread_s {
     int port;
     ch_start_cb_t init;
-} ch_test_chirp_thread_t;
+    ch_test_chirp_thread_t* other;
+    ch_chirp_t* chirp;
+};
 
 static
 void
@@ -71,8 +81,14 @@ ch_sent(ch_message_t* msg, int status, float load)
     _msgs += 1;
     if(_msgs < 10)
         ch_send_message(msg->chirp);
-    else
-        exit(0);
+    else {
+        /* TODO: Insted of sleep, actually wait for the last echoed message to
+         * arrive.
+         */;
+        sleep(1);
+        ch_chirp_close_ts(ch_tr_other_chirp(msg->chirp));
+        ch_chirp_close_ts(msg->chirp);
+    }
 }
 
 static
@@ -142,6 +158,8 @@ _ch_test_run_chirp(void* arg)
         printf("ch_chirp_init error\n");
         return;
     }
+    args->chirp = &chirp;
+    chirp.user_data = args;
     ch_chirp_set_auto_stop_loop(&chirp);
     ch_run(&loop); /* Will block till loop stops */
     ch_loop_close(&loop);
@@ -159,6 +177,8 @@ main()
     // TODO test with and without encryption
     ch_test_chirp_thread_t sender_thread;
     ch_test_chirp_thread_t echo_thread;
+    sender_thread.other = &echo_thread;
+    echo_thread.other = &sender_thread;
     sender_thread.port = 59731;
     sender_thread.init = sender_init_handler;
     echo_thread.port   = 59732;
