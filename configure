@@ -17,6 +17,7 @@ import re
 import sys
 from tempfile import mkdtemp
 import shutil
+import stat
 
 _project = "libchirp"
 _version = "0.1.0"
@@ -71,7 +72,7 @@ def match_files(base, pattern):
 
 
 def parse_depends(file_, h_files):
-    """Find all header depends in this files."""
+    """Find all header depends in this file."""
     with codecs.open(file_, 'r', "UTF-8") as f:
         for line in f:
             match = _include.match(line)
@@ -88,8 +89,17 @@ def parse_depends(file_, h_files):
                     depend = path.realpath(
                         path.join(base, header)
                     )
+
+                rgh_depend = path.realpath(
+                    path.join(
+                        base,
+                        "%s.rgh" % path.splitext(header)[0]
+                    )
+                )
                 if depend in h_files:
                     yield depend
+                elif rgh_depend in h_files:
+                    yield replace_base_build(depend)
 
 
 def flat_depends(file_, depends, flat):
@@ -107,8 +117,11 @@ def flat_depends(file_, depends, flat):
 def read_depends():
     """Read header dependencies into a dict to generate the makefile."""
     depends = collections.defaultdict(set)
-    c_files = set(match_files("src", "*.c"))
+    c_files = set()
+    c_files.update(match_files("src", "*.c"))
+    c_files.update(match_files("src", "*.rgc"))
     h_files = set()
+    h_files.update(match_files("src", "*.rgh"))
     h_files.update(match_files("src", "*.h"))
     h_files.update(match_files("include", "*.h"))
     files = list(itertools.chain(c_files, h_files))
@@ -120,7 +133,7 @@ def read_depends():
         depends,
         set()
     ) for file_ in c_files}
-    return dependency_list, files
+    return dependency_list, files, h_files, c_files
 
 
 def replace_base(file_, repl):
@@ -335,7 +348,7 @@ def write_makefile(args):
             f.write("DEV := True\n")
         f.write("\n")
         f.write("include $(BASE)/mk/base.mk\n\n")
-        depends, files = read_depends()
+        depends, files, h_files, c_files = read_depends()
         depends = list(depends.items())
         fmt_str = (
             "LIBRARIES := $(BUILD)/{0}_test.a $(BUILD)/{0}.a "
@@ -371,10 +384,25 @@ endif
 \trm -f *.gcov\n\n
 """)
 
+        f.write("HEADERS := \\\n")
+        h_list = [
+            "%s.h" % path.splitext(
+                replace_base_build(h)
+            )[0]
+            for h in h_files if h.endswith("rgh")
+        ]
+        for file_ in h_list[:-1]:
+            f.write("\t\t%s \\\n" % file_)
+        f.write("\t\t%s \n\n" % h_list[-1])
+        f.write("headers: $(HEADERS) \n\n")
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
-            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
-        f.write("\t\t%so \n\n" % replace_base_build(depends[-1][0][:-1]))
+            f.write("\t\t%s.o \\\n" % replace_base_build(
+                path.splitext(file_)[0]
+            ))
+        f.write("\t\t%s.o \n\n" % replace_base_build(
+            path.splitext(depends[-1][0])[0]
+        ))
         f.write("objects: $(OBJECTS) \n\n")
         f.write("LIB_OBJECTS := \\\n")
         lib_objs = [
@@ -382,8 +410,12 @@ endif
             if not file_.endswith("test.c")
         ]
         for file_ in lib_objs[:-1]:
-            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
-        f.write("\t\t%so \n\n" % replace_base_build(lib_objs[-1][:-1]))
+            f.write("\t\t%s.o \\\n" % replace_base_build(
+                path.splitext(file_)[0]
+            ))
+        f.write("\t\t%s.o \n\n" % replace_base_build(
+            path.splitext(lib_objs[-1])[0]
+        ))
 
         f.write("TEST_OBJECTS := \\\n")
         test_objs = [
@@ -391,8 +423,12 @@ endif
             if file_.endswith("_test.c")
         ]
         for file_ in test_objs[:-1]:
-            f.write("\t\t%so \\\n" % replace_base_build(file_[:-1]))
-        f.write("\t\t%so \n\n" % replace_base_build(test_objs[-1][:-1]))
+            f.write("\t\t%s.o \\\n" % replace_base_build(
+                path.splitext(file_)[0]
+            ))
+        f.write("\t\t%s.o \n\n" % replace_base_build(
+            path.splitext(test_objs[-1])[0]
+        ))
 
         if args.doc:
             f.write("DOC_FILES := \\\n")
@@ -404,7 +440,9 @@ endif
         for file_, dep in depends:
             if dep:
                 dep = list(dep)
-                bfile = "%so" % replace_base_build(file_[:-1])
+                bfile = "%s.o" % replace_base_build(
+                    path.splitext(file_)[0]
+                )
                 f.write("%s: \\\n" % bfile)
                 for depend in dep:
                     f.write("\t\t%s \\\n" % replace_base_base(depend))
@@ -422,6 +460,10 @@ endif
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")
+    return (
+        [h for h in h_files if h.endswith("rgh")] +
+        [c for c in c_files if c.endswith("rgh")]
+    )
 
 
 def write_ide_files(args):
@@ -430,14 +472,16 @@ def write_ide_files(args):
         sys.stdout.write("Creating .clang_complete: ")
         try:
             with codecs.open(path.join(_base, ".clang_complete"), "w") as f:
-                f.write("-I%s\n-L%s\n" % (
+                f.write("-I%s\n-I%s\n-I%s\n-L%s\n" % (
+                    path.join(_build, "src"),
+                    path.join(_base, "src"),
                     path.join(_base, "include"),
                     _build
                 ))
                 f.write("-DCH_BUILD\n")
                 print("ok")
-        except Exception:
-            print("failed")
+        except Exception as e:
+            print("failed", e)
         if _base != _build:
             sys.stdout.write("Creating Makefile for syntastic: ")
             try:
@@ -446,15 +490,56 @@ def write_ide_files(args):
                     path.join(_base, "Makefile"),
                 )
                 print("ok")
-            except Exception:
-                print("failed")
+            except Exception as e:
+                print("failed", e)
 
+
+def write_pfix(rg_list):
+    """Write path fixer for compiler."""
+    replaces = []
+    for file_ in rg_list:
+        new_file = path.join(_build, file_[_baselen + 1:])
+        new_file = "%s%s" % (
+            new_file[:-3],
+            new_file[-1],
+        )
+        replaces.append("('%s', '%s')," % (
+            new_file,
+            file_,
+        ))
+    replaces = "\n    ".join(replaces)
+    try:
+        sys.stdout.write("Creating pfix ide helper: ")
+        pfix = path.join(_build, "pfix")
+        with codecs.open(pfix, "w") as f:
+            f.write("""#!/usr/bin/env python3
+
+import sys
+
+_replaces = [
+    %s
+]
+
+for line in sys.stdin.readlines():
+    for replace in _replaces:
+        line = line.replace(*replace)
+    sys.stdout.write(line)
+    sys.stdout.flush()
+""" % replaces)
+        st = os.stat(pfix)
+        os.chmod(
+            pfix,
+            st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+    except Exception as e:
+        print("failed", e)
 
 if __name__ == "__main__":
     args = parse()
-    write_makefile(args)
+    rg_list = write_makefile(args)
     write_config()
     write_abi_check()
     copy_files(args)
     write_ide_files(args)
+    write_pfix(rg_list)
     test_depends(args)

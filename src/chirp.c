@@ -12,6 +12,7 @@
 //
 #include "chirp.h"
 #include "util.h"
+#include "structures.h"
 
 // System includes
 // ===============
@@ -879,7 +880,8 @@ ch_chirp_message_finish(
 #   ifdef NDEBUG
     if(sglib_ch_message_dest_t_delete_if_member(
         &ichirp->message_queue,
-        msg
+        msg,
+        &base_msg
     ) == 0) {
         E(
             chirp,
@@ -907,18 +909,15 @@ ch_chirp_message_finish(
             );
         }
 #   endif
-    if(msg->_next != NULL) {
-        // move the next message to front of queue
+    ch_message_t* next = msg;
+    CH_MQ_DEQUEUE(next);
+    if(next != NULL) {
         L(
             chirp,
             "Dequeued message. ch_chirp_t:%p, ch_message_t:%p",
             (void*) chirp,
             (void*) msg
         );
-        ch_message_t* next = msg->_next;
-        next->_qend = msg->_qend;
-        msg->_qend = NULL;
-        msg->_next = NULL;
         next->_flags &= ~CH_MSG_QUEUED;
         ch_chirp_send(chirp, next, next->_send_cb);
     }

@@ -18,7 +18,7 @@ Internal API
    src/buffer.h.rst
    src/chirp.h.rst
    src/chirp.c.rst
-   src/common.h.rst
+   src/common.rgh.rst
    src/connection.h.rst
    src/connection.c.rst
    src/encryption.h.rst
@@ -29,6 +29,7 @@ Internal API
    src/protocol.c.rst
    src/reader.h.rst
    src/reader.c.rst
+   src/structures.rgh.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst
@@ -60,6 +61,7 @@ Test binaries
    src/message_etest.c.rst
    src/quickcheck_etest.c.rst
    src/star_etest.c.rst
+   src/structures_etest.c.rst
 
 External Libs
 =============

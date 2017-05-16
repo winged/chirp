@@ -21,6 +21,8 @@ CFLAGS += \
 	-O0 \
 	-ggdb3 \
 	-I"$(BASE)/include" \
+	-I"$(BASE)/src" \
+	-I"$(BUILD)/src" \
 	-I"$(BUILD)"
 
 LDFLAGS += \
@@ -67,13 +69,18 @@ etests: all
 	$(BUILD)/src/buffer_etest
 	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
 		$(BUILD)/src/buffer_etest
+	$(BUILD)/src/structures_etest
+	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
+		$(BUILD)/src/structures_etest
 
-cppcheck:  ## Static analysis
+cppcheck: headers  ## Static analysis
 	cppcheck -v \
 		--error-exitcode=1 \
 		--std=c99 \
 		--inline-suppr \
 		-I"$(BASE)/include" \
+		-I"$(BASE)/src" \
+		-I"$(BUILD)/src" \
 		-DCH_ACCEPT_STRANGE_PLATFORM \
 		"$(BASE)/src"
 

@@ -186,6 +186,23 @@ Please memcheck your code, we haven't automated memcheck, yet:
 
    valgrind --tool=memcheck ./src/[relevant]_etest
 
+Chirp has a tool to debug macros:
+
+.. code-block:: bash
+
+   mk/rgc True gcc src/structures_etest.c src/xstructures_etest.c
+   cd build
+   ../configure --dev
+   make all
+   gdb src/xstructures_etest
+   rm ../src/xstructures_etest.c*
+
+Of course if your compiler is clang call:
+
+.. code-block:: bash
+
+   mk/rgc True clang src/structures_etest.c src/xstructures_etest.c
+
 Docker
 ------
 

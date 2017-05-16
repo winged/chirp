@@ -100,28 +100,30 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#define E(chirp, message, ...) do { \
-    if(chirp->_log != NULL) { \
-        char buf[1024]; \
-        snprintf( \
-            buf, \
-            1024, \
-            "%s:%d " message, \
-            __FILE__, \
-            __LINE__, \
-            __VA_ARGS__ \
-        ); \
-        chirp->_log(buf, 1); \
-    } else { \
-        fprintf( \
-            stderr, \
-            "%s:%d Error: " message "\n", \
-            __FILE__, \
-            __LINE__, \
-            __VA_ARGS__ \
-        ); \
-    } \
-} while(0)
+#begindef E(chirp, message, ...)
+{
+    if(chirp->_log != NULL) {
+        char buf[1024];
+        snprintf(
+            buf,
+            1024,
+            "%s:%d " message,
+            __FILE__,
+            __LINE__,
+            __VA_ARGS__
+        );
+        chirp->_log(buf, 1);
+    } else {
+        fprintf(
+            stderr,
+            "%s:%d Error: " message "\n",
+            __FILE__,
+            __LINE__,
+            __VA_ARGS__
+        );
+    }
+}
+#enddef
 
 #ifndef NDEBUG
 
@@ -145,35 +147,37 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define V(chirp, condition, message, ...) do { \
-        if(!(condition)) { \
-            if(chirp->_log != NULL) { \
-                char buf[1024]; \
-                snprintf( \
-                    buf, \
-                    1024, \
-                    "%s:%d " message, \
-                    __FILE__, \
-                    __LINE__, \
-                    __VA_ARGS__ \
-                ); \
-                chirp->_log(buf, 1); \
-            } else { \
-                fprintf( \
-                    stderr, \
-                    "%s:%d " message "\n", \
-                    __FILE__, \
-                    __LINE__, \
-                    __VA_ARGS__ \
-                ); \
-                assert(condition); \
-                /* See the double evaluation chapter. */ \
-                fprintf(stderr, "Bad assert: condition not stable\n"); \
-                assert(0); \
-            } \
-            return CH_VALUE_ERROR; \
-        } \
-    } while(0)
+#   begindef V(chirp, condition, message, ...)
+    {
+        if(!(condition)) {
+            if(chirp->_log != NULL) {
+                char buf[1024];
+                snprintf(
+                    buf,
+                    1024,
+                    "%s:%d " message,
+                    __FILE__,
+                    __LINE__,
+                    __VA_ARGS__
+                );
+                chirp->_log(buf, 1);
+            } else {
+                fprintf(
+                    stderr,
+                    "%s:%d " message "\n",
+                    __FILE__,
+                    __LINE__,
+                    __VA_ARGS__
+                );
+                assert(condition);
+                /* See the double evaluation chapter. */
+                fprintf(stderr, "Bad assert: condition not stable\n");
+                assert(0);
+            }
+            return CH_VALUE_ERROR;
+        }
+    }
+#   enddef
 
 // .. c:macro:: VE
 //
@@ -193,33 +197,35 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define VE(chirp, condition, message) do { \
-        if(!(condition)) { \
-            if(chirp->_log != NULL) { \
-                char buf[1024]; \
-                snprintf( \
-                    buf, \
-                    1024, \
-                    "%s:%d " message, \
-                    __FILE__, \
-                    __LINE__ \
-                ); \
-                chirp->_log(buf, 1); \
-            } else { \
-                fprintf( \
-                    stderr, \
-                    "%s:%d " message "\n", \
-                    __FILE__, \
-                    __LINE__ \
-                ); \
-                assert(condition); \
-                /* See the double evaluation chapter. */ \
-                fprintf(stderr, "Bad assert: condition not stable\n"); \
-                assert(0); \
-            } \
-            return CH_VALUE_ERROR; \
-        } \
-    } while(0)
+#   begindef VE(chirp, condition, message)
+    {
+        if(!(condition)) {
+            if(chirp->_log != NULL) {
+                char buf[1024];
+                snprintf(
+                    buf,
+                    1024,
+                    "%s:%d " message,
+                    __FILE__,
+                    __LINE__
+                );
+                chirp->_log(buf, 1);
+            } else {
+                fprintf(
+                    stderr,
+                    "%s:%d " message "\n",
+                    __FILE__,
+                    __LINE__
+                );
+                assert(condition);
+                /* See the double evaluation chapter. */
+                fprintf(stderr, "Bad assert: condition not stable\n");
+                assert(0);
+            }
+            return CH_VALUE_ERROR;
+        }
+    }
+#   enddef
 
 // .. c:macro:: L
 //
@@ -237,28 +243,30 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define L(chirp, message, ...) do { \
-        if(chirp->_log != NULL) { \
-            char buf[1024]; \
-            snprintf( \
-                buf, \
-                1024, \
-                "%s:%d " message, \
-                __FILE__, \
-                __LINE__, \
-                __VA_ARGS__ \
-            ); \
-            chirp->_log(buf, 0); \
-        } else { \
-            fprintf( \
-                stderr, \
-                "%s:%d " message "\n", \
-                __FILE__, \
-                __LINE__, \
-                __VA_ARGS__ \
-            ); \
-        } \
-    } while(0)
+#   begindef L(chirp, message, ...)
+    {
+        if(chirp->_log != NULL) {
+            char buf[1024];
+            snprintf(
+                buf,
+                1024,
+                "%s:%d " message,
+                __FILE__,
+                __LINE__,
+                __VA_ARGS__
+            );
+            chirp->_log(buf, 0);
+        } else {
+            fprintf(
+                stderr,
+                "%s:%d " message "\n",
+                __FILE__,
+                __LINE__,
+                __VA_ARGS__
+            );
+        }
+    }
+#   enddef
 
 // .. c:macro:: A
 //
@@ -276,16 +284,19 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define A(condition, ...) do { \
-        if(!(condition)) { \
-            fprintf(stderr, __VA_ARGS__); \
-            fprintf(stderr, "\n"); \
-            assert(condition); \
-            /* See the double evaluation chapter. */ \
-            fprintf(stderr, "Bad assert: condition not stable\n"); \
-            assert(0); \
-        } \
-    } while(0)
+#   begindef A(condition, ...)
+    {
+        if(!(condition)) {
+            fprintf(stderr, __VA_ARGS__);
+            fprintf(stderr, "\n");
+            assert(condition);
+            /* See the double evaluation chapter. */
+            fprintf(stderr, "Bad assert: condition not stable\n");
+            assert(0);
+        }
+    }
+#   enddef
+
 #else //NDEBUG
 
 // .. c:macro:: V
@@ -308,31 +319,33 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define V(chirp, condition, message, ...) do { \
-        if(!(condition)) { \
-            if(chirp->_log != NULL) { \
-                char buf[1024]; \
-                snprintf( \
-                    buf, \
-                    1024, \
-                    "%s:%d " message, \
-                    __FILE__, \
-                    __LINE__, \
-                    __VA_ARGS__ \
-                ); \
-                chirp->_log(buf, 1); \
-            } else { \
-                fprintf( \
-                    stderr, \
-                    "%s:%d " message "\n", \
-                    __FILE__, \
-                    __LINE__, \
-                    __VA_ARGS__ \
-                ); \
-            } \
-            return CH_VALUE_ERROR; \
-        } \
-    } while(0)
+#   begindef V(chirp, condition, message, ...)
+    {
+        if(!(condition)) {
+            if(chirp->_log != NULL) {
+                char buf[1024];
+                snprintf(
+                    buf,
+                    1024,
+                    "%s:%d " message,
+                    __FILE__,
+                    __LINE__,
+                    __VA_ARGS__
+                );
+                chirp->_log(buf, 1);
+            } else {
+                fprintf(
+                    stderr,
+                    "%s:%d " message "\n",
+                    __FILE__,
+                    __LINE__,
+                    __VA_ARGS__
+                );
+            }
+            return CH_VALUE_ERROR;
+        }
+    }
+#   enddef
 
 // .. c:macro:: VE
 //
@@ -352,29 +365,31 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 // .. code-block:: cpp
 //
-#   define VE(chirp, condition, message) do { \
-        if(!(condition)) { \
-            if(chirp->_log != NULL) { \
-                char buf[1024]; \
-                snprintf( \
-                    buf, \
-                    1024, \
-                    "%s:%d " message, \
-                    __FILE__, \
-                    __LINE__ \
-                ); \
-                chirp->_log(buf, 1); \
-            } else { \
-                fprintf( \
-                    stderr, \
-                    "%s:%d " message "\n", \
-                    __FILE__, \
-                    __LINE__ \
-                ); \
-            } \
-            return CH_VALUE_ERROR; \
-        } \
-    } while(0)
+#   begindef VE(chirp, condition, message)
+    {
+        if(!(condition)) {
+            if(chirp->_log != NULL) {
+                char buf[1024];
+                snprintf(
+                    buf,
+                    1024,
+                    "%s:%d " message,
+                    __FILE__,
+                    __LINE__
+                );
+                chirp->_log(buf, 1);
+            } else {
+                fprintf(
+                    stderr,
+                    "%s:%d " message "\n",
+                    __FILE__,
+                    __LINE__
+                );
+            }
+            return CH_VALUE_ERROR;
+        }
+    }
+#   enddef
 
 // .. c:macro:: L
 //
@@ -462,21 +477,23 @@ typedef struct ch_receipt_s ch_receipt_t;
 // Generic functions
 // =================
 //
-// .. code-block:: cpp
+// .. code-block:: text
+//
+#begindef MINMAX_FUNCS(type)
+    static
+    ch_inline
+    type
+    max_##type(type a, type b) {
+        return (a > b) ? a : b;
+    }
 
-#define MINMAX_FUNCS(type) \
-static \
-ch_inline \
-type \
-max_##type(type a, type b) { \
-    return (a > b) ? a : b; \
-} \
-static \
-ch_inline \
-type \
-min_##type(type a, type b) { \
-    return (a < b) ? a : b; \
-}
+    static
+    ch_inline
+    type
+    min_##type(type a, type b) {
+        return (a < b) ? a : b;
+    }
+#enddef
 
 
 #endif //ch_common_h

@@ -16,6 +16,7 @@
 #include "chirp.h"
 #include "protocol.h"
 #include "util.h"
+#include "structures.h"
 
 // Declarations
 // ============
@@ -318,8 +319,7 @@ _ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg)
         msg
     );
     if(base_msg != NULL) {
-        base_msg->_qend->_next = msg;
-        base_msg->_qend = msg;
+        CH_MQ_ENQUEUE(base_msg, msg);
         L(
             chirp,
             "Queued message. ch_chirp_t:%p, ch_message_t:%p",
@@ -631,6 +631,8 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             (void*) chirp,
             (void*) msg
         );
+        if(send_cb != NULL)
+            send_cb(msg, CH_USED, -1);
         return CH_USED;
     }
     msg->_send_cb     = send_cb;

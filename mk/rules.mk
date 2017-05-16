@@ -15,6 +15,7 @@ check: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(BUILD)/src/buffer_etest
+	$(BUILD)/src/structures_etest
 
 ifeq ($(DOC),True)
 doc: doc_files
@@ -63,6 +64,37 @@ else
 	@$(CC) -c -o "$@" "$<" $(CFLAGS)
 endif
 
+$(BUILD)/%.o: $(BUILD)/%.c
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(CC) -c -o "$@" "$<" $(CFLAGS)
+else
+	@echo CC $<
+	@$(CC) -c -o "$@" "$<" $(CFLAGS)
+endif
+
+ifneq ($(RGC_DEBUG),True)
+RGC_DEBUG:=False
+endif
+
+$(BUILD)/%.c: $(BASE)/%.rgc
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+else
+	@echo RGC $<
+	@$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+endif
+
+$(BUILD)/%.h: $(BASE)/%.rgh
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+else
+	@echo RGC $<
+	@$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+endif
+
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -75,7 +107,31 @@ else
 	@$(BASE)/mk/c2rst $< $@
 endif
 
+$(BUILD)/%.rgc.rst: $(BASE)/%.rgc
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
+	$(BASE)/mk/c2rst $< $@
+else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
+	@echo RST $<
+	@$(BASE)/mk/c2rst $< $@
+endif
+
 $(BUILD)/%.h.rst: $(BASE)/%.h
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(BASE)/mk/twsp $<
+	$(BASE)/mk/c2rst $< $@
+else
+	@echo TWSP $<
+	@$(BASE)/mk/twsp $<
+	@echo RST $<
+	@$(BASE)/mk/c2rst $< $@
+endif
+
+$(BUILD)/%.rgh.rst: $(BASE)/%.rgh
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
 	$(BASE)/mk/twsp $<

@@ -31,6 +31,8 @@ CFLAGS += \
 	$(VISIBLITYFLAG) \
 	-DNDEBUG \
 	-I"$(BASE)/include" \
+	-I"$(BASE)/src" \
+	-I"$(BUILD)/src" \
 	-I"$(BUILD)"
 
 LDFLAGS += \
