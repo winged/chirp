@@ -893,16 +893,19 @@ ch_chirp_message_finish(
             ichirp->message_queue,
             msg
         );
-        A(
-            base_msg == msg,
-            "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        sglib_ch_message_dest_t_delete(
-            &ichirp->message_queue,
-            msg
-        );
+        // TODO: Think about this on message-queue-merge patch
+        if(base_msg != NULL) {
+            A(
+                base_msg == msg,
+                "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
+                (void*) chirp,
+                (void*) msg
+            );
+            sglib_ch_message_dest_t_delete(
+                &ichirp->message_queue,
+                msg
+            );
+        }
 #   endif
     if(msg->_next != NULL) {
         // move the next message to front of queue
