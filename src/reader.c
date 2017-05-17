@@ -105,7 +105,7 @@ _ch_rd_read_buffer(
 );
 //
 //    Reads ``read`` bytes from the given buffer ``source_buf`` over the given
-//    connection with resepect to the current state.
+//    connection with respect to the current state.
 //
 //
 //    .. todo:: Implement this function.
@@ -373,9 +373,17 @@ _ch_rd_handle_msg(
             (void*) chirp,
             (void*) conn,
             msg->data_len,
-            msg->data
+            (char*) msg->data
         );
 #   endif
+    if (msg->data_len > 0) {
+        L(
+            chirp,
+            "data_len:%d, data:%s",
+            msg->data_len,
+            (char*) msg->data
+        );
+    }
 }
 
 // .. c:function::

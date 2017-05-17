@@ -44,9 +44,11 @@ ch_send_message(ch_chirp_t* chirp);
 //
 // .. code-block:: cpp
 //
-int _msgs = 0;
+int _msg_send_count = 0;
+static ch_message_t _msg_send;
+int _msg_echo_count = 0;
+static ch_message_t _msg_echo;
 static char _data[] = "hello";
-static ch_message_t _msg;
 
 struct ch_test_chirp_thread_s;
 typedef struct ch_test_chirp_thread_s ch_test_chirp_thread_t;
@@ -75,16 +77,27 @@ ch_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 
 static
 void
+ch_echo(ch_message_t* msg, int status, float load)
+{
+    (void)(status);
+    (void)(load);
+    (void)(msg);
+    //ch_qc_free_mem();
+    _msg_echo_count += 1;
+}
+
+static
+void
 ch_sent(ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
     (void)(msg);
     //ch_qc_free_mem();
-    _msgs += 1;
-    if(_msgs < 10)
+    _msg_send_count += 1;
+    if(_msg_send_count < 10) {
         ch_send_message(msg->chirp);
-    else {
+    } else {
         /* TODO: Insted of sleep, actually wait for the last echoed message to
          * arrive.
          */;
@@ -92,6 +105,27 @@ ch_sent(ch_message_t* msg, int status, float load)
         ch_chirp_close_ts(ch_tr_other_chirp(msg->chirp));
         ch_chirp_close_ts(msg->chirp);
     }
+}
+
+static
+void
+ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    A(msg != NULL, "Not a ch_message_t*");
+    if(!(msg->message_type & CH_MSG_REQ_ACK)) {
+        // abort if message was an ACK
+        return;
+    }
+    ch_simple_msg(chirp, &_msg_echo);
+    _msg_echo.port = PORT_SENDER;
+    /* TODO Send a echo message
+     * ch_chirp_send(
+     *         chirp,
+     *         &_msg_echo,
+     *         ch_echo
+     * );
+     */
 }
 
 static
@@ -104,11 +138,11 @@ ch_send_message(ch_chirp_t* chirp)
     simple = 1; // TODO remove
 
     if(simple) {
-        ch_simple_msg(chirp, &_msg);
-        _msg.port = PORT_ECHO;
+        ch_simple_msg(chirp, &_msg_send);
+        _msg_send.port = PORT_ECHO;
         ch_chirp_send(
                 chirp,
-                &_msg,
+                &_msg_send,
                 ch_sent
         );
     } else {
@@ -135,6 +169,7 @@ void
 echo_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_register_recv_cb(chirp, ch_recv_echo_message_cb);
 }
 
 static
