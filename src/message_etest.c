@@ -32,6 +32,9 @@
         (ch_test_chirp_thread_t*)(x)->user_data \
     )->other->chirp
 
+#define PORT_SENDER     59731
+#define PORT_ECHO       59732
+
 static
 void
 ch_send_message(ch_chirp_t* chirp);
@@ -64,7 +67,7 @@ ch_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
         msg,
         CH_IPV4,
         "127.0.0.1",
-        59732
+        PORT_ECHO
     );
     msg->data = _data;
     msg->data_len = strnlen(_data, sizeof(_data));
@@ -102,7 +105,7 @@ ch_send_message(ch_chirp_t* chirp)
 
     if(simple) {
         ch_simple_msg(chirp, &_msg);
-        _msg.port = 59732;
+        _msg.port = PORT_ECHO;
         ch_chirp_send(
                 chirp,
                 &_msg,
@@ -110,7 +113,7 @@ ch_send_message(ch_chirp_t* chirp)
         );
     } else {
         ch_message_t* msg = ch_test_gen_message(chirp);
-        msg->port = 59732;
+        msg->port = PORT_ECHO;
         ch_chirp_send(
                 chirp,
                 msg,
@@ -179,9 +182,9 @@ main()
     ch_test_chirp_thread_t echo_thread;
     sender_thread.other = &echo_thread;
     echo_thread.other = &sender_thread;
-    sender_thread.port = 59731;
+    sender_thread.port = PORT_SENDER;
     sender_thread.init = sender_init_handler;
-    echo_thread.port   = 59732;
+    echo_thread.port   = PORT_ECHO;
     echo_thread.init   = echo_init_handler;
     uv_thread_t echo;
     uv_thread_t sender;
