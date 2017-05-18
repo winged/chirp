@@ -9,9 +9,6 @@ http://dl-4.alpinelinux.org/alpine/edge/main
 http://dl-4.alpinelinux.org/alpine/edge/community
 http://dl-4.alpinelinux.org/alpine/edge/testing
 EOF
-if [ "$CC" = "clang" ]; then
-    ICLANG=clang
-fi
 
 if [ "$TLS" = "openssl" ]; then
     ITLS=openssl-dev
@@ -30,8 +27,8 @@ apk add \
     libuv-dev \
     abi-compliance-checker \
     valgrind \
-    $ITLS \
-    $ICLANG
+    clang \
+    $ITLS
 if [ "$TESTSHELL" = "True" ]; then
     apk add gdb
 fi

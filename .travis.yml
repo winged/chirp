@@ -22,6 +22,10 @@ matrix:
       services: docker
       script: ./ci/alpine.sh
     - os: linux
+      env: CC=gcc CI_DISTRO=alpine TLS=libressl MACRO_DEBUG=True
+      services: docker
+      script: ./ci/alpine.sh
+    - os: linux
       env: CC=clang CI_DISTRO=alpine
       services: docker
       script: ./ci/alpine.sh
