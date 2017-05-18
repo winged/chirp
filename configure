@@ -384,9 +384,7 @@ endif
 
         f.write("HEADERS := \\\n")
         h_list = [
-            "%s.h" % path.splitext(
-                replace_base_build(h)
-            )[0]
+            "%s.h" % replace_base_build(h)[:-5]
             for h in h_files if h.endswith("rg.h")
         ]
         for file_ in h_list[:-1]:
