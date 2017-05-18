@@ -93,13 +93,13 @@ def parse_depends(file_, h_files):
                 rgh_depend = path.realpath(
                     path.join(
                         base,
-                        "%s.rgh" % path.splitext(header)[0]
+                        "%s.rg.h" % path.splitext(header)[0]
                     )
                 )
-                if depend in h_files:
-                    yield depend
-                elif rgh_depend in h_files:
+                if rgh_depend in h_files:
                     yield replace_base_build(depend)
+                elif depend in h_files:
+                    yield depend
 
 
 def flat_depends(file_, depends, flat):
@@ -119,9 +119,7 @@ def read_depends():
     depends = collections.defaultdict(set)
     c_files = set()
     c_files.update(match_files("src", "*.c"))
-    c_files.update(match_files("src", "*.rgc"))
     h_files = set()
-    h_files.update(match_files("src", "*.rgh"))
     h_files.update(match_files("src", "*.h"))
     h_files.update(match_files("include", "*.h"))
     files = list(itertools.chain(c_files, h_files))
@@ -389,7 +387,7 @@ endif
             "%s.h" % path.splitext(
                 replace_base_build(h)
             )[0]
-            for h in h_files if h.endswith("rgh")
+            for h in h_files if h.endswith("rg.h")
         ]
         for file_ in h_list[:-1]:
             f.write("\t\t%s \\\n" % file_)
@@ -460,10 +458,7 @@ endif
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")
-    return (
-        [h for h in h_files if h.endswith("rgh")] +
-        [c for c in c_files if c.endswith("rgh")]
-    )
+    return [h for h in h_files if h.endswith("rg.h")]
 
 
 def write_ide_files(args):

@@ -26,7 +26,7 @@ cc = sys.argv[2]
 file_ = sys.argv[3]
 outfile = sys.argv[4]
 prefile = "%s.pre" % outfile
-if debug == "True" and not file_.endswith("rgh"):
+if debug == "True" and not file_.endswith("rg.h"):
     newline_fix = cc in ("gcc", "clang")
     if cc == "cc":
         cc_out = subprocess.run(
