@@ -18,7 +18,7 @@ Internal API
    src/buffer.h.rst
    src/chirp.h.rst
    src/chirp.c.rst
-   src/common.rgh.rst
+   src/common.rg.h.rst
    src/connection.h.rst
    src/connection.c.rst
    src/encryption.h.rst
@@ -29,7 +29,7 @@ Internal API
    src/protocol.c.rst
    src/reader.h.rst
    src/reader.c.rst
-   src/structures.rgh.rst
+   src/structures.rg.h.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst
