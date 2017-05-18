@@ -27,7 +27,7 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                 if _state == State.CFUNC:
                     line = "\\*".join(line.split("*"))
                 if _state == State.RST:
-                    if line.startswith("// .. c:function::"):
+                    if line.strip() == "// .. c:function::":
                         _func  = []
                         _state = State.CFUNC
                     elif line.startswith("// "):

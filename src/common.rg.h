@@ -55,7 +55,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 // will point out all mistakes, checking for stability once will catch the
 // most obvious mistakes, nothing more.
 //
-// So ONLY pass variables to the V, VE and A macros!
+// So ONLY pass variables to the V and A macros!
 //
 // But what is double evaluation?
 //     The macro will just copy the function call, passed to it. So it will
@@ -95,24 +95,23 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 //    :param chirp: Pointer to a chirp object.
 //    :param message: The message to report.
-//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
-//                quantity).
+//    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
 #begindef E(chirp, message, ...)
 {
     if(chirp->_log != NULL) {
-        char buf[1024];
+        char __ch_v_buf_[1024];
         snprintf(
-            buf,
+            __ch_v_buf_,
             1024,
             "%s:%d " message,
             __FILE__,
             __LINE__,
             __VA_ARGS__
         );
-        chirp->_log(buf, 1);
+        chirp->_log(__ch_v_buf_, 1);
     } else {
         fprintf(
             stderr,
@@ -124,6 +123,39 @@ typedef struct ch_receipt_s ch_receipt_t;
     }
 }
 #enddef
+
+// .. c:macro:: TA
+//
+//    Test assert.
+//
+//    Validates the given condition and reports arbitrary arguments when the
+//    condition is not met in debug-/development-mode.
+//
+//    Be aware of :ref:`double-eval`
+//
+//    The assert macro TA(condition, ...) behaves like printf and allows to
+//    print a arbitrary arguments when the given assertion fails.
+//
+//    :param condition: A boolean condition to check.
+//    :param ...: Variadic arguments for xprintf
+//
+// .. code-block:: cpp
+//
+#   begindef TA(condition, ...)
+    {
+        if(!(condition)) {
+            fprintf(
+                stderr,
+                "%s:%d ",
+                __FILE__,
+                __LINE__
+            );
+            fprintf(stderr, __VA_ARGS__);
+            fprintf(stderr, "\n");
+            exit(1);
+        }
+    }
+#   enddef
 
 #ifndef NDEBUG
 
@@ -142,87 +174,48 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    :param chirp: Pointer to a chirp object.
 //    :param condition: A boolean condition to check.
 //    :param message: Message to print when the condition is not met.
-//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
-//                quantity).
+//    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
-#   begindef V(chirp, condition, message, ...)
+#   begindef V(chirp, condition, ...)
     {
         if(!(condition)) {
             if(chirp->_log != NULL) {
-                char buf[1024];
-                snprintf(
-                    buf,
-                    1024,
-                    "%s:%d " message,
+                size_t __ch_v_siz_ = 1024;
+                size_t __ch_v_ret_;
+                char __ch_v_buf_[__ch_v_siz_];
+                char* __ch_v_xbuf_ = __ch_v_buf_;
+                __ch_v_ret_ = snprintf(
+                    __ch_v_xbuf_,
+                    __ch_v_siz_,
+                    "%s:%d ",
                     __FILE__,
-                    __LINE__,
+                    __LINE__
+                );
+                __ch_v_xbuf_ += __ch_v_ret_;
+                __ch_v_siz_ -= __ch_v_ret_;
+                __ch_v_ret_ = snprintf(
+                    __ch_v_xbuf_,
+                    __ch_v_siz_,
                     __VA_ARGS__
                 );
-                chirp->_log(buf, 1);
+                chirp->_log(__ch_v_buf_, 1);
+                return CH_VALUE_ERROR;
             } else {
                 fprintf(
                     stderr,
-                    "%s:%d " message "\n",
+                    "%s:%d ",
                     __FILE__,
-                    __LINE__,
-                    __VA_ARGS__
+                    __LINE__
                 );
+                fprintf(stderr, __VA_ARGS__);
+                fprintf(stderr, "\n");
                 assert(condition);
                 /* See the double evaluation chapter. */
                 fprintf(stderr, "Bad assert: condition not stable\n");
                 assert(0);
             }
-            return CH_VALUE_ERROR;
-        }
-    }
-#   enddef
-
-// .. c:macro:: VE
-//
-//    Validates the given condition and reports a message when the condition is
-//    not met in debug-/development-mode.
-//
-//    Be aware of :ref:`double-eval`
-//
-//    The validate macro VE(chirp, condition, message) behaves like printf
-//    and allows to print a message given an assertion. If that assertion is
-//    not fullfilled, it will print the given message and return
-//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
-//
-//    :param chirp: Pointer to a chirp object.
-//    :param condition: A boolean condition to check.
-//    :param message: Message to print when the condition is not met.
-//
-// .. code-block:: cpp
-//
-#   begindef VE(chirp, condition, message)
-    {
-        if(!(condition)) {
-            if(chirp->_log != NULL) {
-                char buf[1024];
-                snprintf(
-                    buf,
-                    1024,
-                    "%s:%d " message,
-                    __FILE__,
-                    __LINE__
-                );
-                chirp->_log(buf, 1);
-            } else {
-                fprintf(
-                    stderr,
-                    "%s:%d " message "\n",
-                    __FILE__,
-                    __LINE__
-                );
-                assert(condition);
-                /* See the double evaluation chapter. */
-                fprintf(stderr, "Bad assert: condition not stable\n");
-                assert(0);
-            }
-            return CH_VALUE_ERROR;
         }
     }
 #   enddef
@@ -238,8 +231,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 //    :param chirp: Pointer to a chirp object.
 //    :param message: Message to print when the condition is not met.
-//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
-//                quantity).
+//    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
@@ -278,9 +270,8 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    The assert macro A(condition, ...) behaves like printf and allows to
 //    print a arbitrary arguments when the given assertion fails.
 //
-//    :param chirp: Pointer to a chirp object.
-//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
-//                quantity).
+//    :param condition: A boolean condition to check.
+//    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
@@ -314,77 +305,38 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    :param chirp: Pointer to a chirp object.
 //    :param condition: A boolean condition to check.
 //    :param message: Message to print when the condition is not met.
-//    :param ...: Variadic arguments (arbitrary arguments of arbitrary
-//                quantity).
+//    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
-#   begindef V(chirp, condition, message, ...)
+#   begindef V(chirp, condition, ...)
     {
         if(!(condition)) {
             if(chirp->_log != NULL) {
-                char buf[1024];
-                snprintf(
-                    buf,
-                    1024,
-                    "%s:%d " message,
-                    __FILE__,
-                    __LINE__,
-                    __VA_ARGS__
-                );
-                chirp->_log(buf, 1);
-            } else {
-                fprintf(
-                    stderr,
-                    "%s:%d " message "\n",
-                    __FILE__,
-                    __LINE__,
-                    __VA_ARGS__
-                );
-            }
-            return CH_VALUE_ERROR;
-        }
-    }
-#   enddef
-
-// .. c:macro:: VE
-//
-//    Validates the given condition and reports a message when the condition is
-//    not met in release-mode.
-//
-//    Be aware of :ref:`double-eval`
-//
-//    The validate macro VE(chirp, condition, message) behaves like printf
-//    and allows to print a message given an assertion. If that assertion is
-//    not fullfilled, it will print the given message and return
-//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
-//
-//    :param chirp: Pointer to a chirp object.
-//    :param condition: A boolean condition to check.
-//    :param message: Message to print when the condition is not met.
-//
-// .. code-block:: cpp
-//
-#   begindef VE(chirp, condition, message)
-    {
-        if(!(condition)) {
-            if(chirp->_log != NULL) {
-                char buf[1024];
-                snprintf(
-                    buf,
-                    1024,
-                    "%s:%d " message,
+                size_t __ch_v_siz_ = 1024;
+                size_t __ch_v_ret_;
+                char __ch_v_buf_[siz];
+                char* __ch_v_xbuf_ = __ch_v_buf_;
+                __ch_v_ret_ = snprintf(
+                    __ch_v_xbuf_,
+                    __ch_v_siz_,
+                    "%s:%d ",
                     __FILE__,
                     __LINE__
                 );
-                chirp->_log(buf, 1);
+                __ch_v_xbuf_ += __ch_v_ret_;
+                __ch_v_siz_ -= __ch_v_ret_;
+                __ch_v_ret_ = snprintf(__VA_ARGS__);
+                chirp->_log(__ch_v_buf_, 1);
             } else {
                 fprintf(
                     stderr,
-                    "%s:%d " message "\n",
+                    "%s:%d",
                     __FILE__,
                     __LINE__
                 );
+                fprintf(stderr, __VA_ARGS__);
+                fprintf(stderr, "\n");
             }
             return CH_VALUE_ERROR;
         }
@@ -410,7 +362,6 @@ typedef struct ch_receipt_s ch_receipt_t;
 
 #endif
 
-
 #ifndef A
 #   error Assert macro not defined
 #endif
@@ -420,6 +371,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 #ifndef V
 #   error Validate macro not defined
 #endif
+
 
 #define CH_CHIRP_MAGIC 42429
 

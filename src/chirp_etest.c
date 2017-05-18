@@ -2,7 +2,8 @@
 // Testing basic chirp
 // ===================
 //
-// .. todo:: Document purpose
+// Basic test against the libchirp.so, all other tests compile against
+// libchirp.a.
 //
 
 // Project includes

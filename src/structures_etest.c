@@ -55,31 +55,31 @@ ch_test_queue()
     }
     for(int i = 0; i < 2; i++) {
         CH_QQ_DEQUEUE(queue);
-        A(queue == NULL, "Empty dequeue failed");
+        TA(queue == NULL, "Empty dequeue failed");
         CH_QQ_ENQUEUE(queue, &test_data[0]);
-        A(queue == &test_data[0], "Empty enqueue failed");
+        TA(queue == &test_data[0], "Empty enqueue failed");
         CH_QQ_DEQUEUE(queue);
-        A(queue == NULL, "First dequeue failed");
+        TA(queue == NULL, "First dequeue failed");
         CH_QQ_ENQUEUE(queue, &test_data[0]);
-        A(queue == &test_data[0], "Empty enqueue failed");
+        TA(queue == &test_data[0], "Empty enqueue failed");
         CH_QQ_ENQUEUE(queue, &test_data[1]);
-        A(queue == &test_data[0], "Enqueue failed");
-        A(CH_TR_QEND(queue) == &test_data[1], "Enqueue failed");
+        TA(queue == &test_data[0], "Enqueue failed");
+        TA(CH_TR_QEND(queue) == &test_data[1], "Enqueue failed");
         CH_QQ_ENQUEUE(queue, &test_data[2]);
-        A(queue == &test_data[0], "Enqueue failed");
-        A(CH_TR_QEND(queue) == &test_data[2], "Enqueue failed");
-        A(test_data[0].next != NULL, "Enqueue failed");
-        A(test_data[0].qend != NULL, "Enqueue failed");
+        TA(queue == &test_data[0], "Enqueue failed");
+        TA(CH_TR_QEND(queue) == &test_data[2], "Enqueue failed");
+        TA(test_data[0].next != NULL, "Enqueue failed");
+        TA(test_data[0].qend != NULL, "Enqueue failed");
         CH_QQ_DEQUEUE(queue);
-        A(queue == &test_data[1], "Dequeue failed");
-        A(test_data[0].next == NULL, "Dequeue failed");
-        A(test_data[0].qend == NULL, "Dequeue failed");
-        A(CH_TR_QEND(queue) == &test_data[2], "Dequeue failed");
+        TA(queue == &test_data[1], "Dequeue failed");
+        TA(test_data[0].next == NULL, "Dequeue failed");
+        TA(test_data[0].qend == NULL, "Dequeue failed");
+        TA(CH_TR_QEND(queue) == &test_data[2], "Dequeue failed");
         CH_QQ_DEQUEUE(queue);
-        A(queue == &test_data[2], "Dequeue failed");
-        A(CH_TR_QEND(queue) == &test_data[2], "Dequeue failed");
+        TA(queue == &test_data[2], "Dequeue failed");
+        TA(CH_TR_QEND(queue) == &test_data[2], "Dequeue failed");
         CH_QQ_DEQUEUE(queue);
-        A(queue == NULL, "Dequeue failed");
+        TA(queue == NULL, "Dequeue failed");
     }
     return 0;
 }

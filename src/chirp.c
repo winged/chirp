@@ -466,12 +466,12 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_config_t* conf = &chirp->_->config;
-    VE(
+    V(
         chirp,
         conf->DH_PARAMS_PEM != NULL,
         "Config: DH_PARAMS_PEM must be set."
     );
-    VE(
+    V(
         chirp,
         conf->CERT_CHAIN_PEM != NULL,
         "Config: CERT_CHAIN_PEM must be set."
@@ -526,31 +526,31 @@ _ch_chirp_verify_cfg(const ch_chirp_t* chirp)
         conf->REUSE_TIME
     );
     if(conf->FLOW_CONTROL) {
-        VE(
+        V(
             chirp,
             conf->MAX_HANDLERS >= 16,
             "Config: if flow control is on max_handlers must be >= 16."
         );
     } else {
-        VE(
+        V(
             chirp,
             conf->MAX_HANDLERS >= 1,
             "Config: max_handlers must be >= 1."
         );
     }
     if(conf->ACKNOWLEDGE == 0) {
-        VE(
+        V(
             chirp,
             conf->RETRIES != 0,
             "Config: if acknowledge is disabled retries has to be 0."
         );
-        VE(
+        V(
             chirp,
             conf->FLOW_CONTROL != 0,
             "Config: if acknowledge is disabled flow-control has to be 0."
         );
     }
-    VE(
+    V(
         chirp,
         conf->MAX_HANDLERS <= 32,
         "Config: max_handlers must be <= 1."
