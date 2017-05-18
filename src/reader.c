@@ -274,8 +274,9 @@ _ch_rd_handle_msg(
 {
     ch_chirp_t* chirp = conn->chirp;
     /* Pause reading on last handler. */
-    if(reader->last)
+    if(reader->last) {
         uv_read_stop((uv_stream_t*) &conn->client);
+    }
     reader->state = CH_RD_WAIT;
 
     if(msg->type & CH_MSG_REQ_ACK) {
@@ -363,14 +364,16 @@ _ch_rd_handle_msg(
         L(
             chirp,
             "Read message with id: %s, serial:%s from %s:%d type:%d "
-            "ch_chirp_t:%p, ch_connection_t:%p",
+            "ch_chirp_t:%p, ch_connection_t:%p, data_len:%d, data:%s",
             id,
             serial,
             addr.data,
             conn->port,
             msg->type,
             (void*) chirp,
-            (void*) conn
+            (void*) conn,
+            msg->data_len,
+            msg->data
         );
 #   endif
 }
@@ -572,7 +575,6 @@ _ch_rd_read_buffer(
         ch_buf* source_buf,
         size_t read,
         ch_rd_state_t state
-
 )
 //    :noindex:
 //
