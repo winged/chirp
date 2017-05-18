@@ -4,7 +4,6 @@
 
 import codecs
 import sys
-import subprocess
 import re
 
 _state = 0
@@ -21,31 +20,14 @@ class State(object):
     DEF = 1
 
 
-debug = sys.argv[1]
-cc = sys.argv[2]
-file_ = sys.argv[3]
-outfile = sys.argv[4]
-prefile = "%s.pre" % outfile
-if debug == "True" and not file_.endswith("rg.h"):
-    newline_fix = cc in ("gcc", "clang")
-    if cc == "cc":
-        cc_out = subprocess.run(
-            ['cc', '-v'],
-            stderr=subprocess.PIPE
-        ).stderr
-        newline_fix = (
-            b"clang version" in cc_out or
-            b"gcc version" in cc_out
-        )
-else:
-    newline_fix = False
+cc = sys.argv[1]
+file_ = sys.argv[2]
+outfile = sys.argv[3]
 with codecs.open(file_, encoding="UTF-8") as in_:
     with codecs.open(outfile, mode="w", encoding="UTF-8") as out:
         for i, line in enumerate(in_.readlines()):
             line = line.rstrip("\n")
             space = len(line) - len(line.lstrip())
-            if newline_fix:
-                line = line.replace("#include ", "__RGCINCLUDE__ ")
             if _state == State.C:
                 bd = _begindef.match(line)
                 if bd:
@@ -65,13 +47,6 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                     sys.exit(1)
                 elif _enddef.match(stripline):
                     _state = State.C
-                    if newline_fix:
-                        out.write("__RGCNL__0__RGCNL__\n")
-                        for macro_line in _macro:
-                            out.write(
-                                "__RGCNL__0__RGCNL__// %s\n" % macro_line
-                            )
-                        out.write("__RGCNL__0__RGCNL__//\n")
                     line = ""
                 else:
                     line = "%s \\" % line
@@ -82,46 +57,4 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                     len(line) - 1
                 ))
                 sys.exit(1)
-            if newline_fix:
-                if line.startswith("#"):
-                    out.write("%s\n" % line)
-                else:
-                    out.write(
-                        "__RGCNL__%d__RGCNL__ %s\n" % (
-                            space,
-                            line
-                        )
-                    )
-            else:
-                out.write("%s\n" % line)
-if newline_fix:
-    subprocess.check_call([cc, "-E", "-C", "-P", "-o", prefile, outfile])
-    with codecs.open(prefile, encoding="UTF-8") as in_:
-        with codecs.open(outfile, mode="w", encoding="UTF-8") as out:
-            line = line.rstrip("\n")
-            for line in in_.readlines():
-                line = line.rstrip("\n")
-                line = line.replace("__RGCINCLUDE__ ", "#include ")
-                split = line.split("__RGCNL__")
-                newline = [split[0]]
-                split = split[1:]
-                for space, text in (
-                        [split[i:i + 2] for i in range(
-                            0, len(split), 2
-                        )]
-                ):
-                    nline = "%s%s\n" % (
-                        " " * (int(space)),
-                        text.lstrip()
-                    )
-                    sline = nline.strip()
-                    if (
-                            sline.startswith("struct ") or
-                            sline.startswith("typedef ") or
-                            sline == "};"
-                    ):
-                        newline.append(nline.lstrip())
-                    elif sline:
-                        newline.append(nline)
-
-                out.write("".join(newline))
+            out.write("%s\n" % line)

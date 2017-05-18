@@ -73,17 +73,13 @@ else
 	@$(CC) -c -o "$@" "$<" $(CFLAGS)
 endif
 
-ifneq ($(RGC_DEBUG),True)
-RGC_DEBUG:=False
-endif
-
 $(BUILD)/%.h: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
-	$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+	$(BASE)/mk/rgc $(CC) $< $@
 else
 	@echo RGC $<
-	@$(BASE)/mk/rgc $(RGC_DEBUG) $(CC) $< $@
+	@$(BASE)/mk/rgc $(CC) $< $@
 endif
 
 $(BUILD)/%.c.rst: $(BASE)/%.c
