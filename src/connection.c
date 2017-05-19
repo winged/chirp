@@ -704,7 +704,10 @@ ch_cn_send_if_pending(ch_connection_t* conn)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     int pending = BIO_pending(conn->bio_app);
     if(pending < 1) {
-        if(!(conn->flags & CH_CN_TLS_HANDSHAKE))
+        if(!(
+                conn->flags & CH_CN_TLS_HANDSHAKE ||
+                conn->flags & CH_CN_SHUTTING_DOWN
+        ))
             ch_rd_read(conn, NULL, 0); /* Start the reader */
         return;
     }

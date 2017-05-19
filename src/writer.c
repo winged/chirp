@@ -360,6 +360,7 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
     ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
     msg->_conn = conn;
+    writer->msg = msg;
     /* If this is not a user message we have to queue it here */
     if(!(msg->_flags & CH_MSG_USER)) {
         A(
@@ -370,23 +371,8 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
             !(msg->type & CH_MSG_REQ_ACK),
             "Internal message can not require an ACK"
         );
-        if(writer->msg) {
-            A(writer->msg != msg, "Writer inconsistant");
-            CH_MQ_ENQUEUE(writer->msg, msg);
-            L(
-                chirp,
-                "Queued internal message. ch_chirp_t:%p, "
-                "ch_connection_t:%p, ch_message_t:%p",
-                (void*) chirp,
-                (void*) conn,
-                (void*) msg
-            );
-            return;
-        }
-        CH_MQ_ENQUEUE(writer->msg, msg);
+        _ch_wr_queue_message(chirp, msg);
     } else {
-        A(CH_TR_MQEND(msg) != NULL, "Message not head");
-        writer->msg = msg;
         int tmp_err = uv_timer_start(
             &writer->send_timeout,
             _ch_wr_send_timeout_cb,
@@ -404,6 +390,7 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
             );
         }
     }
+    A(CH_TR_MQEND(msg) != NULL, "Message not head");
     /* Use the writers net message structure to write the actual message over
      * the connection. The net message structure is of type
      * :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
@@ -502,23 +489,19 @@ _ch_wr_send_finish(
     ch_chirp_int_t* ichirp  = chirp->_;
     /* We dequeue internal messages here */
     ch_message_t* msg = writer->msg;
+    A(msg != NULL, "Writer has no message");
     if(!(msg->_flags & CH_MSG_USER)) {
-        msg->_flags &= ~CH_MSG_USED;
-        CH_MQ_DEQUEUE(writer->msg);
-        if(writer->msg) {
-            ch_message_t* next = writer->msg;
-            writer->msg = NULL;
-            if(next->_flags & CH_MSG_USER) {
-                ch_chirp_send(chirp, next, next->_send_cb);
-            } else {
-                ch_wr_send(conn, next);
-            }
-        }
+        writer->msg = NULL;
+        ch_chirp_message_finish(
+            chirp,
+            msg,
+            CH_SUCCESS,
+            conn->load
+        );
     } else {
         if(ichirp->config.ACKNOWLEDGE == 0) {
             uv_timer_stop(&writer->send_timeout);
-            ch_message_t* msg = writer->msg;
-            A(msg != NULL, "Writer has no message");
+            writer->msg = NULL;
             ch_chirp_message_finish(
                 chirp,
                 msg,
