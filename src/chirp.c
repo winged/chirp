@@ -876,27 +876,33 @@ ch_chirp_message_finish(
 //
 {
     ch_chirp_int_t* ichirp = chirp->_;
-    ch_message_t* base_msg = NULL;
-#   ifdef NDEBUG
-    if(sglib_ch_message_dest_t_delete_if_member(
-        &ichirp->message_queue,
-        msg,
-        &base_msg
-    ) == 0) {
-        E(
-            chirp,
-            "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-    }
-#   else
-        base_msg = sglib_ch_message_dest_t_find_member(
-            ichirp->message_queue,
-            msg
-        );
-        // TODO: Think about this on message-queue-merge patch
-        if(base_msg != NULL) {
+    if(msg->_flags & CH_MSG_USER) {
+        ch_message_t* base_msg = NULL;
+#       ifdef NDEBUG
+        if(sglib_ch_message_dest_t_delete_if_member(
+            &ichirp->message_queue,
+            msg,
+            &base_msg
+        ) == 0) {
+            E(
+                chirp,
+                "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
+                (void*) chirp,
+                (void*) msg
+            );
+        }
+#       else
+            base_msg = sglib_ch_message_dest_t_find_member(
+                ichirp->message_queue,
+                msg
+            );
+            A(
+                base_msg != NULL,
+                "On finish there must be a message in queue. "
+                "ch_chirp_t:%p ch_message_t:%p",
+                (void*) chirp,
+                (void*) msg
+            );
             A(
                 base_msg == msg,
                 "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
@@ -907,19 +913,29 @@ ch_chirp_message_finish(
                 &ichirp->message_queue,
                 msg
             );
+#       endif
+        ch_message_t* next = msg;
+        CH_MQ_DEQUEUE(next);
+        if(next != NULL) {
+            L(
+                chirp,
+                "Dequeued message. ch_chirp_t:%p, ch_message_t:%p",
+                (void*) chirp,
+                (void*) msg
+            );
+            next->_flags &= ~CH_MSG_QUEUED;
+            if(msg->_flags & CH_MSG_USER) {
+                ch_chirp_send(chirp, next, next->_send_cb);
+            } else {
+                ch_wr_send(next->_conn, next);
+            }
         }
-#   endif
-    ch_message_t* next = msg;
-    CH_MQ_DEQUEUE(next);
-    if(next != NULL) {
         L(
             chirp,
-            "Dequeued message. ch_chirp_t:%p, ch_message_t:%p",
+            "Message finished. ch_chirp_t:%p, ch_message_t:%p",
             (void*) chirp,
             (void*) msg
         );
-        next->_flags &= ~CH_MSG_QUEUED;
-        ch_chirp_send(chirp, next, next->_send_cb);
     }
     msg->_flags &= ~CH_MSG_USED;
     if(msg->_send_cb != NULL) {

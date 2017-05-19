@@ -280,7 +280,7 @@ _ch_rd_handle_msg(
         uv_read_stop((uv_stream_t*) &conn->client);
     reader->state = CH_RD_WAIT;
 
-    if(msg->message_type & CH_MSG_REQ_ACK) {
+    if(msg->type & CH_MSG_REQ_ACK) {
         /* Send ack */
         ch_message_t* ack_msg = &reader->ack_msg;
         memset(ack_msg, 0, sizeof(ch_message_t));
@@ -289,7 +289,7 @@ _ch_rd_handle_msg(
             msg,
             sizeof(ch_msg_message_t)
         );
-        ack_msg->message_type = CH_MSG_ACK;
+        ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
         ack_msg->actor_len  = 0;
         ack_msg->data_len   = 0;
@@ -299,7 +299,7 @@ _ch_rd_handle_msg(
             sizeof(ack_msg->serial)
         );
         ch_wr_send(conn, ack_msg);
-    } else if(msg->message_type & CH_MSG_ACK) {
+    } else if(msg->type & CH_MSG_ACK) {
         ch_writer_t* writer = &conn->writer;
         if(memcmp(
                 writer->msg->identity,
@@ -361,7 +361,7 @@ _ch_rd_handle_msg(
             serial,
             addr.data,
             conn->port,
-            msg->message_type,
+            msg->type,
             (void*) chirp,
             (void*) conn
         );

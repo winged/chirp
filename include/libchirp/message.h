@@ -44,7 +44,7 @@
 //
 //       The serial number of the message.
 //
-//    .. c:member:: uint8_t message_type
+//    .. c:member:: uint8_t type
 //
 //       The type of the message.
 //
@@ -66,7 +66,7 @@
 #define CH_WIRE_MESSAGE \
     uint8_t  identity[CH_ID_SIZE]; \
     uint8_t  serial[CH_ID_SIZE]; \
-    uint8_t  message_type; \
+    uint8_t  type; \
     uint16_t header_len; \
     uint16_t actor_len; \
     uint32_t data_len \

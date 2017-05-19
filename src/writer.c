@@ -328,10 +328,16 @@ _ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg)
         );
         return CH_QUEUED;
     } else {
-        msg->_qend = msg;
+        L(
+            chirp,
+            "Message started. ch_chirp_t:%p, ch_message_t:%p",
+            (void*) chirp,
+            (void*) msg
+        );
+        CH_MQ_ENQUEUE(base_msg, msg);
         sglib_ch_message_dest_t_add(
             &ichirp->message_queue,
-            msg
+            base_msg
         );
         return CH_SUCCESS;
     }
@@ -351,8 +357,53 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
 
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    //ch_chirp_int_t* ichirp = chirp->_;
     ch_writer_t* writer = &conn->writer;
+    ch_chirp_int_t* ichirp = chirp->_;
+    msg->_conn = conn;
+    /* If this is not a user message we have to queue it here */
+    if(!(msg->_flags & CH_MSG_USER)) {
+        A(
+            !(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED),
+            "Message already used"
+        );
+        A(
+            !(msg->type & CH_MSG_REQ_ACK),
+            "Internal message can not require an ACK"
+        );
+        if(writer->msg) {
+            A(writer->msg != msg, "Writer inconsistant");
+            CH_MQ_ENQUEUE(writer->msg, msg);
+            L(
+                chirp,
+                "Queued internal message. ch_chirp_t:%p, "
+                "ch_connection_t:%p, ch_message_t:%p",
+                (void*) chirp,
+                (void*) conn,
+                (void*) msg
+            );
+            return;
+        }
+        CH_MQ_ENQUEUE(writer->msg, msg);
+    } else {
+        A(CH_TR_MQEND(msg) != NULL, "Message not head");
+        writer->msg = msg;
+        int tmp_err = uv_timer_start(
+            &writer->send_timeout,
+            _ch_wr_send_timeout_cb,
+            ichirp->config.TIMEOUT * 1000,
+            0
+        );
+        if(tmp_err != CH_SUCCESS) {
+            E(
+                chirp,
+                "Starting send timeout failed: %d. ch_connection_t:%p,"
+                " ch_chirp_t:%p",
+                tmp_err,
+                (void*) conn,
+                (void*) chirp
+            );
+        }
+    }
     /* Use the writers net message structure to write the actual message over
      * the connection. The net message structure is of type
      * :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
@@ -363,24 +414,6 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
      * the lengths of the header, the actor and the data.
      */
     ch_msg_message_t* net_msg = &writer->net_msg;
-    writer->msg = msg;
-    // TODO reenable timeout
-    /*tmp_err = uv_timer_start(
-        &writer->send_timeout,
-        _ch_wr_send_timeout_cb,
-        ichirp->config.TIMEOUT * 1000,
-        0
-    );
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Starting send timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
-            tmp_err,
-            (void*) conn,
-            (void*) chirp
-        );
-    }*/
     memcpy(
         net_msg->serial,
         msg->serial,
@@ -391,7 +424,7 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
         msg->identity,
         sizeof(net_msg->identity)
     );
-    net_msg->message_type = msg->message_type;
+    net_msg->type         = msg->type;
     net_msg->header_len   = htons(msg->header_len);
     net_msg->actor_len    = htons(msg->actor_len);
     net_msg->data_len     = htonl(msg->data_len);
@@ -467,17 +500,32 @@ _ch_wr_send_finish(
 //
 {
     ch_chirp_int_t* ichirp  = chirp->_;
-    if(ichirp->config.ACKNOWLEDGE == 0) {
-        uv_timer_stop(&writer->send_timeout);
-        ch_message_t* msg = writer->msg;
-        A(msg != NULL, "Writer has no message");
-        writer->msg = NULL;
-        ch_chirp_message_finish(
-            chirp,
-            msg,
-            CH_SUCCESS,
-            conn->load
-        );
+    /* We dequeue internal messages here */
+    ch_message_t* msg = writer->msg;
+    if(!(msg->_flags & CH_MSG_USER)) {
+        msg->_flags &= ~CH_MSG_USED;
+        CH_MQ_DEQUEUE(writer->msg);
+        if(writer->msg) {
+            ch_message_t* next = writer->msg;
+            writer->msg = NULL;
+            if(next->_flags & CH_MSG_USER) {
+                ch_chirp_send(chirp, next, next->_send_cb);
+            } else {
+                ch_wr_send(conn, next);
+            }
+        }
+    } else {
+        if(ichirp->config.ACKNOWLEDGE == 0) {
+            uv_timer_stop(&writer->send_timeout);
+            ch_message_t* msg = writer->msg;
+            A(msg != NULL, "Writer has no message");
+            ch_chirp_message_finish(
+                chirp,
+                msg,
+                CH_SUCCESS,
+                conn->load
+            );
+        }
     }
 }
 
@@ -621,9 +669,11 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 // .. code-block:: cpp
 //
 {
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
+    msg->_flags |= CH_MSG_USER;
     if(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED) {
         E(
             chirp,
@@ -635,9 +685,8 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             send_cb(msg, CH_USED, -1);
         return CH_USED;
     }
-    msg->_send_cb     = send_cb;
-    msg->message_type = CH_MSG_REQ_ACK;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    msg->_send_cb = send_cb;
+    msg->type     = CH_MSG_REQ_ACK;
     if(_ch_wr_queue_message(chirp, msg) == CH_QUEUED) {
         msg->_flags |= CH_MSG_QUEUED;
         return CH_QUEUED;

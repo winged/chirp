@@ -64,6 +64,7 @@ typedef enum {
     CH_MSG_FREE_DATA   = 1 << 2,
     CH_MSG_QUEUED      = 1 << 3,
     CH_MSG_USED        = 1 << 4,
+    CH_MSG_USER        = 1 << 5,
 } ch_msg_flags_t;
 
 #endif //ch_msg_message_h

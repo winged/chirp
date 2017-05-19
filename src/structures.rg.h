@@ -82,6 +82,7 @@
         /* The new item becomes the queue */
         queue = item;
     } else {
+        A(end(queue) != NULL, "This is not a head of a queue");
         A(next(end(queue)) == NULL, "End item used in different queue");
         /* Append the new item at the end of the queue */
         next(end(queue)) = item;
@@ -125,6 +126,7 @@
 #begindef CH_GQ_DEQUEUE(queue, next, end)
 {
     if(queue != NULL) {
+        A(end(queue) != NULL, "This is not a head of a queue");
         A(next(end(queue)) == NULL, "End item used in different queue");
         void* __ch_gq_next_ = next(queue);
         if(__ch_gq_next_ != NULL) {
