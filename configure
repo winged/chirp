@@ -493,7 +493,7 @@ def write_pfix(rg_list):
     for file_ in rg_list:
         new_file = path.join(_build, file_[_baselen + 1:])
         new_file = "%s%s" % (
-            new_file[:-3],
+            new_file[:-4],
             new_file[-1],
         )
         replaces.append("('%s', '%s')," % (
@@ -526,6 +526,7 @@ for line in sys.stdin.readlines():
         )
     except Exception as e:
         print("failed", e)
+
 
 if __name__ == "__main__":
     args = parse()

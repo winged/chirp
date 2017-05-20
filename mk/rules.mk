@@ -77,26 +77,6 @@ else
 endif
 endif
 
-$(BUILD)/%.o: $(BUILD)/%.c
-	@mkdir -p "$(dir $@)"
-ifeq ($(MACRO_DEBUG),True)
-ifeq ($(VERBOSE),True)
-	$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	$(CC) -c -o $@ $@.c $(NWCFLAGS)
-else
-	@echo MDCC $<
-	@$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	@$(CC) -c -o $@ $@.c $(NWCFLAGS)
-endif
-else
-ifeq ($(VERBOSE),True)
-	$(CC) -c -o $@ $< $(CFLAGS)
-else
-	@echo CC $<
-	@$(CC) -c -o $@ $< $(CFLAGS)
-endif
-endif
-
 $(BUILD)/%.h: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
