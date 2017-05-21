@@ -202,8 +202,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
         (void*) chirp
     );
     /* In production we allow the semaphore to drop below zero but log it as
-     * an error.
-     */
+     * an error. */
     if(ichirp->closing_tasks < 1) {
         int tmp_err;
         tmp_err = uv_prepare_stop(handle);
@@ -281,8 +280,7 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
      * 3. Every uv_loop iteration before it blocks we check
      *    ichirp->closing_tasks == 0
      * -> if we reach 0 all callbacks are done and we continue freeing memory
-     * etc.
-     */
+     * etc. */
     tmp_err = uv_prepare_start(
         &ichirp->close_check,
         _ch_chirp_check_closing_cb
@@ -970,8 +968,7 @@ ch_chirp_run(
 
     tmp_err = ch_uv_error_map(ch_loop_init(&loop));
     chirp._log = NULL; /* Bootstrap order problem. E checks _log but
-                        * ch_chirp_init() will initialize it.
-                        */
+                        * ch_chirp_init() will initialize it. */
     if(tmp_err != CH_SUCCESS) {
         E(
             (&chirp),

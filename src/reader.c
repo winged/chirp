@@ -194,12 +194,10 @@ _ch_rd_handshake(
         conn
     );
     /* If there is a network race condition we replace the old connection and
-     * leave the old one for garbage collection
-     */
+     * leave the old one for garbage collection */
     if(old_conn != NULL) {
         /* Since we reuse the tree members we have to delete the connection
-         * from the old data-structure, before adding it to the new.
-         */
+         * from the old data-structure, before adding it to the new. */
         L(
             chirp,
             "ch_connection_t:%p replaced ch_connection_t:%p. "
@@ -327,8 +325,7 @@ _ch_rd_handle_msg(
         }
     }
     /* TODO call callback
-     * TODO release to done
-     */
+     * TODO release to done */
     ch_bf_release(&reader->pool, msg->_handler);
 
 #   ifndef NDEBUG
@@ -413,8 +410,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
 
     /* Bytes handled is used for the case when multiple data streams are
      * coming in and the reader switches between various states as for
-     * example CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER.
-     */
+     * example CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER. */
     size_t bytes_handled = 0;
 
     ch_chirp_t* chirp = conn->chirp;
@@ -447,8 +443,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 break;
             case CH_RD_HANDSHAKE:
                 /* We expect that complete handshake arrives at once,
-                 * check in _ch_rd_handshake
-                 */
+                 * check in _ch_rd_handshake */
                 _ch_rd_handshake(
                     conn,
                     reader,

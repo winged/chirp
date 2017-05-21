@@ -95,8 +95,7 @@ sds sdsnewlen(const void *init, size_t initlen) {
     sds s;
     char type = sdsReqType(initlen);
     /* Empty strings are usually created in order to append. Use type 8
-     * since type 5 is not good at this.
-     */
+     * since type 5 is not good at this. */
     if (type == SDS_TYPE_5 && initlen == 0) type = SDS_TYPE_8;
     int hdrlen = sdsHdrSize(type);
     unsigned char *fp; /* flags pointer. */
@@ -148,8 +147,7 @@ sds sdsnewlen(const void *init, size_t initlen) {
 }
 
 /* Create an empty (zero length) sds string. Even in this case the string
- * always has an implicit null term.
- */
+ * always has an implicit null term. */
 sds sdsempty(void) {
     return sdsnewlen("",0);
 }
@@ -230,8 +228,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
 
     /* Don't use type 5: the user is appending to the string and type 5 is
      * not able to remember empty space, so sdsMakeRoomFor() must be called
-     * at every appending operation.
-     */
+     * at every appending operation. */
     if (type == SDS_TYPE_5) type = SDS_TYPE_8;
 
     hdrlen = sdsHdrSize(type);
@@ -241,8 +238,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
         s = (char*)newsh+hdrlen;
     } else {
         /* Since the header size changes, need to move the string forward,
-         * and can't use realloc
-         */
+         * and can't use realloc */
         newsh = s_malloc(hdrlen+newlen+1);
         if (newsh == NULL) return NULL;
         memcpy((char*)newsh+hdrlen, s, len+1);
@@ -301,8 +297,7 @@ size_t sdsAllocSize(sds s) {
 }
 
 /* Return the pointer of the actual SDS allocation (normally SDS strings
- * are referenced by the start of the string buffer).
- */
+ * are referenced by the start of the string buffer). */
 void *sdsAllocPtr(sds s) {
     return (void*) (s-sdsHdrSize(s[-1]));
 }
@@ -385,8 +380,7 @@ void sdsIncrLen(sds s, int incr) {
  * the original length of the sds will be set to zero.
  *
  * if the specified length is smaller than the current length, no operation
- * is performed.
- */
+ * is performed. */
 sds sdsgrowzero(sds s, size_t len) {
     size_t curlen = sdslen(s);
 
@@ -436,8 +430,7 @@ sds sdscatsds(sds s, const sds t) {
 }
 
 /* Destructively modify the sds string 's' to hold the specified binary
- * safe string pointed by 't' of length 'len' bytes.
- */
+ * safe string pointed by 't' of length 'len' bytes. */
 sds sdscpylen(sds s, const char *t, size_t len) {
     if (sdsalloc(s) < len) {
         s = sdsMakeRoomFor(s,len-sdslen(s));
@@ -450,8 +443,7 @@ sds sdscpylen(sds s, const char *t, size_t len) {
 }
 
 /* Like sdscpylen() but 't' must be a null-termined string so that the length
- * of the string is obtained with strlen().
- */
+ * of the string is obtained with strlen(). */
 sds sdscpy(sds s, const char *t) {
     return sdscpylen(s, t, strlen(t));
 }
@@ -470,8 +462,7 @@ int sdsll2str(char *s, long long value) {
     size_t l;
 
     /* Generate the string representation, this method produces
-     * an reversed string.
-     */
+     * an reversed string. */
     v = (value < 0) ? -value : value;
     p = s;
     do {
@@ -502,8 +493,7 @@ int sdsull2str(char *s, unsigned long long v) {
     size_t l;
 
     /* Generate the string representation, this method produces
-     * an reversed string.
-     */
+     * an reversed string. */
     p = s;
     do {
         *p++ = '0'+(v%10);
@@ -544,8 +534,7 @@ sds sdscatvprintf(sds s, const char *fmt, va_list ap) {
     size_t buflen = strlen(fmt)*2;
 
     /* We try to start using a static buffer for speed.
-     * If not possible we revert to heap allocation.
-     */
+     * If not possible we revert to heap allocation. */
     if (buflen > sizeof(staticbuf)) {
         buf = s_malloc(buflen);
         if (buf == NULL) return NULL;
@@ -554,8 +543,7 @@ sds sdscatvprintf(sds s, const char *fmt, va_list ap) {
     }
 
     /* Try with buffers two times bigger every time we fail to
-     * fit the string in the current buffer size.
-     */
+     * fit the string in the current buffer size. */
     while(1) {
         buf[buflen-2] = '\0';
         va_copy(cpy,ap);
@@ -891,8 +879,7 @@ cleanup:
 }
 
 /* Free the result returned by sdssplitlen(), or do nothing if
- * 'tokens' is NULL.
- */
+ * 'tokens' is NULL. */
 void sdsfreesplitres(sds *tokens, int count) {
     if (!tokens) return;
     while(count--)
@@ -933,8 +920,7 @@ sds sdscatrepr(sds s, const char *p, size_t len) {
 }
 
 /* Helper function for sdssplitargs() that returns non zero if 'c'
- * is a valid hex digit.
- */
+ * is a valid hex digit. */
 int is_hex_digit(char c) {
     return (
         c >= '0' && c <= '9'
@@ -946,8 +932,7 @@ int is_hex_digit(char c) {
 }
 
 /* Helper function for sdssplitargs() that converts a hex digit into an
- * integer from 0 to 15
- */
+ * integer from 0 to 15. */
 int hex_digit_to_int(char c) {
     switch(c) {
     case '0': return 0;
@@ -1034,8 +1019,7 @@ sds *sdssplitargs(const char *line, int *argc) {
                         current = sdscatlen(current,&c,1);
                     } else if (*p == '"') {
                         /* closing quote must be followed by a space or
-                         * nothing at all.
-                         */
+                         * nothing at all. */
                         if (*(p+1) && !isspace(*(p+1))) goto err;
                         done=1;
                     } else if (!*p) {
@@ -1050,8 +1034,7 @@ sds *sdssplitargs(const char *line, int *argc) {
                         current = sdscatlen(current,"'",1);
                     } else if (*p == '\'') {
                         /* closing quote must be followed by a space or
-                         * nothing at all.
-                         */
+                         * nothing at all. */
                         if (*(p+1) && !isspace(*(p+1))) goto err;
                         done=1;
                     } else if (!*p) {
@@ -1128,8 +1111,7 @@ sds sdsmapchars(sds s, const char *from, const char *to, size_t setlen) {
 }
 
 /* Join an array of C strings using the specified separator (also a C string).
- * Returns the result as an sds string.
- */
+ * Returns the result as an sds string. */
 sds sdsjoin(char **argv, int argc, char *sep) {
     sds join = sdsempty();
     int j;

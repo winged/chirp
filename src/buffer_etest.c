@@ -62,8 +62,7 @@ ch_gen_plan(ch_buf* data)
     int* plan = (int*) mem->data;
     int override_index = mem->count * override_len;
     /* Full pools are not very probable, so we override the plan to make ensure
-     * that the pool is sometimes empty/full.
-     */
+     * that the pool is sometimes empty/full. */
     if(override)
         for(int i = override_index; i < mem->count; i++)
             plan[i] = override_with;

@@ -144,8 +144,7 @@ _ch_pr_do_handshake(ch_connection_t* conn)
     if(SSL_is_init_finished(conn->ssl)) {
         conn->flags &= ~CH_CN_TLS_HANDSHAKE;
         /* Last handshake state, since we got that on the last read and have to
-         * use it on this read.
-         */
+         * use it on this read. */
         if(conn->tls_handshake_state) {
             L(
                 chirp,

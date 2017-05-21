@@ -93,8 +93,7 @@ ch_is_local_addr(ch_text_address_t* addr)
 //
 {
     /* TODO move to util.c, create _ch_always_encrypt and change this code
-     * accordingly.
-     */
+     * accordingly. */
     return 0;
     return !(
         strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||

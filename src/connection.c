@@ -510,8 +510,7 @@ ch_cn_close_cb(uv_handle_t* handle)
         (void*) chirp
     );
     /* In production we allow the semaphore to drop below 0, but we log an
-     * error
-     */
+     * error. */
     if(conn->shutdown_tasks < 0) {
         E(
             chirp,
@@ -531,8 +530,7 @@ ch_cn_close_cb(uv_handle_t* handle)
         }
         if(conn->ssl != NULL)
             /* The doc says this frees conn->bio_ssl I tested it. let's
-             * hope they never change that.
-             */
+             * hope they never change that. */
             SSL_free(conn->ssl);
         if(conn->bio_app != NULL)
             BIO_free(conn->bio_app);
@@ -674,8 +672,7 @@ ch_cn_read_alloc_cb(
 //
 {
     /* That whole suggested size concept doesn't work, we have to allocated
-     * consistent buffers.
-     */
+     * consistent buffers. */
     (void)(suggested_size);
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
@@ -780,8 +777,7 @@ ch_cn_shutdown(
         return CH_IN_PRORESS;
     }
     /* There are many reasons the connection is not in this data-structure,
-     * therefore we do a blind delete.
-     */
+     * therefore we do a blind delete. */
     ch_connection_t* out_conn;
     sglib_ch_connection_t_delete_if_member(
         &protocol->connections,
