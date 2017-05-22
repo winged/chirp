@@ -33,7 +33,7 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                 if bd:
                     _state = State.DEF
                     _macro = [line]
-                    line = "%sdefine%s" % (bd[1], bd[3])
+                    line = "%sdefine%s" % (bd.group(1), bd.group(3))
                     line = "%s \\" % line
             elif _state == State.DEF:
                 _macro.append(line)
