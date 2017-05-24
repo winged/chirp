@@ -107,15 +107,9 @@ _ch_rd_read_buffer(
 //    Reads ``read`` bytes from the given buffer ``source_buf`` over the given
 //    connection with respect to the current state.
 //
-//
-//    .. todo:: Implement this function.
-//
-//    .. warning:: This function is not yet implemented and will always return
-//                 1.
-//
 //    :param ch_connection_t* conn: Pointer to a connection instance.
 //    :param ch_readert* reader:    Pointer to a reader instance.
-//    :param ch_buf* buf:           Buffer containing ``read`` bytes to be
+//    :param ch_buf* source_buf:    Buffer containing ``read`` bytes to be
 //                                  read, acting as data source.
 //    :param size_t read:           Number of bytes to read.
 //    :param ch_rd_state_t state:   The readers current state (finite-state
@@ -586,8 +580,6 @@ _ch_rd_read_buffer(
 )
 //    :noindex:
 //
-//    TODO: Implement the function
-//
 //    see: :c:func:`_ch_rd_read_buffer`
 //
 // .. code-block:: cpp
@@ -595,18 +587,34 @@ _ch_rd_read_buffer(
 {
     (void)(conn);
     (void)(source_buf);
-    (void)(read);
-    int length = 0;
+    size_t length = 0;
     ch_message_t* msg = reader->msg;
     switch(state) {
         case CH_RD_HEADER:
             length = msg->header_len;
+            A(length == read, "msg->header_len and read are not the same");
+            msg->header = ch_alloc(read + 1);
+            for (size_t i=0; i<read; i++) {
+                msg->actor[i] = source_buf[i];
+            }
             break;
         case CH_RD_ACTOR:
             length = msg->actor_len;
+            A(length == read, "msg->actor_len and read are not the same");
+            msg->actor = ch_alloc(read + 1);
+            for (size_t i=0; i<read; i++) {
+                msg->actor[i] = source_buf[i];
+            }
+            msg->data[read] = '\0';
             break;
         case CH_RD_DATA:
             length = msg->data_len;
+            A(length == read, "msg->data_len and read are not the same");
+            msg->data = ch_alloc(read + 1);
+            for (size_t i=0; i<read; i++) {
+                msg->data[i] = source_buf[i];
+            }
+            msg->data[read] = '\0';
             break;
         default:
             A(0, "Unknown buffer type.");
