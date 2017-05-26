@@ -119,7 +119,7 @@ ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
     }
     ch_simple_msg(chirp, &_msg_echo);
     _msg_echo.port = PORT_SENDER;
-    /* TODO Send a echo message
+    /* TODO Send an echo message
      * ch_chirp_send(
      *         chirp,
      *         &_msg_echo,
