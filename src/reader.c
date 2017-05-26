@@ -598,6 +598,7 @@ _ch_rd_read_buffer(
         case CH_RD_HEADER:
             length = msg->header_len;
             A(length == read, "msg->header_len and read are not the same");
+            // TODO use preallocated memory for header
             msg->header = ch_alloc(read + 1);
             for (size_t i=0; i<read; i++) {
                 msg->actor[i] = source_buf[i];
