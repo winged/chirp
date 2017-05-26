@@ -599,28 +599,32 @@ _ch_rd_read_buffer(
             length = msg->header_len;
             A(length == read, "msg->header_len and read are not the same");
             // TODO use preallocated memory for header
-            msg->header = ch_alloc(read + 1);
-            for (size_t i=0; i<read; i++) {
-                msg->actor[i] = source_buf[i];
-            }
+            msg->header = ch_alloc(read);
+            memcpy(
+                msg->actor,
+                source_buf,
+                read
+            );
             break;
         case CH_RD_ACTOR:
             length = msg->actor_len;
             A(length == read, "msg->actor_len and read are not the same");
-            msg->actor = ch_alloc(read + 1);
-            for (size_t i=0; i<read; i++) {
-                msg->actor[i] = source_buf[i];
-            }
-            msg->data[read] = '\0';
+            msg->actor = ch_alloc(read);
+            memcpy(
+                msg->actor,
+                source_buf,
+                read
+            );
             break;
         case CH_RD_DATA:
             length = msg->data_len;
             A(length == read, "msg->data_len and read are not the same");
-            msg->data = ch_alloc(read + 1);
-            for (size_t i=0; i<read; i++) {
-                msg->data[i] = source_buf[i];
-            }
-            msg->data[read] = '\0';
+            msg->data = ch_alloc(read);
+            memcpy(
+                msg->data,
+                source_buf,
+                read
+            );
             break;
         default:
             A(0, "Unknown buffer type.");
