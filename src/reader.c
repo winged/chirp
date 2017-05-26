@@ -474,9 +474,13 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     E(
                         chirp,
                         "Illegal message header size -> shutdown. "
-                        "ch_chirp_t:%p, ch_connection_t:%p",
+                        "ch_chirp_t:%p, ch_connection_t:%p, "
+                        "read:%lu, bytes_handled:%lu, ch_msg_message_t:%lu",
                         (void*) chirp,
-                        (void*) conn
+                        (void*) conn,
+                        read,
+                        bytes_handled,
+                        sizeof(ch_msg_message_t)
                     );
                     ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
                     return;
