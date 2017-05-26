@@ -360,16 +360,15 @@ _ch_rd_handle_msg(
         L(
             chirp,
             "Read message with id: %s, serial:%s from %s:%d type:%d "
-            "ch_chirp_t:%p, ch_connection_t:%p, data_len:%d, data:%s",
+            "data_len:%d, ch_chirp_t:%p, ch_connection_t:%p",
             id,
             serial,
             addr.data,
             conn->port,
             msg->type,
-            (void*) chirp,
-            (void*) conn,
             msg->data_len,
-            (char*) msg->data
+            (void*) chirp,
+            (void*) conn
         );
 #   endif
     if (msg->data_len > 0) {
