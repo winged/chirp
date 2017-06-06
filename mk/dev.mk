@@ -4,6 +4,10 @@ ALPINE_AND_CLANG := $(shell \
 	[ -f /etc/apk/world ] && [ "$(CC)" == "clang" ] \
 		&& echo True \
 )
+ifeq ($(ALPINE_AND_CLANG),True)
+	IGNORE_COV := True
+endif
+
 MEMCHECK := valgrind --tool=memcheck
 
 CFLAGS += \
@@ -33,7 +37,7 @@ LDFLAGS += \
 	-lpthread \
 	-lcrypto
 
-ifeq ($(ALPINE_AND_CLANG),True)
+ifeq ($(IGNORE_COV),True)
 test: etests cppcheck check-abi todo  ## Test everything
 	@echo Note: Alpine Linux clang does not support coverage
 else
