@@ -910,7 +910,7 @@ ch_chirp_message_finish(
             &ichirp->message_queue,
             msg
         );
-#    endif
+#   endif
     ch_message_t* next = msg;
     CH_MQ_DEQUEUE(next);
     if(next != NULL) {
