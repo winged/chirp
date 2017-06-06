@@ -113,12 +113,8 @@ ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     A(msg != NULL, "Not a ch_message_t*");
-    if(!(msg->message_type & CH_MSG_REQ_ACK)) {
-        // abort if message was an ACK
-        return;
-    }
-    ch_simple_msg(chirp, &_msg_echo);
-    _msg_echo.port = PORT_SENDER;
+    A(!(msg->type & CH_MSG_ACK), "ACK should not call callback");
+    memcpy(&_msg_echo, msg, sizeof(ch_message_t));
     /* TODO Send an echo message
      * ch_chirp_send(
      *         chirp,
