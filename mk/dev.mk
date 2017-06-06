@@ -15,7 +15,6 @@ CFLAGS += \
 	-pedantic \
 	-ffunction-sections \
 	-fdata-sections \
-	-fno-omit-frame-pointer \
 	-Wno-unused-function \
 	$(VISIBLITYFLAG) \
 	-O0 \
