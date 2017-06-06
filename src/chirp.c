@@ -1079,3 +1079,18 @@ ch_libchirp_init(void)
     uv_mutex_init(&_ch_chirp_init_lock);
     return ch_en_openssl_init();
 }
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_register_recv_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_int_t* ichirp = chirp->_;
+    ichirp->recv_cb = recv_cb;
+}

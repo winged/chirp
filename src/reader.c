@@ -267,6 +267,7 @@ _ch_rd_handle_msg(
 //
 {
     ch_chirp_t* chirp = conn->chirp;
+    ch_chirp_int_t* ichirp = chirp->_;
     /* Pause reading on last handler. */
     if(reader->last) {
         uv_read_stop((uv_stream_t*) &conn->client);
@@ -321,8 +322,8 @@ _ch_rd_handle_msg(
     }
     if(!(msg->type & CH_MSG_ACK)) {
         /* TODO release to done */
-        if(chirp->_recv_cb != NULL) {
-            (chirp->_recv_cb)(chirp, msg);
+        if(ichirp->recv_cb != NULL) {
+            (ichirp->recv_cb)(chirp, msg);
         } else {
             E(
                 chirp,
