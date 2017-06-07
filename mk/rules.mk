@@ -178,7 +178,7 @@ ifeq ($(STRIP),True)
 endif
 endif
 ifeq ($(DEV),True)
-	@command -v setfattr > /dev/null && setfattr -n user.pax.flags -v "emr" $@
+	@command -v setfattr > /dev/null && setfattr -n user.pax.flags -v "emr" $@ || true
 endif
 
 ifeq ($(DOC),True)
