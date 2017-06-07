@@ -251,9 +251,9 @@ and
 
 Please install sphinx:
 
-Alpine:         apk add py-sphinx py-sphinx_rtd_theme graphviz
-Debian-based:   apt install python-sphinx python-sphinx-rtd-theme graphviz
-Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme graphviz
+Alpine:         apk add py3-sphinx py3-sphinx_rtd_theme graphviz
+Debian-based:   apt install python3-sphinx python3-sphinx-rtd-theme graphviz
+Redhat-based:   yum install python3-sphinx python3-sphinx-rtd-theme graphviz
 Arch:           pacman -S python-sphinx python-sphinx_rtd_theme graphviz
 OSX:            brew install sphinx-doc graphviz
 """)
