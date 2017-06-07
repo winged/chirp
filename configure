@@ -252,7 +252,7 @@ and
 Please install sphinx:
 
 Alpine:         apk add py-sphinx py-sphinx_rtd_theme graphviz
-Debian-based:   apt install python-sphinx py-sphinx_rtd_theme graphviz
+Debian-based:   apt install python-sphinx python-sphinx-rtd-theme graphviz
 Redhat-based:   yum install python-sphinx python-sphinx_rtd_theme graphviz
 Arch:           pacman -S python-sphinx python-sphinx_rtd_theme graphviz
 OSX:            brew install sphinx-doc graphviz
@@ -301,7 +301,7 @@ def copy_files(args):
 
 
 def write_config():
-    """"Write config.h file with version."""
+    """Write config.h file with version."""
     with codecs.open(
             path.join(_base, "mk", "config.defs.h"),
             "r",
