@@ -154,7 +154,7 @@ endif
 
 $(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp_test.a libchirp.a
 ifeq ($(VERBOSE),True)
-	@if [ "$@" == "$(BUILD)/src/chirp_etest" ]; then \
+	@if [ "$@" = "$(BUILD)/src/chirp_etest" ]; then \
 		LIBCHIRP="-L$(BUILD) -lchirp"; \
 	else \
 		LIBCHIRP="$(BUILD)/libchirp.a"; \
@@ -166,7 +166,7 @@ ifeq ($(STRIP),True)
 endif
 else
 	@echo LD $@
-	@if [ "$@" == "$(BUILD)/src/chirp_etest" ]; then \
+	@if [ "$@" = "$(BUILD)/src/chirp_etest" ]; then \
 		LIBCHIRP="-L$(BUILD) -lchirp"; \
 	else \
 		LIBCHIRP="$(BUILD)/libchirp.a"; \

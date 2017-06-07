@@ -39,7 +39,7 @@ LDFLAGS += \
 
 ifeq ($(IGNORE_COV),True)
 test: etests cppcheck check-abi todo  ## Test everything
-	@echo Note: Alpine Linux clang does not support coverage
+	@echo Note: Coverage disabled or not supported
 else
 CFLAGS += --coverage
 LDFLAGS += --coverage
