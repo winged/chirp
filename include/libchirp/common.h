@@ -34,6 +34,7 @@
 // .. code-block:: cpp
 //
 #include <uv.h>
+#include <stdio.h>
 
 
 // Typedefs
