@@ -240,8 +240,8 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
-        int addr_len = 0;
         struct sockaddr_storage addr;
+        int addr_len = sizeof(struct sockaddr_storage);
         ch_text_address_t taddr;
         if(uv_tcp_getpeername(
                     &conn->client,

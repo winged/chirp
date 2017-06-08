@@ -283,11 +283,18 @@ _ch_rd_handle_msg(
             msg,
             sizeof(ch_msg_message_t)
         );
+        memcpy(
+            ack_msg->address,
+            msg->address,
+            CH_IP_ADDR_SIZE
+        );
         ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
         ack_msg->actor_len  = 0;
         ack_msg->data_len   = 0;
         ack_msg->chirp      = chirp;
+        ack_msg->port       = msg->port;
+        ack_msg->_conn      = msg->_conn;
         ch_random_ints_as_bytes(
             ack_msg->serial,
             sizeof(ack_msg->serial)
