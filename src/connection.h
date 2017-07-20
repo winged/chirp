@@ -2,7 +2,105 @@
 // Connection header
 // =================
 //
-// .. todo:: Document purpose
+// Connection state machine
+// ========================
+//
+// Variables
+// ---------
+//
+// * C = Connection pointer valid
+//
+// * Q = A message is queued
+//
+// * V = Connection timestamp is valid (connection did not timeout)
+//
+// Actions
+// -------
+//
+// enqu = enqueue
+//    Enqueue the message passed to ch_chirp_send().
+//
+// dequ = dequeue
+//    Dequeue a message and send it, or go to idle if there is no message.
+//
+// bufs = create buffers
+//    Create all the data-structures and buffers needed for running a connection.
+//
+// chck = check
+//    Check if a connection has been idle for RESUE_TIME seconds, since the
+//    connection is valid: do nothing.
+//
+// gc = collect connection
+//    Check if a connection has been idle for RESUE_TIME seconds, since the
+//    connection is not valid: close it if needed and cleanup ch_destination_t.
+//
+// reco = reconnect
+//    Reconnect immediately.
+//
+// wait = wait
+//    Reconnect after waiting for TIMEOUT / 2 seconds.
+//
+// clen = cleanup
+//    Cleanup data-structures and buffers, remove pointer to connection from
+//    ch_destination_t.
+//
+//
+// States
+// ------
+//
+// null = null
+//    ch_destination_t for the destination in the message does not exist.
+//
+// clos = closed
+//    ch_destination_t does exist but there is no pointer to the connection.
+//
+// cing = connecting
+//    ch_destination_t exists but the connection is still connecting.
+//
+// idle = idle
+//    ch_destination_t exists, the connection is valid and idle.
+//
+// invalid idle = (Not reachable)
+//    Same as idle, but the connection timed out. On next gc it will be removed.
+//
+// send = sending
+//    The connection is blocked, messages will be enqueued and not sent.
+//
+//
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |                      | send      | done      | fail      | timer      |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |Name         | C| Q| V| act | next| act | next| act | next| act  | next|
+// +=============+==+==+==+=====+=====+=====+=====+=====+=====+======+=====+
+// |null         | 0| 0| 0| init| cing| init| idle| xxx | xxx | xxx  | xxx |
+// |             |  |  |  | enqu|     | bufs|     |     |     |      |     |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |closed       | 0| 0| 1| conn| cing| xxx | xxx | xxx | xxx | chck | clos|
+// |             |  |  |  | enqu|     |     |     |     |     |      |     |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |xxx          | 0| 1| 0| xxx | xxx | xxx | xxx | xxx | xxx | xxx  | xxx |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |connecting   | 0| 1| 1| enqu| cing| bufs| send| wait| cing| chck | cing|
+// |             |  |  |  |     |     |     |     |     | clos|      |     |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |invalid idle | 1| 0| 0| enqu| send| xxx | xxx | clen| clos| gc   | null|
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |idle         | 1| 0| 1| enqu| send| xxx | xxx | clen| clos| chck | idle|
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |xxx          | 1| 1| 0| xxx | xxx | xxx | xxx | xxx | xxx | xxx  | xxx |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+// |sending      | 1| 1| 1| enqu| send| dequ| send| reco| cing| chck | send|
+// |             |  |  |  |     |     |     | idle|     |     |      |     |
+// +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
+//
+//
+// Done depnds on current state:
+//
+// * null: successful accept()
+//
+// * connecting: successful connect()
+//
+// * sending: successful send()
 //
 // .. code-block:: cpp
 //
@@ -278,6 +376,11 @@ struct ch_connection_s {
     ch_connection_t* left;
     ch_connection_t* right;
 };
+
+// TODO: Create ch_destination_t
+// TODO: All callbacks use ch_destination_t and have to check the pointer to
+// ch_connection_t, other functions may deference without check
+// TODO: Timestamp in ch_destination_t
 
 typedef ch_connection_t ch_connection_set_t;
 
