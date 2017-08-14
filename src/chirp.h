@@ -39,6 +39,33 @@
 //
 // .. code-block:: cpp
 //
+// Structures
+// ==========
+//
+// default is composition where the child is part of the parent
+//
+// -> means aggregation. It also means the parent structure is not the owner of
+// the child structure.
+//
+// \* means composition with a pointer (can be replaced)
+//
+// .. code-block:: text
+//
+//    ch_chirp_t
+//        ch_chirp_int_t (pimpl)
+//            ch_protocol_t (connecting / accept)
+//                destination dictionary (ch_destination_t)
+//                old connection dictionary (ch_connection_t)
+//            ch_encryption_t (interface to \*ssl)
+//
+//    ch_destination_t (allows replacing connection to destination)
+//        \*ch_connection_t (can be NULL)
+//            ch_writer_t
+//            ch_reader_t
+//        message-queue (-> ch_message_t)
+//
+//    ch_message_t
+//
 #ifndef ch_chirp_h
 #define ch_chirp_h
 
@@ -212,6 +239,7 @@ struct ch_chirp_int_s {
     ch_message_t*       send_ts_queue_end;
     uv_async_t          send_ts;
     uv_mutex_t          send_ts_queue_lock;
+    // TODO: Why is message_queue not in ch_protocol_t
     ch_message_dest_t*  message_queue;
     ch_recv_cb_t        recv_cb;
 };

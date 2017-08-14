@@ -491,7 +491,7 @@ _ch_wr_send_finish(
     /* We dequeue internal messages here */
     ch_message_t* msg = writer->msg;
     A(msg != NULL, "Writer has no message");
-    if(!(msg->_flags & CH_MSG_USER)) {
+    if(!(msg->_flags & CH_MSG_USER)) { // TODO: Merge this into single case
         writer->msg = NULL;
         ch_chirp_message_finish(
             chirp,
@@ -565,7 +565,7 @@ _ch_wr_send_msg_header_cb(uv_write_t* req, int status)
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_send_error(chirp, writer, conn, status)) return;
-    if(msg->header_len > 0)
+    if(msg->header_len > 0) // TODO: && !(msg->_flags & CH_MSG_SENT_HEADER))
         ch_cn_write(
             conn,
             msg->header,

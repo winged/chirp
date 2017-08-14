@@ -267,6 +267,7 @@ _ch_rd_handle_msg(
 //
 {
     ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     /* Pause reading on last handler. */
     if(reader->last) {

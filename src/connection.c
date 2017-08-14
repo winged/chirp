@@ -312,6 +312,7 @@ _ch_cn_shutdown_cb(
     int tmp_err;
     ch_connection_t* conn = req->handle->data;
     ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     L(
         chirp,
         "Shutdown callback called. ch_connection_t:%p, ch_chirp_t:%p",
