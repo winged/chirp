@@ -377,10 +377,24 @@ struct ch_connection_s {
     ch_connection_t* right;
 };
 
+
+// First pull request
+// TODO: Implement qs_head/qs_tail
+// TODO: Make macros lowercase
+// TODO: Use rbtree for ch_destination_t dictionary
 // TODO: Create ch_destination_t
 // TODO: All callbacks use ch_destination_t and have to check the pointer to
-// ch_connection_t, other functions may deference without check
-// TODO: Timestamp in ch_destination_t
+// ch_connection_t and act accordingly, other functions may deference with
+// an assert.
+// TODO: Timestamp has to be in ch_connection_t because of old connections
+// TODO: Remove current message from ch_writer_t, because the queue contains it
+// Second pull request
+// TODO: Move message-queue to ch_destination_t
+// Third pull request
+// TODO: new queuing
+// TODO: remove CH_MSG_USER
+// TODO: join ack and user messages code-path
+// TODO: handle timeout for acks
 
 typedef ch_connection_t ch_connection_set_t;
 
