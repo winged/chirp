@@ -2,10 +2,6 @@
 // Writer
 // ======
 //
-// Chirp protocol writer.
-// .. todo:: Document purpose
-//
-// .. code-block:: cpp
 
 // Project includes
 // ================
@@ -70,18 +66,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status);
 //
 //    :param uv_connect_t* req: Connect request, containing the connection.
 //    :param int status:        Status of the connection.
-//
-
-// .. c:function::
-static
-ch_inline
-int
-_ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg);
-//
-//    Queue the message if needed. Return CH_QUEUED if the message was queued.
-//
-//    :param ch_chirp_t* chirp: Pointer to a chirp object.
-//    :param ch_message_t* msg: The message to queue.
 //
 
 // .. c:function::
@@ -216,13 +200,12 @@ _ch_wr_check_send_error(
 // .. code-block:: cpp
 //
 {
+    A(writer->msg != NULL, "ⱳriter->msg should be set on callback")
     if(status != CH_SUCCESS) {
-        L(
+        LC(
             chirp,
-            "Write failed with uv status: %d. ch_chirp_t:%p, "
-            "ch_connection_t:%p",
+            "Write failed with uv status: %d. ", "ch_connection_t:%p",
             status,
-            (void*) chirp,
             (void*) conn
         );
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
@@ -247,12 +230,13 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_connection_t* conn = msg->_conn;
     ch_free(conn);
-    ch_chirp_message_finish(
-        chirp,
-        msg,
-        CH_CANNOT_CONNECT,
-        -1
-    );
+    msg->_flags &= ~CH_MSG_USED;
+    if(msg->_send_cb != NULL) {
+        /* The user may free the message in the cb */
+        ch_send_cb_t cb = msg->_send_cb;
+        msg->_send_cb = NULL;
+        cb(msg, CH_CANNOT_CONNECT, -1);
+    }
 }
 
 // .. c:function::
@@ -272,27 +256,24 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
     ch_connection_t* conn = msg->_conn;
     ch_msg_get_address(msg, &taddr);
     if(status == CH_SUCCESS) {
-        L(
+        LC(
             chirp,
-            "Connected to remote %s:%d. ch_chirp_t:%p, ch_connection_t:%p",
+            "Connected to remote %s:%d. ", "ch_connection_t:%p",
             taddr.data,
             msg->port,
-            (void*) chirp,
             (void*) conn
         );
         /* Here we join the code called on accept. */
-        conn->writer.msg = msg;
-        conn->writer.send_msg = ch_wr_send;
+        conn->writer.send_msg = msg;
         ch_pr_conn_start(chirp, conn, &conn->client, 0);
     } else {
-        E(
+        EC(
             chirp,
-            "Connection to remote failed %s:%d (%d). ch_chirp_t:%p, "
+            "Connection to remote failed %s:%d (%d). ",
             "ch_connection_t:%p",
             taddr.data,
             msg->port,
             status,
-            (void*) chirp,
             (void*) conn
         );
         conn->client.data = msg;
@@ -300,48 +281,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
     }
 }
 
-// .. c:function::
-static
-ch_inline
-int
-_ch_wr_queue_message(ch_chirp_t* chirp, ch_message_t* msg)
-//    :noindex:
-//
-//    see: :c:func:`_ch_wr_queue_message`
-//
-// .. code-block:: cpp
-//
-{
-    ch_chirp_int_t* ichirp  = chirp->_;
-    ch_message_t* base_msg = NULL;
-    base_msg = sglib_ch_message_dest_t_find_member(
-        ichirp->message_queue,
-        msg
-    );
-    if(base_msg != NULL) {
-        CH_MQ_ENQUEUE(base_msg, msg);
-        L(
-            chirp,
-            "Queued message. ch_chirp_t:%p, ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        return CH_QUEUED;
-    } else {
-        L(
-            chirp,
-            "Message started. ch_chirp_t:%p, ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        CH_MQ_ENQUEUE(base_msg, msg);
-        sglib_ch_message_dest_t_add(
-            &ichirp->message_queue,
-            base_msg
-        );
-        return CH_SUCCESS;
-    }
-}
 
 // .. c:function::
 void
@@ -356,39 +295,25 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
-    ch_chirp_int_t* ichirp = chirp->_;
+    //ch_chirp_int_t* ichirp = chirp->_;
     msg->_conn = conn;
+    writer->flags = 0;
+    A(writer->msg == NULL, "Message should be null on new write");
     writer->msg = msg;
-    /* If this is not a user message we have to queue it here */
-    if(!(msg->_flags & CH_MSG_USER)) {
-        A(
-            !(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED),
-            "Message already used"
+    /*int tmp_err = uv_timer_start(
+        &writer->send_timeout,
+        _ch_wr_send_timeout_cb,
+        ichirp->config.TIMEOUT * 1000,
+        0
+    ); TODO reenable write timeout
+    if(tmp_err != CH_SUCCESS) {
+        EC(
+            chirp,
+            "Starting send timeout failed: %d. ", "ch_connection_t:%p",
+            tmp_err,
+            (void*) conn
         );
-        A(
-            !(msg->type & CH_MSG_REQ_ACK),
-            "Internal message can not require an ACK"
-        );
-        _ch_wr_queue_message(chirp, msg);
-    } else {
-        int tmp_err = uv_timer_start(
-            &writer->send_timeout,
-            _ch_wr_send_timeout_cb,
-            ichirp->config.TIMEOUT * 1000,
-            0
-        );
-        if(tmp_err != CH_SUCCESS) {
-            E(
-                chirp,
-                "Starting send timeout failed: %d. ch_connection_t:%p,"
-                " ch_chirp_t:%p",
-                tmp_err,
-                (void*) conn,
-                (void*) chirp
-            );
-        }
-    }
-    A(CH_TR_MQEND(msg) != NULL, "Message not head");
+    } */
 
 // Use the writers net message structure to write the actual message over
 // the connection. The net message structure is of type
@@ -488,29 +413,23 @@ _ch_wr_send_finish(
 //
 {
     ch_chirp_int_t* ichirp  = chirp->_;
-    /* We dequeue internal messages here */
     ch_message_t* msg = writer->msg;
     A(msg != NULL, "Writer has no message");
-    if(!(msg->_flags & CH_MSG_USER)) { // TODO: Merge this into single case
-        writer->msg = NULL;
-        ch_chirp_message_finish(
-            chirp,
-            msg,
-            CH_SUCCESS,
-            conn->load
-        );
-    } else {
-        if(ichirp->config.ACKNOWLEDGE == 0) {
-            uv_timer_stop(&writer->send_timeout);
-            writer->msg = NULL;
-            ch_chirp_message_finish(
-                chirp,
-                msg,
-                CH_SUCCESS,
-                conn->load
-            );
-        }
+    if((
+            ichirp->config.ACKNOWLEDGE == 0 ||
+            !(msg->type & CH_MSG_REQ_ACK)
+    )) {
+        uv_timer_stop(&writer->send_timeout);
+        writer->flags |= CH_WR_ACK_RECEIVED; /* Emulate ACK */
     }
+    writer->flags |= CH_WR_WRITE_DONE;
+    ch_chirp_try_message_finish(
+        chirp,
+        writer,
+        msg,
+        CH_SUCCESS,
+        conn->load
+    );
 }
 
 // .. c:function::
@@ -605,10 +524,9 @@ _ch_wr_send_timeout_cb(uv_timer_t* handle)
     ch_writer_t* writer = &conn->writer;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    L(
+    LC(
         chirp,
-        "Write timed out. ch_chirp_t:%p, ch_connection_t:%p",
-        (void*) chirp,
+        "Write timed out. ", "ch_connection_t:%p",
         (void*) conn
     );
     ch_cn_shutdown(conn, CH_TIMEOUT);
@@ -629,14 +547,14 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
+    /* TODO unqueue again
     ch_message_t* cur = ichirp->send_ts_queue;
     while(cur != NULL) {
         ch_message_t* tmp = cur;
         cur = cur->_next;
         tmp->_next = NULL; // Share pointer with message queue
-        tmp->_flags &= ~CH_MSG_QUEUED;
         ch_chirp_send(chirp, tmp, tmp->_send_cb);
-    }
+    } */
     ichirp->send_ts_queue = NULL;
     ichirp->send_ts_queue_end = NULL;
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
@@ -657,25 +575,9 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
-    msg->_flags |= CH_MSG_USER;
-    if(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED) {
-        E(
-            chirp,
-            "Message already used. ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        if(send_cb != NULL)
-            send_cb(msg, CH_USED, -1);
-        return CH_USED;
-    }
     msg->_send_cb = send_cb;
     msg->type     = CH_MSG_REQ_ACK;
-    if(_ch_wr_queue_message(chirp, msg) == CH_QUEUED) {
-        msg->_flags |= CH_MSG_QUEUED;
-        return CH_QUEUED;
-    }
-    msg->_flags |= CH_MSG_USED;
+    msg->_flags  |= CH_MSG_USED;
     ch_chirp_int_t* ichirp  = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     search_conn.ip_protocol = msg->ip_protocol;
@@ -695,8 +597,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         if(!conn) {
             E(
                 chirp,
-                "Could not allocate memory for connection. ch_chirp_t:%p",
-                (void*) chirp
+                "Could not allocate memory for connection%s", ""
             );
             if(send_cb != NULL)
                 send_cb(msg, CH_ENOMEM, -1);
@@ -741,22 +642,20 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 _ch_wr_connect_cb
             );
         }
-        L(
+        LC(
             chirp,
-            "Connecting to remote %s:%d. ch_chirp_t:%p, ch_connection_t:%p",
+            "Connecting to remote %s:%d. ", "ch_connection_t:%p",
             taddr.data,
             msg->port,
-            (void*) chirp,
             (void*) conn
         );
         if(tmp_err != CH_SUCCESS) {
             E(
                 chirp,
-                "Failed to connect to host: %s:%d (%d). ch_chirp_t:%p",
+                "Failed to connect to host: %s:%d (%d)",
                 taddr.data,
                 msg->port,
-                tmp_err,
-                (void*) chirp
+                tmp_err
             );
         }
     } else
@@ -778,22 +677,16 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
-    if(msg->_flags & CH_MSG_QUEUED || msg->_flags & CH_MSG_USED) {
-        E(
+    if(msg->_flags & CH_MSG_USED) {
+        EC(
             chirp,
-            "Message already used. ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
+            "Message already used. ", "ch_message_t:%p",
             (void*) msg
         );
         return CH_USED;
     }
-    msg->_flags |= CH_MSG_QUEUED;
     msg->_send_cb = send_cb;
-    if(ichirp->send_ts_queue == NULL)
-        ichirp->send_ts_queue = msg;
-    if(ichirp->send_ts_queue_end != NULL)
-        ichirp->send_ts_queue_end->_next = msg;
-    ichirp->send_ts_queue_end = msg;
+    // TODO queue again
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
     uv_async_send(&ichirp->send_ts);
     return CH_SUCCESS;
@@ -835,9 +728,8 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Initializing send timeout failed: %d. ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
+            "Initializing send timeout failed: %d",
+            tmp_err
         );
     }
     writer->send_timeout.data = conn;

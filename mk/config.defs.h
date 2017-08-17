@@ -31,6 +31,14 @@
 
 #define CH_MIN_BUFFER_SIZE 1024
 
+// Encryption buffer size. Only change if it doesn't match with your TLS
+// library.
+//
+// .. code-block:: cpp
+
+/* 16k */
+#define CH_ENC_BUFFER_SIZE 16384
+
 // Preallocated buffer size for header. If the size is to small the buffer gets
 // allocated using ch_alloc().
 //

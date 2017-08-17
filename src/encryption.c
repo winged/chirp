@@ -2,8 +2,6 @@
 // Encryption
 // ==========
 //
-// .. todo:: Document purpose
-//
 
 // Project includes
 // ================
@@ -273,8 +271,7 @@ ch_en_start(ch_encryption_t* enc)
     if(method == NULL) {
         E(
             chirp,
-            "Could not get the TLSv1_2_method. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not get the TLSv1_2_method%s", ""
         );
         return CH_TLS_ERROR;
     }
@@ -282,8 +279,7 @@ ch_en_start(ch_encryption_t* enc)
     if(enc->ssl_ctx == NULL) {
         E(
             chirp,
-            "Could create the SSL_CTX. ch_chirp_t:%p",
-            (void*) chirp
+            "Could create the SSL_CTX%s", ""
         );
         return CH_TLS_ERROR;
     }
@@ -313,10 +309,8 @@ ch_en_start(ch_encryption_t* enc)
     ) != 1) {
         E(
             chirp,
-            "Could not set the verification certificate "
-            "%s. ch_chirp_t:%p",
-            ichirp->config.CERT_CHAIN_PEM,
-            (void*) chirp
+            "Could not set the verification certificate %s",
+            ichirp->config.CERT_CHAIN_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -327,9 +321,8 @@ ch_en_start(ch_encryption_t* enc)
     ) != 1) {
         E(
             chirp,
-            "Could not set the certificate %s. ch_chirp_t:%p",
-            ichirp->config.CERT_CHAIN_PEM,
-            (void*) chirp
+            "Could not set the certificate %s",
+            ichirp->config.CERT_CHAIN_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -341,9 +334,8 @@ ch_en_start(ch_encryption_t* enc)
     ) != 1) {
         E(
             chirp,
-            "Could not set the private key %s. ch_chirp_t:%p",
-            ichirp->config.CERT_CHAIN_PEM,
-            (void*) chirp
+            "Could not set the private key %s",
+            ichirp->config.CERT_CHAIN_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -351,9 +343,8 @@ ch_en_start(ch_encryption_t* enc)
     if(SSL_CTX_check_private_key(enc->ssl_ctx) != 1) {
         E(
             chirp,
-            "Private key is not valid %s. ch_chirp_t:%p",
-            ichirp->config.CERT_CHAIN_PEM,
-            (void*) chirp
+            "Private key is not valid %s",
+            ichirp->config.CERT_CHAIN_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -364,9 +355,8 @@ ch_en_start(ch_encryption_t* enc)
     if(paramfile == NULL) {
         E(
             chirp,
-            "Could not open the dh-params %s. ch_chirp_t:%p",
-            ichirp->config.DH_PARAMS_PEM,
-            (void*) chirp
+            "Could not open the dh-params %s",
+            ichirp->config.DH_PARAMS_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -376,9 +366,8 @@ ch_en_start(ch_encryption_t* enc)
     if(dh == NULL) {
         E(
             chirp,
-            "Could not load the dh-params %s. ch_chirp_t:%p",
-            ichirp->config.DH_PARAMS_PEM,
-            (void*) chirp
+            "Could not load the dh-params %s",
+            ichirp->config.DH_PARAMS_PEM
         );
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
@@ -386,9 +375,8 @@ ch_en_start(ch_encryption_t* enc)
     if(SSL_CTX_set_tmp_dh(enc->ssl_ctx, dh) != 1) {
         E(
             chirp,
-            "Could not set the dh-params %s. ch_chirp_t:%p",
-            ichirp->config.DH_PARAMS_PEM,
-            (void*) chirp
+            "Could not set the dh-params %s",
+            ichirp->config.DH_PARAMS_PEM
         );
         ch_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
@@ -404,8 +392,7 @@ ch_en_start(ch_encryption_t* enc)
     ) != 1) {
         E(
             chirp,
-            "Could not set the cipher list. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not set the cipher list%s", ""
         );
         ch_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
@@ -413,8 +400,7 @@ ch_en_start(ch_encryption_t* enc)
     }
     L(
         chirp,
-        "Created SSL context for chirp. ch_chirp_t:%p",
-        (void*) chirp
+        "Created SSL context for chirp%s", ""
     );
 #   ifdef CH_OPENSSL_10_API
         ch_free(dh); // Well no comment, just use libressl

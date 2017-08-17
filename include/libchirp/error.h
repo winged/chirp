@@ -80,6 +80,10 @@
 //       Indicates that the message is already in use. The message will not be
 //       sent.
 //
+//    .. c:member:: CH_MORE
+//
+//       Indicates that the message has not been sent completely.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -98,6 +102,7 @@ typedef enum {
     CH_CANNOT_CONNECT = 12,
     CH_QUEUED         = 13,
     CH_USED           = 14,
+    CH_MORE           = 15,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

@@ -5,15 +5,17 @@ set -e
 cd /etc/apk
 ln -s /outside/ci/alpine/.cache cache
 cat > /etc/apk/repositories <<EOF
-http://dl-4.alpinelinux.org/alpine/edge/main
-http://dl-4.alpinelinux.org/alpine/edge/community
-http://dl-4.alpinelinux.org/alpine/edge/testing
+http://dl-cdn.alpinelinux.org/alpine/v3.6/main
+http://dl-cdn.alpinelinux.org/alpine/v3.6/community
+@edge http://dl-4.alpinelinux.org/alpine/edge/main
+@comm http://dl-4.alpinelinux.org/alpine/edge/community
+@test http://dl-4.alpinelinux.org/alpine/edge/testing
 EOF
 
 if [ "$TLS" = "openssl" ]; then
-    ITLS=openssl-dev
+    export ITLS=openssl-dev
 else
-    ITLS=libressl-dev
+    export ITLS=libressl-dev
 fi
 apk update
 apk upgrade
@@ -25,7 +27,7 @@ apk add \
     graphviz \
     cppcheck \
     libuv-dev \
-    abi-compliance-checker \
+    abi-compliance-checker@edge \
     valgrind \
     clang \
     $ITLS

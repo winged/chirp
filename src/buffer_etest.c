@@ -170,7 +170,7 @@ ch_plan_works(ch_buf* data)
 // .. code-block:: cpp
 
 int
-main()
+main(void)
 {
     ch_qc_init();
     ch_qc_gen gs0[] = { ch_gen_plan, ch_qc_gen_double };

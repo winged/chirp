@@ -8,7 +8,11 @@ ifeq ($(ALPINE_AND_CLANG),True)
 	IGNORE_COV := True
 endif
 
-MEMCHECK := valgrind --tool=memcheck
+ifeq ($(ITLS),libressl-dev)
+	MEMCHECK := valgrind --tool=memcheck --error-exitcode
+else
+	MEMCHECK := valgrind --tool=memcheck
+endif
 
 CFLAGS += \
 	-std=gnu99 \
@@ -75,6 +79,9 @@ etests: all
 	$(BUILD)/src/structures_etest
 	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
 		$(BUILD)/src/structures_etest
+	$(BUILD)/src/message_etest
+	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
+		$(BUILD)/src/message_etest
 
 cppcheck: headers  ## Static analysis
 	cppcheck -v \

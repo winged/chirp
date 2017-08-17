@@ -11,6 +11,7 @@
 
 #include "quickcheck_test.h"
 #include "message.h"
+#include "util.h"
 
 // Definitions
 // ===========
@@ -18,7 +19,7 @@
 
 // .. c:function::
 static
-int _ch_test_gen_data_field(
+size_t _ch_test_gen_data_field(
         float zero_probability,
         float max_probability,
         int max_size,
@@ -38,7 +39,7 @@ int _ch_test_gen_data_field(
 {
     ch_qc_mem_track_t* track;
     double draw = ch_qc_tgen_double();
-    int size = 0;
+    size_t size = 0;
     if(draw > zero_probability) {
         if(draw < max_probability)
             size = max_size;
@@ -46,10 +47,14 @@ int _ch_test_gen_data_field(
             size = ch_qc_tgen_double() * max_size;
         }
     }
+    if(size == 0)
+        return size;
     track = ch_qc_tgen_bytes();
-
-    data = &track->data;
-    (void)(data);
+    track->data = ch_realloc(track->data, size);
+    if(track->size < size)
+        memset(track->data + track->size, 0, size - track->size);
+    track->size = 0;
+    *data = track->data;
     return size;
 }
 
@@ -84,7 +89,7 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     message->data_len = _ch_test_gen_data_field(
         0.1,
         0.05,
-        1042 * 1042,
+        1024,
         &message->data
     );
     int ipv6 = ch_qc_tgen_bool();

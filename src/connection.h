@@ -2,6 +2,9 @@
 // Connection header
 // =================
 //
+// Represents a connection and implements low-level write (low-level read is
+// implemented in protocol.h/c).
+//
 // Connection state machine
 // ========================
 //
@@ -32,7 +35,7 @@
 //
 // gc = collect connection
 //    Check if a connection has been idle for RESUE_TIME seconds, since the
-//    connection is not valid: close it if needed and cleanup ch_destination_t.
+//    connection is not valid: close it if needed and cleanup ch_remote_t.
 //
 // reco = reconnect
 //    Reconnect immediately.
@@ -42,29 +45,44 @@
 //
 // clen = cleanup
 //    Cleanup data-structures and buffers, remove pointer to connection from
-//    ch_destination_t.
+//    ch_remote_t.
 //
 //
 // States
 // ------
 //
 // null = null
-//    ch_destination_t for the destination in the message does not exist.
+//    ch_remote_t for the destination address in the message does not exist.
 //
 // clos = closed
-//    ch_destination_t does exist but there is no pointer to the connection.
+//    ch_remote_t does exist but there is no pointer to the connection.
 //
 // cing = connecting
-//    ch_destination_t exists but the connection is still connecting.
+//    ch_remote_t exists but the connection is still connecting.
 //
 // idle = idle
-//    ch_destination_t exists, the connection is valid and idle.
+//    ch_remote_t exists, the connection is valid and idle.
 //
 // invalid idle = (Not reachable)
 //    Same as idle, but the connection timed out. On next gc it will be removed.
 //
 // send = sending
 //    The connection is blocked, messages will be enqueued and not sent.
+//
+// Triggers
+// --------
+//
+// send
+//    The user of libchirp sends a message
+//
+// done
+//    Defined below
+//
+// fail
+//    Sending of a message fails (all kinds of error are treated the same)
+//
+// timer
+//    The garbage collector timer is triggered (callback from libuv)
 //
 //
 // +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
@@ -93,6 +111,7 @@
 // |             |  |  |  |     |     |     | idle|     |     |      |     |
 // +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
 //
+// Wide version of this table is in doc/chirp_state_machine.ods
 //
 // Done depnds on current state:
 //
@@ -233,8 +252,11 @@ typedef enum {
 //
 //    .. c:member:: size_t buffer_size
 //
-//       The size that shall be used for initializing the libuv (data-)
-//       buffers.
+//       The size of libuv (data-) buffers.
+//
+//    .. c:member:: size_t buffer_tls_size
+//
+//       The size of the tls buffers.
 //
 //    .. c:member:: uv_write_cb write_callback
 //
@@ -355,6 +377,7 @@ struct ch_connection_s {
     uv_buf_t         buffer_wtls_uv;
     uv_buf_t         buffer_any_uv;
     size_t           buffer_size;
+    size_t           buffer_rtls_size;
     uv_write_cb      write_callback;
     size_t           write_written;
     size_t           write_size;
@@ -372,29 +395,31 @@ struct ch_connection_s {
     float            load;
     ch_reader_t      reader;
     ch_writer_t      writer;
-    char             color_field;
-    ch_connection_t* left;
-    ch_connection_t* right;
+    char             color_field; // TODO remove
+    ch_connection_t* left; // TODO remove
+    ch_connection_t* right; // TODO remove
 };
 
 
 // First pull request
 // TODO: Implement qs_head/qs_tail
 // TODO: Make macros lowercase
-// TODO: Use rbtree for ch_destination_t dictionary
-// TODO: Create ch_destination_t
-// TODO: All callbacks use ch_destination_t and have to check the pointer to
+// TODO: Use rbtree for ch_remote_t dictionary
+// TODO: Create ch_remote_t
+// TODO: All callbacks use ch_remote_t and have to check the pointer to
 // ch_connection_t and act accordingly, other functions may deference with
 // an assert.
 // TODO: Timestamp has to be in ch_connection_t because of old connections
 // TODO: Remove current message from ch_writer_t, because the queue contains it
 // Second pull request
-// TODO: Move message-queue to ch_destination_t
+// TODO: Move message-queue to ch_remote_t
 // Third pull request
 // TODO: new queuing
 // TODO: remove CH_MSG_USER
 // TODO: join ack and user messages code-path
 // TODO: handle timeout for acks
+// TODO: remove sglib
+// TODO: remove old queue header
 
 typedef ch_connection_t ch_connection_set_t;
 
@@ -526,7 +551,7 @@ ch_cn_write(
 static
 ch_inline
 int
-ch_connection_cmp(ch_connection_t* x, ch_connection_t* y)
+ch_connection_cmp(ch_connection_t* x, ch_connection_t* y) // TODO remove
 //
 //    Compare operator for connections.
 //

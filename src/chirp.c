@@ -1,9 +1,6 @@
 // =====
 // Chirp
 // =====
-//
-// .. todo:: Document purpose
-//
 
 // Project includes
 // ================
@@ -30,19 +27,6 @@
 #   include <unistd.h>
 #endif
 
-// Sglib Prototypes
-// ================
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
-    ch_message_dest_t,
-    _left,
-    _right,
-    _color_field,
-    CH_MESSAGE_DEST_CMP
-)
-
 // Declarations
 // ============
 //
@@ -54,6 +38,14 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
 // .. code-block:: cpp
 //
 static uv_mutex_t _ch_chirp_init_lock;
+
+// .. c:var:: uv_mutex_t _ch_chirp_log_lock
+//
+//    For clean locking logs we lock when writing a line.
+//
+// .. code-block:: cpp
+//
+static uv_mutex_t _ch_chirp_log_lock;
 
 // .. c:var:: ch_config_t ch_config_defaults
 //
@@ -157,7 +149,7 @@ _ch_chirp_start(uv_async_t* handle);
 // .. c:function::
 static
 ch_error_t
-_ch_chirp_verify_cfg(const ch_chirp_t* chirp);
+_ch_chirp_verify_cfg(ch_chirp_t* chirp);
 //
 //   Verifies the configuration.
 //
@@ -197,9 +189,8 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
     A(ichirp->closing_tasks > -1, "Closing semaphore dropped below zero");
     L(
         chirp,
-        "Check closing semaphore (%d). ch_chirp_t:%p",
-        ichirp->closing_tasks,
-        (void*) chirp
+        "Check closing semaphore (%d)",
+        ichirp->closing_tasks
     );
     /* In production we allow the semaphore to drop below zero but log it as
      * an error. */
@@ -216,8 +207,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
     if(ichirp->closing_tasks < 0) {
         E(
             chirp,
-            "Check closing semaphore dropped blow 0. ch_chirp_t:%p",
-            (void*) chirp
+            "Check closing semaphore dropped blow 0%s", ""
         );
     }
 }
@@ -239,8 +229,7 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     if(chirp->_ == NULL) {
         E(
             chirp,
-            "Chirp closing callback called on closed. ch_chirp_t:%p",
-            (void*) chirp
+            "Chirp closing callback called on closed%s", ""
         );
         return;
     }
@@ -248,15 +237,13 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     if(ichirp->flags & CH_CHIRP_CLOSED) {
         E(
             chirp,
-            "Chirp closing callback called on closed. ch_chirp_t:%p",
-            (void*) chirp
+            "Chirp closing callback called on closed%s", ""
         );
         return;
     }
     L(
         chirp,
-        "Chirp closing callback called. ch_chirp_t:%p",
-        (void*) chirp
+        "Chirp closing callback called%s", ""
     );
     tmp_err = ch_pr_stop(&ichirp->protocol);
     A(tmp_err == CH_SUCCESS, "Could not stop protocol");
@@ -301,12 +288,11 @@ ch_chirp_close_cb(uv_handle_t* handle)
     ch_chirp_t* chirp = handle->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     chirp->_->closing_tasks -= 1;
-    L(
+    LC(
         chirp,
-        "Closing semaphore (%d). uv_handle_t:%p, ch_chirp_t:%p",
+        "Closing semaphore (%d). ", "uv_handle_t:%p",
         chirp->_->closing_tasks,
-        (void*) handle,
-        (void*) chirp
+        (void*) handle
     );
 }
 
@@ -327,17 +313,16 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     uv_async_send(&chirp->_done);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
         uv_stop(ichirp->loop);
-        L(
+        LC(
             chirp,
-            "UV-Loop stopped by chirp. uv_loop_t:%p ch_chirp_t:%p",
-            (void*) ichirp->loop,
-            (void*) chirp
+            "UV-Loop stopped by chirp. ", "uv_loop_t:%p",
+            (void*) ichirp->loop
         );
     }
     uv_mutex_destroy(&ichirp->send_ts_queue_lock);
+    L(chirp, "Closed.%s", "");
     chirp->_ = NULL;
     ch_free(ichirp);
-    L(chirp, "Closed. ch_chirp_t:%p", (void*) chirp);
 }
 
 // .. c:function::
@@ -386,8 +371,7 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         )) {
             E(
                 chirp,
-                "Unable to set SIGINT handler. ch_chirp_t:%p",
-                (void*) chirp
+                "Unable to set SIGINT handler%s", ""
             );
             return;
         }
@@ -401,8 +385,7 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
             uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
             E(
                 chirp,
-                "Unable to set SIGTERM handler. ch_chirp_t:%p",
-                (void*) chirp
+                "Unable to set SIGTERM handler%s", ""
             );
         }
 #   else
@@ -454,7 +437,7 @@ _ch_chirp_start(uv_async_t* handle)
 // .. c:function::
 static
 ch_error_t
-_ch_chirp_verify_cfg(const ch_chirp_t* chirp)
+_ch_chirp_verify_cfg(ch_chirp_t* chirp)
 //    :noindex:
 //
 //    see: :c:func:`_ch_chirp_verify_cfg`
@@ -624,19 +607,17 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
     if(ichirp->flags & CH_CHIRP_CLOSING) {
         E(
             chirp,
-            "Close already in progress. ch_chirp_t:%p",
-            (void*) chirp
+            "Close already in progress%s", ""
         );
         return CH_IN_PRORESS;
     }
     ichirp->flags |= CH_CHIRP_CLOSING;
     ichirp->close.data = chirp;
-    L(chirp, "Closing chirp via callback. ch_chirp_t:%p", (void*) chirp);
+    L(chirp, "Closing chirp via callback%s", "");
     if(uv_async_send(&ichirp->close) < 0) {
         E(
             chirp,
-            "Could not call close callback. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not call close callback%s", ""
         );
         return CH_UV_ERROR; // NOCOV only breaking things will trigger this
     }
@@ -709,8 +690,9 @@ ch_chirp_init(
 {
     int tmp_err;
     uv_mutex_lock(&_ch_chirp_init_lock);
-    chirp->_done_cb = done;
     memset(chirp, 0, sizeof(ch_chirp_t));
+    chirp->_log_lock = &_ch_chirp_log_lock;
+    chirp->_done_cb = done;
     chirp->_init            = CH_CHIRP_MAGIC;
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
     if(!ichirp) {
@@ -757,8 +739,7 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
         E(
             chirp,
-            "Could not initialize close callback. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not initialize close callback%s", ""
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -768,8 +749,7 @@ ch_chirp_init(
     if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
         E(
             chirp,
-            "Could not initialize done handler. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not initialize done handler%s", ""
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -780,8 +760,7 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
         E(
             chirp,
-            "Could not initialize done handler. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not initialize done handler%s", ""
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -792,8 +771,7 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->send_ts, _ch_wr_send_ts_cb) < 0) {
         E(
             chirp,
-            "Could not initialize send_ts handler. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not initialize send_ts handler%s", ""
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -808,9 +786,8 @@ ch_chirp_init(
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Could not start protocol: %d. ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
+            "Could not start protocol: %d",
+            tmp_err
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -826,9 +803,8 @@ ch_chirp_init(
 #       endif
             E(
                 chirp,
-                "Could not start encryption: %d. ch_chirp_t:%p",
-                tmp_err,
-                (void*) chirp
+                "Could not start encryption: %d",
+                tmp_err
             );
             ch_free(ichirp);
             chirp->_init = 0;
@@ -844,11 +820,10 @@ ch_chirp_init(
         id_str,
         sizeof(id_str)
     );
-    L(
+    LC(
         chirp,
-        "Chirp initialized id: %s. ch_chirp_t:%p, uv_loop_t:%p",
+        "Chirp initialized id: %s. ", "uv_loop_t:%p",
         id_str,
-        (void*) chirp,
         (void*) loop
     );
 #   endif
@@ -860,85 +835,46 @@ ch_chirp_init(
 
 // .. c:function::
 void
-ch_chirp_message_finish(
+ch_chirp_try_message_finish(
         ch_chirp_t* chirp,
+        ch_writer_t* writer,
         ch_message_t* msg,
         int status,
         float load
 )
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_message_finish`
+//    see: :c:func:`ch_chirp_try_message_finish`
 //
 // .. code-block:: cpp
 //
 {
-    ch_chirp_int_t* ichirp = chirp->_;
-    ch_message_t* base_msg = NULL;
-#   ifdef NDEBUG
-        if(sglib_ch_message_dest_t_delete_if_member(
-            &ichirp->message_queue,
-            msg,
-            &base_msg
-        ) == 0) {
-            E(
-                chirp,
-                "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
-                (void*) chirp,
-                (void*) msg
-            );
-        }
-#   else
-        base_msg = sglib_ch_message_dest_t_find_member(
-            ichirp->message_queue,
-            msg
+    char flags = writer->flags;
+    if(flags & CH_WR_ACK_RECEIVED && flags & CH_WR_WRITE_DONE) {
+#   ifndef NDEBUG
+        char id_str[33];
+        ch_bytes_to_hex(
+            msg->serial,
+            sizeof(msg->serial),
+            id_str,
+            sizeof(id_str)
         );
-        A(
-            base_msg != NULL,
-            "On finish there must be a message in queue. "
-            "ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
+        LC(
+            chirp,
+            "Finished message: %s. ", "ch_message_t:%p",
+            id_str,
             (void*) msg
-        );
-        A(
-            base_msg == msg,
-            "Message queue inconstant. ch_chirp_t:%p ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        sglib_ch_message_dest_t_delete(
-            &ichirp->message_queue,
-            msg
         );
 #   endif
-    ch_message_t* next = msg;
-    CH_MQ_DEQUEUE(next);
-    if(next != NULL) {
-        L(
-            chirp,
-            "Dequeued message. ch_chirp_t:%p, ch_message_t:%p",
-            (void*) chirp,
-            (void*) msg
-        );
-        next->_flags &= ~CH_MSG_QUEUED;
-        if(msg->_flags & CH_MSG_USER) {
-            ch_chirp_send(chirp, next, next->_send_cb);
-        } else {
-            ch_wr_send(next->_conn, next);
+        writer->flags = 0;
+        writer->msg = NULL;
+        msg->_flags &= ~CH_MSG_USED;
+        if(msg->_send_cb != NULL) {
+            /* The user may free the message in the cb */
+            ch_send_cb_t cb = msg->_send_cb;
+            msg->_send_cb = NULL;
+            cb(msg, status, load);
         }
-    }
-    L(
-        chirp,
-        "Message finished. ch_chirp_t:%p, ch_message_t:%p",
-        (void*) chirp,
-        (void*) msg
-    );
-    msg->_flags &= ~CH_MSG_USED;
-    if(msg->_send_cb != NULL) {
-        /* The user may free the message in the cb */
-        ch_send_cb_t cb = msg->_send_cb;
-        msg->_send_cb = NULL;
-        cb(msg, status, load);
     }
 }
 
@@ -970,9 +906,9 @@ ch_chirp_run(
     chirp._log = NULL; /* Bootstrap order problem. E checks _log but
                         * ch_chirp_init() will initialize it. */
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             (&chirp),
-            "Could not init loop: %d. uv_loop_t:%p",
+            "Could not init loop: %d. ", "uv_loop_t:%p",
             tmp_err,
             (void*) &loop
         );
@@ -980,19 +916,18 @@ ch_chirp_run(
     }
     tmp_err = ch_chirp_init(&chirp, config, &loop, start, NULL, log);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             (&chirp),
-            "Could not init chirp: %d ch_chirp_t:%p",
+            "Could not init chirp: %d. ", "ch_chirp_t:%p",
             tmp_err,
             (void*) &chirp
         );
         return tmp_err;  // NOCOV covered in ch_chirp_init tests
     }
     chirp._->flags |= CH_CHIRP_AUTO_STOP;
-    L(
+    LC(
         (&chirp),
-        "UV-Loop run by chirp. ch_chirp_t:%p, uv_loop_t:%p",
-        (void*) &chirp,
+        "UV-Loop run by chirp. ", "uv_loop_t:%p",
         (void*) &loop
     );
     /* This works and is not TOO bad because the function blocks. */
@@ -1001,9 +936,9 @@ ch_chirp_run(
     tmp_err = ch_run(&loop);
     *chirp_out = NULL;
     if(tmp_err != 0) {
-        E(
+        EC(
             (&chirp),
-            "uv_run returned with error: %d, uv_loop_t:%p",
+            "uv_run returned with error: %d. ", "uv_loop_t:%p",
             tmp_err,
             (void*) &loop
         );
@@ -1062,6 +997,7 @@ ch_libchirp_cleanup(void)
 //
 {
     uv_mutex_destroy(&_ch_chirp_init_lock);
+    uv_mutex_destroy(&_ch_chirp_log_lock);
     return ch_en_openssl_cleanup();
 }
 
@@ -1077,6 +1013,7 @@ ch_libchirp_init(void)
 //
 {
     uv_mutex_init(&_ch_chirp_init_lock);
+    uv_mutex_init(&_ch_chirp_log_lock);
     return ch_en_openssl_init();
 }
 

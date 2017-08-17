@@ -539,7 +539,7 @@ ch_inline
 double
 ch_qc_tgen_double(void)
 //
-//    Generate float of type double.
+//    Generate positive float of type double.
 //
 //    :rtype: dobule
 //

@@ -27,7 +27,8 @@ sudo docker run -it \
     -e "CC=$CC" \
     -e "TLS=$TLS" \
     -e "TESTSHELL=$TESTSHELL" \
+    -e "VERBOSE=$VERBOSE" \
     -v "$(pwd -P)/..":/outside \
     --rm \
-    alpine:edge \
+    alpine:3.6 \
     /outside/ci/alpine/run.sh

@@ -138,11 +138,6 @@ struct ch_message_s {
     ch_send_cb_t   _send_cb;
     void*          _conn;
     int            _handler;
-    ch_message_t*  _next;
-    ch_message_t*  _qend;
-    char           _color_field;
-    ch_message_t*  _left;
-    ch_message_t*  _right;
 };
 
 // .. c:type:: ch_msg_message_t

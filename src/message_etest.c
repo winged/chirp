@@ -13,6 +13,7 @@
 #include "common.h"
 #include "quickcheck_test.h"
 #include "message_test.h"
+#include "chirp.h"
 
 // System includes
 // ===============
@@ -38,6 +39,12 @@
 static
 void
 ch_send_message(ch_chirp_t* chirp);
+
+// Definitions
+//
+// .. code-block:: cpp
+//
+MINMAX_FUNCS(int)
 
 // Test functions
 // ==============
@@ -82,7 +89,6 @@ ch_echo(ch_message_t* msg, int status, float load)
     (void)(status);
     (void)(load);
     (void)(msg);
-    //ch_qc_free_mem();
     _msg_echo_count += 1;
 }
 
@@ -93,17 +99,18 @@ ch_sent(ch_message_t* msg, int status, float load)
     (void)(status);
     (void)(load);
     (void)(msg);
-    //ch_qc_free_mem();
+    ch_chirp_t* chirp = msg->chirp;
+    ch_qc_free_mem();
     _msg_send_count += 1;
     if(_msg_send_count < 10) {
-        ch_send_message(msg->chirp);
+        ch_send_message(chirp);
     } else {
         /* TODO: Insted of sleep, actually wait for the last echoed message to
          * arrive.
          */;
         sleep(1);
-        ch_chirp_close_ts(ch_tr_other_chirp(msg->chirp));
-        ch_chirp_close_ts(msg->chirp);
+        ch_chirp_close_ts(ch_tr_other_chirp(chirp));
+        ch_chirp_close_ts(chirp);
     }
 }
 
@@ -114,6 +121,17 @@ ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     A(msg != NULL, "Not a ch_message_t*");
     A(!(msg->type & CH_MSG_ACK), "ACK should not call callback");
+    if(memcmp(msg->data, "hello", min_int(5, msg->data_len)) == 0) {
+        L(
+            chirp,
+            "Echo received hello%s", ""
+        )
+    } else {
+        L(
+            chirp,
+            "Echo received a message%s", ""
+        )
+    }
     memcpy(&_msg_echo, msg, sizeof(ch_message_t));
     /* TODO Send an echo message
      * ch_chirp_send(
@@ -131,7 +149,7 @@ ch_send_message(ch_chirp_t* chirp)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
 
     int simple = ch_qc_tgen_bool();
-    simple = 1; // TODO remove
+    simple = 1;
 
     if(simple) {
         ch_simple_msg(chirp, &_msg_send);
@@ -226,4 +244,5 @@ main()
     uv_thread_join(&echo);
     uv_thread_join(&sender);
     ch_libchirp_cleanup();
+    ch_qc_free_mem();
 }

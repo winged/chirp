@@ -2,7 +2,8 @@
 // Protocol Header
 // ===============
 //
-// .. todo:: Document purpose
+// Implements the chirp protocol in its children ch_reader_t/ch_writer_t, it
+// also handles low-level reading (low-level writing is in connection.h/c)
 //
 // .. code-block:: cpp
 

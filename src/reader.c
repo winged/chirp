@@ -2,9 +2,6 @@
 // Reader
 // ======
 //
-// .. todo:: Document purpose
-//
-// .. code-block:: cpp
 
 // Project includes
 // ================
@@ -99,11 +96,17 @@ int
 _ch_rd_read_buffer(
         ch_connection_t* conn,
         ch_reader_t*     reader,
-        ch_buf*          source_buf,
-        size_t           read,
-        ch_rd_state_t    state
+        ch_message_t*    msg,
+        ch_buf*          src_buf,
+        size_t           to_read,
+        char**           assign_buf,
+        ch_buf*          dest_buf,
+        size_t           dest_buf_size,
+        uint32_t         expected,
+        int              free_flag,
+        size_t*          bytes_handled
 );
-//
+//    TODO update doc
 //    Reads ``read`` bytes from the given buffer ``source_buf`` over the given
 //    connection with respect to the current state.
 //
@@ -161,11 +164,9 @@ _ch_rd_handshake(
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     if(read < sizeof(ch_rd_handshake_t)) {
-        E(
+        EC(
             chirp,
-            "Illegal handshake size -> shutdown. ch_chirp_t:%p, "
-            "ch_connection_t:%p",
-            (void*) chirp,
+            "Illegal handshake size -> shutdown. ", "ch_connection_t:%p",
             (void*) conn
         );
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
@@ -194,11 +195,9 @@ _ch_rd_handshake(
          * from the old data-structure, before adding it to the new. */
         L(
             chirp,
-            "ch_connection_t:%p replaced ch_connection_t:%p. "
-            "ch_chirp_t:%p",
+            "ch_connection_t:%p replaced ch_connection_t:%p",
             (void*) conn,
-            (void*) old_conn,
-            (void*) chirp
+            (void*) old_conn
         );
         sglib_ch_connection_t_delete(
             &protocol->connections,
@@ -229,24 +228,21 @@ _ch_rd_handshake(
             identity,
             sizeof(identity)
         );
-        L(
+        LC(
             chirp,
-            "Handshake with remote %s:%d (%s) done. ch_chirp_t:%p, "
-            "ch_connection_t:%p",
+            "Handshake with remote %s:%d (%s) done. ", "ch_connection_t:%p",
             addr.data,
             conn->port,
             identity,
-            (void*) chirp,
             (void*) conn
         );
     }
 #   endif
     ch_writer_t* writer = &conn->writer;
     if(writer->send_msg != NULL) {
-        ch_wr_msg_cb_t cb = writer->send_msg;
+        ch_message_t* msg = writer->send_msg;
         writer->send_msg = NULL;
-        if(writer->msg != NULL)
-            cb(conn, writer->msg);
+        ch_wr_send(conn, msg);
     }
 }
 
@@ -270,6 +266,7 @@ _ch_rd_handle_msg(
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     /* Pause reading on last handler. */
+    // TODO start reader again
     if(reader->last) {
         uv_read_stop((uv_stream_t*) &conn->client);
     }
@@ -300,6 +297,7 @@ _ch_rd_handle_msg(
             ack_msg->serial,
             sizeof(ack_msg->serial)
         );
+        // TODO use queued send
         ch_wr_send(conn, ack_msg);
     } else if(msg->type & CH_MSG_ACK) {
         ch_writer_t* writer = &conn->writer;
@@ -309,19 +307,19 @@ _ch_rd_handle_msg(
                 CH_ID_SIZE
         ) == 0) {
             ch_message_t* wmsg = writer->msg;
-            writer->msg = NULL;
-            ch_chirp_message_finish(
+            writer->flags |= CH_WR_ACK_RECEIVED;
+            ch_chirp_try_message_finish(
                 chirp,
+                writer,
                 wmsg,
                 CH_SUCCESS,
                 conn->load
             );
         } else {
-            E(
+            EC(
                 chirp,
-                "Received bad ack -> shutdown. "
-                "ch_chirp_t:%p, ch_connection_t:%p",
-                (void*) chirp,
+                "Received bad ack -> shutdown. ",
+                "ch_connection_t:%p",
                 (void*) conn
             );
             ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
@@ -329,20 +327,15 @@ _ch_rd_handle_msg(
         }
     }
     if(!(msg->type & CH_MSG_ACK)) {
-        /* TODO release to done */
         if(ichirp->recv_cb != NULL) {
-            (ichirp->recv_cb)(chirp, msg);
+            ichirp->recv_cb(chirp, msg);
         } else {
             E(
                 chirp,
-                "No receiving callback function registered. "
-                "ch_chirp_t:%p",
-                (void*) chirp
+                "No receiving callback function registered%s", ""
             );
         }
     }
-
-    ch_bf_release(&reader->pool, msg->_handler);
 
 #   ifndef NDEBUG
         ch_text_address_t addr;
@@ -366,28 +359,24 @@ _ch_rd_handle_msg(
             serial,
             sizeof(serial)
         );
-        L(
+        LC(
             chirp,
-            "Read message with id: %s, serial:%s from %s:%d type:%d "
-            "data_len:%d, ch_chirp_t:%p, ch_connection_t:%p",
+            "Read message with id: %s, serial:%s\n"
+            "                          "
+            "from %s:%d type:%d data_len:%d. ", "ch_connection_t:%p",
             id,
             serial,
             addr.data,
             conn->port,
             msg->type,
             msg->data_len,
-            (void*) chirp,
             (void*) conn
         );
 #   endif
-    if (msg->data_len > 0) {
-        L(
-            chirp,
-            "data_len:%d, data:%s",
-            msg->data_len,
-            (char*) msg->data
-        );
-    }
+
+    /* TODO release to done */
+    ch_bf_release(&reader->pool, msg->_handler);
+
 }
 
 // .. c:function::
@@ -405,10 +394,9 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(status < 0) {
-        L(
+        LC(
             chirp,
-            "Sending handshake failed. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Sending handshake failed. ", "ch_connection_t:%p",
             (void*) conn
         );
         ch_cn_shutdown(conn, status);
@@ -442,15 +430,14 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ch_reader_t* reader = &conn->reader;
-    L(
+    LC(
         chirp,
-        "Reader state: %s ch_chirp_t:%p, "
-        "ch_connection_t:%p",
+        "Reader state: %s. ", "ch_connection_t:%p",
         _ch_rd_state_names[reader->state],
-        (void*) chirp,
         (void*) conn
     );
     do {
+        int to_read = read - bytes_handled;
         switch(reader->state) {
             case CH_RD_START:
                 reader->hs.port = htons(ichirp->public_port);
@@ -473,37 +460,37 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     conn,
                     reader,
                     buf + bytes_handled,
-                    read - bytes_handled
+                    to_read
                 );
                 bytes_handled += sizeof(ch_rd_handshake_t);
                 reader->state = CH_RD_WAIT;
                 break;
             case CH_RD_WAIT:
-                /* TODO partial read */
-                if(read + bytes_handled < sizeof(ch_msg_message_t)) {
-                    E(
-                        chirp,
-                        "Illegal message header size -> shutdown. "
-                        "ch_chirp_t:%p, ch_connection_t:%p, "
-                        "read:%lu, bytes_handled:%lu, ch_msg_message_t:%lu",
-                        (void*) chirp,
-                        (void*) conn,
-                        read,
-                        bytes_handled,
+                /* TODO add read timeout (dos protection) */
+                if(reader->bytes_read == 0) {
+                    reader->handler = ch_bf_acquire(
+                        &reader->pool,
+                        &reader->last
+                    );
+                }
+                handler = reader->handler;
+                msg     = &handler->msg;
+                if(to_read >= (int) sizeof(ch_msg_message_t)) {
+                    /* We can read everything */
+                    memcpy(
+                        msg + reader->bytes_read,
+                        buf + bytes_handled,
                         sizeof(ch_msg_message_t)
                     );
-                    ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
+                } else {
+                    memcpy(
+                        msg + reader->bytes_read,
+                        buf + bytes_handled,
+                        to_read
+                    );
+                    reader->bytes_read += to_read;
                     return;
                 }
-
-                handler     = ch_bf_acquire(&reader->pool, &reader->last);
-                msg         = &handler->msg;
-                reader->msg = msg;
-                memcpy(
-                    msg,
-                    buf + bytes_handled,
-                    sizeof(ch_msg_message_t)
-                );
                 msg->header_len    = ntohs(msg->header_len);
                 msg->actor_len     = ntohs(msg->actor_len);
                 msg->data_len      = ntohl(msg->data_len);
@@ -529,15 +516,23 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_HEADER:
-                msg = reader->msg;
-                bytes_handled +=_ch_rd_read_buffer(
-                    conn,
-                    reader,
-                    buf + bytes_handled,
-                    read - bytes_handled,
-                    CH_RD_HEADER
-                );
-                reader->bytes_read = 0; /* Reset partial buffer reads */
+                handler = reader->handler;
+                msg     = &handler->msg;
+                if(_ch_rd_read_buffer(
+                        conn,
+                        reader,
+                        msg,
+                        buf + bytes_handled,
+                        to_read,
+                        &msg->header,
+                        handler->header,
+                        CH_BF_PREALLOC_HEADER,
+                        msg->header_len,
+                        CH_MSG_FREE_HEADER,
+                        &bytes_handled
+                ) != CH_SUCCESS) {
+                    return;
+                }
                 /* Direct jump to next read state */
                 if(msg->actor_len > 0)
                     reader->state = CH_RD_ACTOR;
@@ -547,15 +542,23 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_ACTOR:
-                msg = reader->msg;
-                bytes_handled +=_ch_rd_read_buffer(
-                    conn,
-                    reader,
-                    buf + bytes_handled,
-                    read - bytes_handled,
-                    CH_RD_ACTOR
-                );
-                reader->bytes_read = 0; /* Reset partial buffer reads */
+                handler = reader->handler;
+                msg     = &handler->msg;
+                if(_ch_rd_read_buffer(
+                        conn,
+                        reader,
+                        msg,
+                        buf + bytes_handled,
+                        to_read,
+                        &msg->actor,
+                        handler->actor,
+                        CH_BF_PREALLOC_ACTOR,
+                        msg->actor_len,
+                        CH_MSG_FREE_ACTOR,
+                        &bytes_handled
+                ) != CH_SUCCESS) {
+                    return;
+                }
                 /* Direct jump to next read state */
                 if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
@@ -563,15 +566,23 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     _ch_rd_handle_msg(conn, reader, msg);
                 break;
             case CH_RD_DATA:
-                msg = reader->msg;
-                bytes_handled +=_ch_rd_read_buffer(
-                    conn,
-                    reader,
-                    buf + bytes_handled,
-                    read - bytes_handled,
-                    CH_RD_DATA
-                );
-                reader->bytes_read = 0; /* Reset partial buffer reads */
+                handler = reader->handler;
+                msg     = &handler->msg;
+                if(_ch_rd_read_buffer(
+                        conn,
+                        reader,
+                        msg,
+                        buf + bytes_handled,
+                        to_read,
+                        &msg->data,
+                        handler->data,
+                        CH_BF_PREALLOC_DATA,
+                        msg->data_len,
+                        CH_MSG_FREE_DATA,
+                        &bytes_handled
+                ) != CH_SUCCESS) {
+                    return;
+                }
                 _ch_rd_handle_msg(conn, reader, msg);
                 break;
             default:
@@ -587,10 +598,16 @@ ch_inline
 int
 _ch_rd_read_buffer(
         ch_connection_t* conn,
-        ch_reader_t* reader,
-        ch_buf* source_buf,
-        size_t read,
-        ch_rd_state_t state
+        ch_reader_t*     reader,
+        ch_message_t*    msg,
+        ch_buf*          src_buf,
+        size_t           to_read,
+        char**           assign_buf,
+        ch_buf*          dest_buf,
+        size_t           dest_buf_size,
+        uint32_t         expected,
+        int              free_flag,
+        size_t*          bytes_handled
 )
 //    :noindex:
 //
@@ -599,45 +616,34 @@ _ch_rd_read_buffer(
 // .. code-block:: cpp
 //
 {
-    (void)(conn);
-    (void)(source_buf);
-    size_t length = 0;
-    ch_message_t* msg = reader->msg;
-    switch(state) {
-        case CH_RD_HEADER:
-            length = msg->header_len;
-            A(length == read, "msg->header_len and read are not the same");
-            // TODO use preallocated memory for header
-            msg->header = ch_alloc(read);
-            memcpy(
-                msg->actor,
-                source_buf,
-                read
-            );
-            break;
-        case CH_RD_ACTOR:
-            length = msg->actor_len;
-            A(length == read, "msg->actor_len and read are not the same");
-            msg->actor = ch_alloc(read);
-            memcpy(
-                msg->actor,
-                source_buf,
-                read
-            );
-            break;
-        case CH_RD_DATA:
-            length = msg->data_len;
-            A(length == read, "msg->data_len and read are not the same");
-            msg->data = ch_alloc(read);
-            memcpy(
-                msg->data,
-                source_buf,
-                read
-            );
-            break;
-        default:
-            A(0, "Unknown buffer type.");
-            break;
+    (void)(conn); // TODO remove?
+    if(reader->bytes_read == 0) {
+        if(expected <= dest_buf_size) {
+            /* Preallocated buf is large enough */
+            *assign_buf = dest_buf;
+        } else {
+            *assign_buf = ch_alloc(expected);
+            msg->_flags |= free_flag;
+        }
     }
-    return length;
+    if(to_read >= expected) {
+        /* We can read everything */
+        memcpy(
+            *assign_buf + reader->bytes_read,
+            src_buf,
+            expected
+        );
+    } else {
+        /* Only partial read possible */
+        memcpy(
+            *assign_buf + reader->bytes_read,
+            src_buf,
+            to_read
+        );
+        reader->bytes_read += to_read;
+        return CH_MORE;
+    }
+    *bytes_handled += expected;
+    reader->bytes_read = 0; /* Reset partial buffer reads */
+    return CH_SUCCESS;
 }

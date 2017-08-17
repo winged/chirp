@@ -2,10 +2,6 @@
 // Connection
 // ==========
 //
-// .. todo:: Document purpose
-//
-// .. code-block:: cpp
-
 
 // Project includes
 // ================
@@ -28,7 +24,7 @@
 
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
+SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV // TODO remove
     ch_connection_t,
     left,
     right,
@@ -38,7 +34,7 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
 
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
+SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV // TODO remove
     ch_connection_set_t,
     left,
     right,
@@ -119,6 +115,10 @@ _ch_cn_write_cb(uv_write_t* req, int status);
 // Definitions
 // ===========
 //
+// .. code-block:: cpp
+
+MINMAX_FUNCS(size_t)
+
 // .. c:function::
 static
 ch_inline
@@ -138,11 +138,13 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
     if(size == 0)
         size = CH_BUFFER_SIZE;
     conn->buffer_uv   = ch_alloc(size);
+    conn->buffer_size = size;
     if(conn->flags & CH_CN_ENCRYPTED) {
         conn->buffer_wtls  = ch_alloc(size);
+        size = min_size_t(size, CH_ENC_BUFFER_SIZE);
         conn->buffer_rtls  = ch_alloc(size);
     }
-    conn->buffer_size = size;
+    conn->buffer_rtls_size = size;
     int alloc_nok = 0;
     if(conn->flags & CH_CN_ENCRYPTED)
         alloc_nok = !(
@@ -153,11 +155,10 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
     else
         alloc_nok = !conn->buffer_uv;
     if(alloc_nok) {
-        E(
+        EC(
             chirp,
-            "Could not allocate memory for libuv and tls. "
-            "ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Could not allocate memory for libuv and tls. ",
+            "ch_connection_t:%p",
             (void*) conn
         );
         return CH_ENOMEM;
@@ -204,12 +205,11 @@ _ch_cn_partial_write(ch_connection_t* conn)
         );
         A(tmp_err > -1, "SSL_write failure unexpected");
         if(tmp_err < 0) {
-            E(
+            EC(
                 chirp,
-                "SSL error writing to BIO, shutting down connection. "
-                "ch_connection_t:%p ch_chirp_t:%p",
-                (void*) conn,
-                (void*) chirp
+                "SSL error writing to BIO, shutting down connection. ",
+                "ch_connection_t:%p",
+                (void*) conn
             );
             ch_cn_shutdown(conn, CH_TLS_ERROR);
             return;
@@ -221,12 +221,11 @@ _ch_cn_partial_write(ch_connection_t* conn)
         );
         A(read > 0, "BIO_read failure unexpected");
         if(read < 1) {
-            E(
+            EC(
                 chirp,
-                "SSL error reading from BIO, shutting down connection. "
-                "ch_connection_t:%p ch_chirp_t:%p",
-                (void*) conn,
-                (void*) chirp
+                "SSL error reading from BIO, shutting down connection. ",
+                "ch_connection_t:%p",
+                (void*) conn
             );
             ch_cn_shutdown(conn, CH_TLS_ERROR);
             return;
@@ -245,12 +244,11 @@ _ch_cn_partial_write(ch_connection_t* conn)
         1,
         _ch_cn_write_cb
     );
-    L(
+    LC(
         chirp,
-        "Called uv_write with %d bytes. "
-        "ch_chirp_t:%p, ch_connection_t:%p",
+        "Called uv_write with %d bytes. ",
+        "ch_connection_t:%p",
         (int) bytes_read,
-        (void*) chirp,
         (void*) conn
     );
     conn->write_written += bytes_encrypted;
@@ -275,20 +273,18 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
         conn->flags &= ~CH_CN_BUF_WTLS_USED;
 #   endif
     if(status < 0) {
-        L(
+        LC(
             chirp,
-            "Sending pending data failed. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Sending pending data failed. ", "ch_connection_t:%p",
             (void*) conn
         );
         ch_cn_shutdown(conn, status);
         return;
     }
-    L(
+    LC(
         chirp,
-        "Write handshake bytes to connection successful. "
-        "ch_chirp_t:%p, ch_connection_t:%p",
-        (void*) chirp,
+        "Write handshake bytes to connection successful. ",
+        "ch_connection_t:%p",
         (void*) conn
     );
     ch_cn_send_if_pending(conn);
@@ -313,31 +309,27 @@ _ch_cn_shutdown_cb(
     ch_connection_t* conn = req->handle->data;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    L(
+    LC(
         chirp,
-        "Shutdown callback called. ch_connection_t:%p, ch_chirp_t:%p",
-        (void*) conn,
-        (void*) chirp
+        "Shutdown callback called. ", "ch_connection_t:%p",
+        (void*) conn
     );
     tmp_err = uv_timer_stop(&conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Stopping shutdown timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
+            "Stopping shutdown timeout failed: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
             (void*) chirp
         );
     }
     uv_handle_t* handle = (uv_handle_t*) req->handle;
     if(uv_is_closing(handle)) {
-        E(
+        EC(
             chirp,
-            "Connection already closed after shutdown. "
-            "ch_connection_t:%p, ch_chirp_t:%p",
-            (void*) conn,
-            (void*) chirp
+            "Connection already closed after shutdown. ",
+            "ch_connection_t:%p",
+            (void*) conn
         );
     } else {
         uv_read_stop(req->handle);
@@ -346,12 +338,11 @@ _ch_cn_shutdown_cb(
         uv_close(handle, ch_cn_close_cb);
         uv_close((uv_handle_t*) &conn->shutdown_timeout, ch_cn_close_cb);
         conn->shutdown_tasks += 2;
-        L(
+        LC(
             chirp,
-            "Closing connection after shutdown. "
-            "ch_connection_t:%p, ch_chirp_t:%p",
-            (void*) conn,
-            (void*) chirp
+            "Closing connection after shutdown. ",
+            "ch_connection_t:%p",
+            (void*) conn
         );
     }
 }
@@ -374,20 +365,17 @@ _ch_cn_shutdown_timeout_cb( uv_timer_t* handle)
     _ch_cn_shutdown_cb(&conn->shutdown_req, 1);
     tmp_err = uv_cancel((uv_req_t*) &conn->shutdown_req);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Canceling shutdown timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
+            "Canceling shutdown timeout failed: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
     }
-    L(
+    LC(
         chirp,
-        "Shutdown timed out closing. ch_connection_t:%p, ch_chirp_t:%p",
-        (void*) conn,
-        (void*) chirp
+        "Shutdown timed out closing. ", "ch_connection_t:%p",
+        (void*) conn
     );
 }
 
@@ -410,10 +398,9 @@ _ch_cn_write_cb(uv_write_t* req, int status)
         conn->flags &= ~CH_CN_BUF_WTLS_USED;
 #   endif
     if(status < 0) {
-        L(
+        LC(
             chirp,
-            "Sending pending data failed. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Sending pending data failed. ", "ch_connection_t:%p",
             (void*) conn
         );
         uv_write_cb cb = conn->write_callback;
@@ -424,23 +411,21 @@ _ch_cn_write_cb(uv_write_t* req, int status)
     }
     if(conn->write_size < conn->write_written) {
         _ch_cn_partial_write(conn);
-        L(
+        LC(
             chirp,
-            "Partially encrypted %d of %d bytes. "
-            "ch_chirp_t:%p, ch_connection_t:%p",
+            "Partially encrypted %d of %d bytes. ",
+            "ch_connection_t:%p",
             (int) conn->write_written,
             (int) conn->write_size,
-            (void*) chirp,
             (void*) conn
         );
     } else {
         int pending = BIO_pending(conn->bio_app);
         if(pending < 1) {
-            L(
+            LC(
                 chirp,
-                "Completely sent %d bytes. ch_chirp_t:%p, ch_connection_t:%p",
+                "Completely sent %d bytes. ", "ch_connection_t:%p",
                 (int) conn->write_written,
-                (void*) chirp,
                 (void*) conn
             );
             conn->write_size = 0;
@@ -454,13 +439,11 @@ _ch_cn_write_cb(uv_write_t* req, int status)
                 conn->flags |= CH_CN_WRITE_PENDING;
                 conn->flags |= CH_CN_BUF_WTLS_USED;
 #           endif
-            L(
+            LC(
                 chirp,
-                "Partially sent %d bytes. "
-                "ch_chirp_t:%p, ch_connection_t:%p",
+                "Partially sent %d bytes. ", "ch_connection_t:%p",
                 (int) conn->buffer_size,
-                (void*) chirp,
-                (void*) conn
+                (void*) chirp
             );
             int read = BIO_read(
                 conn->bio_app,
@@ -475,12 +458,10 @@ _ch_cn_write_cb(uv_write_t* req, int status)
                 1,
                 _ch_cn_write_cb
             );
-            L(
+            LC(
                 chirp,
-                "Called uv_write with %d bytes. ch_chirp_t:%p, "
-                "ch_connection_t:%p",
+                "Called uv_write with %d bytes. ", "ch_connection_t:%p",
                 (int) read,
-                (void*) chirp,
                 (void*) conn
             );
         }
@@ -503,20 +484,18 @@ ch_cn_close_cb(uv_handle_t* handle)
     ch_chirp_int_t* ichirp = chirp->_;
     conn->shutdown_tasks -= 1;
     A(conn->shutdown_tasks > -1, "Shutdown semaphore dropped below zero");
-    L(
+    LC(
         chirp,
-        "Shutdown semaphore (%d). ch_connection_t:%p, ch_chirp_t:%p",
+        "Shutdown semaphore (%d). ", "ch_connection_t:%p",
         conn->shutdown_tasks,
-        (void*) conn,
-        (void*) chirp
+        (void*) conn
     );
     /* In production we allow the semaphore to drop below 0, but we log an
      * error. */
     if(conn->shutdown_tasks < 0) {
         E(
             chirp,
-            "Shutdown semaphore dropped blow 0. ch_chirp_t:%p",
-            (void*) chirp
+            "Shutdown semaphore dropped blow 0%s", ""
         );
     }
     if(conn->shutdown_tasks < 1) {
@@ -536,13 +515,11 @@ ch_cn_close_cb(uv_handle_t* handle)
         if(conn->bio_app != NULL)
             BIO_free(conn->bio_app);
         ch_free(conn);
-        L(
+        LC(
             chirp,
-            "Closed connection, closing semaphore (%d). ch_connection_t:%p, "
-            "ch_chirp_t:%p",
+            "Closed connection, closing semaphore (%d). ", "ch_connection_t:%p",
             chirp->_->closing_tasks,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
     }
 }
@@ -567,26 +544,22 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->write_req.data  = conn;
     tmp_err = ch_rd_init(&conn->reader, ichirp->config.MAX_HANDLERS);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Could not initialize reader: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
+            "Could not initialize reader: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
         return tmp_err;
     }
     ch_wr_init(&conn->writer, conn);
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Initializing shutdown timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
+            "Initializing shutdown timeout failed: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
         return tmp_err;
     }
@@ -615,10 +588,9 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
 #       ifndef NDEBUG
             ERR_print_errors_fp(stderr);
 #       endif
-        E(
+        EC(
             chirp,
-            "Could not create SSL. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Could not create SSL. ", "ch_connection_t:%p",
             (void*) conn
         );
         return CH_TLS_ERROR;
@@ -627,10 +599,9 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
 #       ifndef NDEBUG
             ERR_print_errors_fp(stderr);
 #       endif
-        E(
+        EC(
             chirp,
-            "Could not create BIO pair. ch_chirp_t:%p, ch_connection_t:%p",
-            (void*) chirp,
+            "Could not create BIO pair. ", "ch_connection_t:%p",
             (void*) conn
         );
         SSL_free(conn->ssl);
@@ -649,10 +620,9 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
     sk_SSL_CIPHER_free(ciphers);
 
 #   endif
-    L(
+    LC(
         chirp,
-        "SSL context created. ch_chirp_t:%p, ch_connection_t:%p",
-        (void*) chirp,
+        "SSL context created. ", "ch_connection_t:%p",
         (void*) conn
     );
     return CH_SUCCESS;
@@ -714,7 +684,11 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         conn->flags |= CH_CN_BUF_WTLS_USED;
         conn->flags |= CH_CN_WRITE_PENDING;
 #   endif
-    int read = BIO_read(conn->bio_app, conn->buffer_wtls, conn->buffer_size);
+    int read = BIO_read(
+        conn->bio_app,
+        conn->buffer_wtls,
+        conn->buffer_size
+    );
     conn->buffer_wtls_uv.len = read;
     uv_write(
         &conn->write_req,
@@ -723,12 +697,10 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         1,
         _ch_cn_send_pending_cb
     );
-    L(
+    LC(
         chirp,
-        "Sending %d pending handshake bytes. ch_chirp_t:%p, "
-        "ch_connection_t:%p",
+        "Sending %d pending handshake bytes. ", "ch_connection_t:%p",
         read,
-        (void*) chirp,
         (void*) conn
     );
 }
@@ -753,27 +725,27 @@ ch_cn_shutdown(
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    L(
+    LC(
         chirp,
-        "Shutdown connection. ch_connection_t:%p, ch_chirp_t:%p",
-        (void*) conn,
-        (void*) chirp
+        "Shutdown connection. ", "ch_connection_t:%p",
+        (void*) conn
     );
+    uv_read_stop((uv_stream_t*) &conn->client);
     if(msg != NULL) {
-        writer->msg = NULL;
-        ch_chirp_message_finish(
+        writer->flags = CH_WR_FAILURE;
+        ch_chirp_try_message_finish(
             chirp,
+            writer,
             msg,
             reason,
             conn->load
         );
     }
     if(conn->flags & CH_CN_SHUTTING_DOWN) {
-        E(
+        EC(
             chirp,
-            "Shutdown in progress. ch_connection_t:%p, ch_chirp_t:%p",
-            (void*) conn,
-            (void*) chirp
+            "Shutdown in progress. ", "ch_connection_t:%p",
+            (void*) conn
         );
         return CH_IN_PRORESS;
     }
@@ -789,24 +761,22 @@ ch_cn_shutdown(
     if(conn->flags & CH_CN_ENCRYPTED) {
         tmp_err = SSL_get_verify_result(conn->ssl);
         if(tmp_err != X509_V_OK) {
-            E(
+            EC(
                 chirp,
-                "Connection has cert verification error: %d. "
-                "ch_connection_t:%p, ch_chirp_t:%p",
+                "Connection has cert verification error: %d. ",
+                "ch_connection_t:%p",
                 tmp_err,
-                (void*) conn,
-                (void*) chirp
+                (void*) conn
             );
         }
         /* If we have a valid SSL connection send a shutdown to the remote */
         if(SSL_is_init_finished(conn->ssl)) {
             if(SSL_shutdown(conn->ssl) < 0) {
-                E(
+                EC(
                     chirp,
-                    "Could not shutdown SSL connection. "
-                    "ch_connection_t:%p, ch_chirp_t:%p",
-                    (void*) conn,
-                    (void*) chirp
+                    "Could not shutdown SSL connection. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
                 );
             } else
                 ch_cn_send_if_pending(conn);
@@ -818,13 +788,11 @@ ch_cn_shutdown(
         _ch_cn_shutdown_cb
     );
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "uv_shutdown returned error: %d. ch_connection_t:%p, "
-            "ch_chirp_t:%p",
+            "uv_shutdown returned error: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
         return ch_uv_error_map(tmp_err);
     }
@@ -837,13 +805,11 @@ ch_cn_shutdown(
         0
     );
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Starting shutdown timeout failed: %d. ch_connection_t:%p,"
-            " ch_chirp_t:%p",
+            "Starting shutdown timeout failed: %d. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) conn,
-            (void*) chirp
+            (void*) conn
         );
     }
     return CH_SUCCESS;
@@ -886,11 +852,10 @@ ch_cn_write(
             1,
             callback
         );
-        L(
+        LC(
             chirp,
-            "Called uv_write with %d bytes. ch_chirp_t:%p, ch_connection_t:%p",
+            "Called uv_write with %d bytes. ", "ch_connection_t:%p",
             (int) size,
-            (void*) chirp,
             (void*) conn
         );
     }

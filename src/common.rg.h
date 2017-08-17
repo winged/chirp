@@ -35,13 +35,47 @@
 //
 // .. code-block:: cpp
 
+struct ch_remote_s;
+typedef struct ch_remote_s ch_remote_t;
 struct ch_connection_s;
 typedef struct ch_connection_s ch_connection_t;
 struct ch_receipt_s;
 typedef struct ch_receipt_s ch_receipt_t;
 
+
 // Logging and assert macros
 // =========================
+//
+// Colors
+// ------
+//
+// .. code-block:: cpp
+
+static const char*
+_ch_lg_reset = "\x1B[0m";
+static const char*
+_ch_lg_err = "\x1B[1;31m";
+static const char*
+_ch_lg_colors[8] = {
+    "\x1B[0;34m",
+    "\x1B[0;32m",
+    "\x1B[0;36m",
+    "\x1B[0;33m",
+    "\x1B[1;34m",
+    "\x1B[1;32m",
+    "\x1B[1;36m",
+    "\x1B[1;33m",
+};
+
+static
+void
+__ch__silenence(void)
+{
+    (void)(_ch_lg_err);
+    (void)(_ch_lg_reset);
+    (void)(_ch_lg_colors);
+}
+
 //
 // .. _double-eval:
 //
@@ -83,8 +117,33 @@ typedef struct ch_receipt_s ch_receipt_t;
 // .. code-block:: cpp
 //
 #define CH_EMPTY
+// .. c:macro:: ch_lg_get_id_m
+//
+//    Creates a id from 0-7 based on the identity of a chirp object.
+//
+//    :param chirp: Pointer to a chirp object.
+//
+// .. code-block:: cpp
+//
+#begindef _ch_lg_get_id_m(chirp)
+    uint8_t __ch_log__id_ = (
+        (uint8_t) chirp->_->identity[0]
+    ) % 8
+#enddef
 
-// .. c:macro:: E
+// .. c:macro:: ch_lg_get_file_m
+//
+//    Creates the variable char* __ch_log__file_ pointing the file part of the
+//    __FILE__ path.
+//
+// .. code-block:: cpp
+//
+#begindef _ch_lg_get_file_m()
+    char* __ch_log__file_ = __FILE__;
+    __ch_log__file_ = strrchr(__ch_log__file_, '/') + 1
+#enddef
+
+// .. c:macro:: EC
 //
 //    Reports an error.
 //
@@ -94,35 +153,47 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    log to stderr if no callback is set.
 //
 //    :param chirp: Pointer to a chirp object.
-//    :param message: The message to report.
+//    :param message: The highlighted message to report.
+//    :param clear:   The clear message to report.
 //    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
-#begindef E(chirp, message, ...)
+#begindef EC(chirp, message, clear, ...)
 {
+    _ch_lg_get_file_m();
     if(chirp->_log != NULL) {
         char __ch_v_buf_[1024];
         snprintf(
             __ch_v_buf_,
             1024,
-            "%s:%d " message,
-            __FILE__,
+            "%s:%d " message clear,
+            __ch_log__file_,
             __LINE__,
             __VA_ARGS__
         );
         chirp->_log(__ch_v_buf_, 1);
     } else {
+        _ch_lg_get_id_m(chirp);
+        uv_mutex_lock(chirp->_log_lock);
         fprintf(
             stderr,
-            "%s:%d Error: " message "\n",
-            __FILE__,
+            "%s%0X%0X %15s:%4d Error: %s" message "\x1B[0m" clear "%s\n",
+            _ch_lg_err,
+            chirp->_->identity[0],
+            chirp->_->identity[1],
+            __ch_log__file_,
             __LINE__,
-            __VA_ARGS__
+            _ch_lg_colors[__ch_log__id_],
+            __VA_ARGS__,
+            _ch_lg_reset
         );
+        fflush(stderr);
+        uv_mutex_unlock(chirp->_log_lock);
     }
 }
 #enddef
+#define E(chirp, message, ...) EC(chirp, message, "",  __VA_ARGS__)
 
 // .. c:macro:: TA
 //
@@ -143,15 +214,18 @@ typedef struct ch_receipt_s ch_receipt_t;
 //
 #   begindef TA(condition, ...)
     {
+        _ch_lg_get_file_m();
         if(!(condition)) {
             fprintf(
                 stderr,
-                "%s:%d ",
-                __FILE__,
+                "%s%20s:%4d ",
+                _ch_lg_err,
+                __ch_log__file_,
                 __LINE__
             );
             fprintf(stderr, __VA_ARGS__);
-            fprintf(stderr, "\n");
+            fprintf(stderr, "%s\n", _ch_lg_reset);
+            fflush(stderr);
             exit(1);
         }
     }
@@ -181,6 +255,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 #   begindef V(chirp, condition, ...)
     {
         if(!(condition)) {
+            _ch_lg_get_file_m();
             if(chirp->_log != NULL) {
                 size_t __ch_v_siz_ = 1024;
                 size_t __ch_v_ret_;
@@ -190,7 +265,7 @@ typedef struct ch_receipt_s ch_receipt_t;
                     __ch_v_xbuf_,
                     __ch_v_siz_,
                     "%s:%d ",
-                    __FILE__,
+                    __ch_log__file_,
                     __LINE__
                 );
                 __ch_v_xbuf_ += __ch_v_ret_;
@@ -203,14 +278,22 @@ typedef struct ch_receipt_s ch_receipt_t;
                 chirp->_log(__ch_v_buf_, 1);
                 return CH_VALUE_ERROR;
             } else {
+                _ch_lg_get_id_m(chirp);
+                uv_mutex_lock(chirp->_log_lock);
                 fprintf(
                     stderr,
-                    "%s:%d ",
-                    __FILE__,
-                    __LINE__
+                    "%s%0X%0X %15s:%4d %s",
+                    _ch_lg_err,
+                    chirp->_->identity[0],
+                    chirp->_->identity[1],
+                    __ch_log__file_,
+                    __LINE__,
+                    _ch_lg_colors[__ch_log__id_]
                 );
                 fprintf(stderr, __VA_ARGS__);
-                fprintf(stderr, "\n");
+                fprintf(stderr, "%s\n", _ch_lg_reset);
+                fflush(stderr);
+                uv_mutex_unlock(chirp->_log_lock); /* Just for consistency */
                 assert(condition);
                 /* See the double evaluation chapter. */
                 fprintf(stderr, "Bad assert: condition not stable\n");
@@ -220,7 +303,7 @@ typedef struct ch_receipt_s ch_receipt_t;
     }
 #   enddef
 
-// .. c:macro:: L
+// .. c:macro:: LC
 //
 //    Logs the given message including arbitrary arguments to a custom callback
 //    in debug-/development-mode.
@@ -230,35 +313,48 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    facility.
 //
 //    :param chirp: Pointer to a chirp object.
-//    :param message: Message to print when the condition is not met.
+//    :param message: The highlighted message to report.
+//    :param clear:   The clear message to report.
 //    :param ...: Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
-#   begindef L(chirp, message, ...)
+#   begindef LC(chirp, message, clear, ...)
     {
+        _ch_lg_get_file_m();
         if(chirp->_log != NULL) {
             char buf[1024];
             snprintf(
                 buf,
                 1024,
-                "%s:%d " message,
-                __FILE__,
+                "%s:%d " message clear,
+                __ch_log__file_,
                 __LINE__,
                 __VA_ARGS__
             );
             chirp->_log(buf, 0);
         } else {
+            _ch_lg_get_id_m(chirp);
+            uv_mutex_lock(chirp->_log_lock);
             fprintf(
                 stderr,
-                "%s:%d " message "\n",
-                __FILE__,
+                "%s%0X%0X%s %15s:%4d%s " message "\x1B[0m" clear "%s\n",
+                _ch_lg_colors[__ch_log__id_],
+                chirp->_->identity[0],
+                chirp->_->identity[1],
+                _ch_lg_reset,
+                __ch_log__file_,
                 __LINE__,
-                __VA_ARGS__
+                _ch_lg_colors[__ch_log__id_],
+                __VA_ARGS__,
+                _ch_lg_reset
             );
+            fflush(stderr);
+            uv_mutex_unlock(chirp->_log_lock);
         }
     }
 #   enddef
+#define L(chirp, message, ...) LC(chirp, message, "",  __VA_ARGS__)
 
 // .. c:macro:: A
 //
@@ -278,11 +374,13 @@ typedef struct ch_receipt_s ch_receipt_t;
 #   begindef A(condition, ...)
     {
         if(!(condition)) {
+            fprintf(stderr, "%20s", _ch_lg_err);
             fprintf(stderr, __VA_ARGS__);
-            fprintf(stderr, "\n");
+            fprintf(stderr, "%s\n", _ch_lg_reset);
             assert(condition);
             /* See the double evaluation chapter. */
             fprintf(stderr, "Bad assert: condition not stable\n");
+            fflush(stderr);
             assert(0);
         }
     }
@@ -312,6 +410,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 #   begindef V(chirp, condition, ...)
     {
         if(!(condition)) {
+            _ch_lg_get_file_m();
             if(chirp->_log != NULL) {
                 size_t __ch_v_siz_ = 1024;
                 size_t __ch_v_ret_;
@@ -321,7 +420,7 @@ typedef struct ch_receipt_s ch_receipt_t;
                     __ch_v_xbuf_,
                     __ch_v_siz_,
                     "%s:%d ",
-                    __FILE__,
+                    __ch_log__file_,
                     __LINE__
                 );
                 __ch_v_xbuf_ += __ch_v_ret_;
@@ -331,12 +430,13 @@ typedef struct ch_receipt_s ch_receipt_t;
             } else {
                 fprintf(
                     stderr,
-                    "%s:%d",
-                    __FILE__,
+                    "%s:%d", /* No coloring because its not debug mode */
+                    __ch_log__file_,
                     __LINE__
                 );
                 fprintf(stderr, __VA_ARGS__);
                 fprintf(stderr, "\n");
+                fflush(stderr);
             }
             return CH_VALUE_ERROR;
         }
@@ -446,6 +546,5 @@ typedef struct ch_receipt_s ch_receipt_t;
         return (a < b) ? a : b;
     }
 #enddef
-
 
 #endif //ch_common_h

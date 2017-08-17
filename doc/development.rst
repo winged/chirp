@@ -29,6 +29,8 @@ Internal API
    src/protocol.c.rst
    src/reader.h.rst
    src/reader.c.rst
+   src/remote.h.rst
+   src/remote.c.rst
    src/structures.rg.h.rst
    src/util.h.rst
    src/util.c.rst
@@ -62,6 +64,7 @@ Test binaries
    src/quickcheck_etest.c.rst
    src/star_etest.c.rst
    src/structures_etest.c.rst
+   src/uv_error_etest.c
 
 External Libs
 =============

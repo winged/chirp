@@ -42,7 +42,8 @@ ch_alloc(size_t size)
 //
 {
     void* buf = _ch_alloc_cb(size);
-    assert(buf); /* Assert we got memory */
+    assert(buf); /* Assert memory (do not rely on this, implement it
+                    robust: be graceful and return error to user) */
     return buf;
 }
 
@@ -73,7 +74,8 @@ ch_realloc(
 //
 {
     void* rbuf = _ch_realloc_cb(buf, size);
-    assert(rbuf); /* Assert we got memory */
+    assert(rbuf); /* Assert memory (do not rely on this, implement it
+                    robust: be graceful and return error to user) */
     return rbuf;
 }
 

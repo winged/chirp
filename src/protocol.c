@@ -2,9 +2,6 @@
 // Protocol
 // ========
 //
-// .. todo:: Document purpose
-//
-// .. code-block:: cpp
 
 // Project includes
 // ================
@@ -146,20 +143,18 @@ _ch_pr_do_handshake(ch_connection_t* conn)
         /* Last handshake state, since we got that on the last read and have to
          * use it on this read. */
         if(conn->tls_handshake_state) {
-            L(
+            LC(
                 chirp,
-                "SSL handshake successful. ch_chirp_t:%p, ch_connection_t:%p",
-                (void*) chirp,
+                "SSL handshake successful. ", "ch_connection_t:%p",
                 (void*) conn
             );
         } else {
 #           ifndef NDEBUG
                 ERR_print_errors_fp(stderr);
 #           endif
-            E(
+            EC(
                 chirp,
-                "SSL handshake failed. ch_chirp_t:%p, ch_connection_t:%p",
-                (void*) chirp,
+                "SSL handshake failed. ", "ch_connection_t:%p",
                 (void*) conn
             );
             ch_cn_shutdown(conn, CH_TLS_ERROR);
@@ -212,9 +207,8 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     if (status < 0) { // NOCOV TODO
         L(
             chirp,
-            "New connection error %s. ch_chirp_t:%p",
-            uv_strerror(status),
-            (void*) chirp
+            "New connection error %s",
+            uv_strerror(status)
         ); // NOCOV TODO
         return; // NOCOV TODO
     }
@@ -222,17 +216,15 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(
         sizeof(ch_connection_t)
     );
-    L(
+    LC(
         chirp,
-        "Accepted connection. ch_chirp_t:%p, ch_connection_t:%p",
-        (void*) chirp,
+        "Accepted connection. ", "ch_connection_t:%p",
         (void*) conn
     );
     if(!conn) {
         E(
             chirp,
-            "Could not allocate memory for connection. ch_chirp_t:%p",
-            (void*) chirp
+            "Could not allocate memory for connection%s", ""
         );
         return;
     }
@@ -248,11 +240,9 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
                     (struct sockaddr*) &addr,
                     &addr_len
         ) != CH_SUCCESS) {
-            E(
+            EC(
                 chirp,
-                "Could not get remote address. ch_chirp_t:%p, "
-                "ch_connection_t:%p",
-                (void*) chirp,
+                "Could not get remote address. ", "ch_connection_t:%p",
                 (void*) conn
             );
             ch_free(conn);
@@ -310,9 +300,8 @@ ch_pr_conn_start(
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Could not initialize connection (%d). ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
+            "Could not initialize connection (%d)",
+            tmp_err
         );
         ch_free(conn);
         uv_close((uv_handle_t*) client, NULL);
@@ -323,9 +312,8 @@ ch_pr_conn_start(
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Could not set tcp nodelay on connection (%d). ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
+            "Could not set tcp nodelay on connection (%d)",
+            tmp_err
         );
         ch_free(conn);
         uv_close((uv_handle_t*) client, NULL);
@@ -335,9 +323,8 @@ ch_pr_conn_start(
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
-            "Could not set tcp keepalive on connection (%d). ch_chirp_t:%p",
-            tmp_err,
-            (void*) chirp
+            "Could not set tcp keepalive on connection (%d)",
+            tmp_err
         );
         ch_free(conn);
         uv_close((uv_handle_t*) client, NULL);
@@ -378,13 +365,12 @@ ch_pr_read(ch_connection_t* conn)
     while((tmp_err = SSL_read(
             conn->ssl,
             conn->buffer_rtls,
-            conn->buffer_size
+            conn->buffer_rtls_size
     )) > 0) {;
-        L(
+        LC(
             chirp,
-            "Read %d bytes. ch_chirp_t:%p, ch_connection_t:%p",
+            "Read %d bytes. ", "ch_connection_t:%p",
             tmp_err,
-            (void*) chirp,
             (void*) conn
         );
         ch_rd_read(conn, conn->buffer_rtls, tmp_err);
@@ -395,18 +381,15 @@ ch_pr_read(ch_connection_t* conn)
 #           ifndef NDEBUG
                 ERR_print_errors_fp(stderr);
 #           endif
-            E(
+            EC(
                 chirp,
-                "SSL operation fatal error. ch_chirp_t:%p, "
-                "ch_connection_t:%p",
-                (void*) chirp,
+                "SSL operation fatal error. ", "ch_connection_t:%p",
                 (void*) conn
             );
         } else {
-            L(
+            LC(
                 chirp,
-                "SSL operation failed. ch_chirp_t:%p, ch_connection_t:%p",
-                (void*) chirp,
+                "SSL operation failed. ", "ch_connection_t:%p",
                 (void*) conn
             );
         }
@@ -449,11 +432,10 @@ ch_pr_start(ch_protocol_t* protocol)
     if(tmp_err != CH_SUCCESS) {
         fprintf(
             stderr,
-            "%s:%d Fatal: cannot bind port (ipv4:%d). ch_chirp_t:%p\n",
+            "%s:%d Fatal: cannot bind port (ipv4:%d)\n",
             __FILE__,
             __LINE__,
-            config->PORT,
-            (void*) chirp
+            config->PORT
         );
         return tmp_err;  // NOCOV UV_EADDRINUSE can't happen in tcp_bind or
                          // listen on my systems it happends in listen
@@ -468,11 +450,10 @@ ch_pr_start(ch_protocol_t* protocol)
     ) < 0) {
         fprintf(
             stderr,
-            "%s:%d Fatal: cannot listen port (ipv4:%d). ch_chirp_t:%p\n",
+            "%s:%d Fatal: cannot listen port (ipv4:%d)\n",
             __FILE__,
             __LINE__,
-            config->PORT,
-            (void*) chirp
+            config->PORT
         );
         return CH_EADDRINUSE;
     }
@@ -496,11 +477,10 @@ ch_pr_start(ch_protocol_t* protocol)
     if(tmp_err != CH_SUCCESS) {
         fprintf(
             stderr,
-            "%s:%d Fatal: cannot bind port (ipv6:%d). ch_chirp_t:%p\n",
+            "%s:%d Fatal: cannot bind port (ipv6:%d)\n",
             __FILE__,
             __LINE__,
-            config->PORT,
-            (void*) chirp
+            config->PORT
         );
         return tmp_err; // NOCOV errors happend for IPV4
     }
@@ -514,11 +494,10 @@ ch_pr_start(ch_protocol_t* protocol)
     ) < 0) {
         fprintf(
             stderr,
-            "%s:%d Fatal: cannot listen port (ipv6:%d). ch_chirp_t:%p\n",
+            "%s:%d Fatal: cannot listen port (ipv6:%d)\n",
             __FILE__,
             __LINE__,
-            config->PORT,
-            (void*) chirp
+            config->PORT
         );
         return CH_EADDRINUSE; // NOCOV errors happend for IPV4
     }
@@ -553,22 +532,19 @@ ch_pr_read_data_cb(
         return;
     }
     if(nread < 0) {
-        L(
+        LC(
             chirp,
-            "Reader got error %d -> shutdown. ch_chirp_t:%p, "
-            "ch_connection_t:%p",
+            "Reader got error %d -> shutdown. ", "ch_connection_t:%p",
             (int) nread,
-            (void*) chirp,
             (void*) conn
         );
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
-    L(
+    LC(
         chirp,
-        "%d available bytes. ch_chirp_t:%p, ch_connection_t:%p",
+        "%d available bytes. ", "ch_connection_t:%p",
         (int) nread,
-        (void*) chirp,
         (void*) conn
     );
     if(conn->flags & CH_CN_ENCRYPTED) {
@@ -582,12 +558,11 @@ ch_pr_read_data_cb(
                 nread - bytes_decrypted
             );
             if(tmp_err < 1) {
-                E(
+                EC(
                     chirp,
-                    "SSL error writing to BIO, shutting down connection. "
-                    "ch_connection_t:%p ch_chirp_t:%p",
-                    (void*) conn,
-                    (void*) chirp
+                    "SSL error writing to BIO, shutting down connection. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
                 );
                 ch_cn_shutdown(conn, CH_TLS_ERROR);
                 return;
@@ -615,7 +590,7 @@ ch_pr_stop(ch_protocol_t* protocol)
 {
     ch_chirp_t* chirp = protocol->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    L(chirp, "Closing protocol. ch_chirp_t:%p", (void*) chirp);
+    L(chirp, "Closing protocol%s", "");
     _ch_pr_close_free_connections(chirp);
     uv_close((uv_handle_t*) &protocol->serverv4, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &protocol->serverv6, ch_chirp_close_cb);

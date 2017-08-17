@@ -98,9 +98,17 @@ typedef struct ch_rd_handshake_s {
 //       Handshake data structure to send over the network, which is used as
 //       data source.
 //
-//    .. c:member:: ch_msg_message_t msg
+//    .. c:member:: ch_message_t* msg
 //
-//       Wire protocol message in network order (network endianness).
+//       Current message
+//
+//    .. c:member:: ch_bf_handler_t* handler
+//
+//       Current handler buffer
+//
+//    .. c:member:: ch_message_t ack_msg
+//
+//       Buffer used for ack message
 //
 //    .. c:member:: ch_buffer_pool_t pool
 //
@@ -113,12 +121,16 @@ typedef struct ch_rd_handshake_s {
 //       :c:member:`ch_rd_read.read` bytes to read but not enough bytes are
 //       being delivered over the connection :c:member:`ch_rd_read.conn`.
 //
+//    .. c:member:: int last
+//
+//       The last buffer was used (bool)
+//
 // .. code-block:: cpp
 //
 typedef struct ch_reader_s {
     ch_rd_state_t     state;
     ch_rd_handshake_t hs;
-    ch_message_t*     msg;
+    ch_bf_handler_t*  handler;
     ch_message_t      ack_msg;
     ch_buffer_pool_t  pool;
     size_t            bytes_read;

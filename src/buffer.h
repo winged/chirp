@@ -54,9 +54,9 @@
 //
 typedef struct ch_bf_handler_s {
     ch_message_t msg;
-    ch_buf* header[CH_BF_PREALLOC_HEADER];
-    char*   actor[CH_BF_PREALLOC_ACTOR];
-    ch_buf* data[CH_BF_PREALLOC_DATA];
+    ch_buf  header[CH_BF_PREALLOC_HEADER];
+    char    actor[CH_BF_PREALLOC_ACTOR];
+    ch_buf  data[CH_BF_PREALLOC_DATA];
     uint8_t id;
     uint8_t used;
 } ch_bf_handler_t;
