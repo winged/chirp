@@ -89,7 +89,7 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     message->data_len = _ch_test_gen_data_field(
         0.1,
         0.05,
-        1024,
+        1024 * 1024,
         &message->data
     );
     int ipv6 = ch_qc_tgen_bool();

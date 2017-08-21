@@ -8,8 +8,8 @@ ifeq ($(ALPINE_AND_CLANG),True)
 	IGNORE_COV := True
 endif
 
-ifeq ($(ITLS),libressl-dev)
-	MEMCHECK := valgrind --tool=memcheck --error-exitcode
+ifneq ($(TLS),openssl)
+	MEMCHECK := valgrind --tool=memcheck --error-exitcode=1
 else
 	MEMCHECK := valgrind --tool=memcheck
 endif
