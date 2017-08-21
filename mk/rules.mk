@@ -15,8 +15,7 @@ check: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(BUILD)/src/buffer_etest
-	$(BUILD)/src/structures_etest
-	$(BUILD)/src/message_etest
+	$runtimepathruntimepathruntimepath(BUILD)/src/message_etest
 
 ifeq ($(DOC),True)
 doc: doc_files

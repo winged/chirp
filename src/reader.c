@@ -242,7 +242,7 @@ _ch_rd_handshake(
     if(writer->send_msg != NULL) {
         ch_message_t* msg = writer->send_msg;
         writer->send_msg = NULL;
-        ch_wr_send(conn, msg);
+        ch_wr_write(conn, msg);
     }
 }
 
@@ -298,7 +298,7 @@ _ch_rd_handle_msg(
             sizeof(ack_msg->serial)
         );
         // TODO use queued send
-        ch_wr_send(conn, ack_msg);
+        ch_wr_write(conn, ack_msg);
     } else if(msg->type & CH_MSG_ACK) {
         ch_writer_t* writer = &conn->writer;
         if(memcmp(

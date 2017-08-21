@@ -9,9 +9,9 @@ ifeq ($(ALPINE_AND_CLANG),True)
 endif
 
 ifneq ($(TLS),openssl)
-	MEMCHECK := valgrind --tool=memcheck --error-exitcode=1
+	MEMCHECK := valgrind --tool=memcheck --error-exitcode=1 --suppressions=$(BASE)/ci/memcheck-musl.supp
 else
-	MEMCHECK := valgrind --tool=memcheck
+	MEMCHECK := valgrind --tool=memcheck --suppressions=$(BASE)/ci/memcheck-musl.supp
 endif
 
 CFLAGS += \
@@ -74,14 +74,9 @@ etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(BUILD)/src/buffer_etest
-	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
-		$(BUILD)/src/buffer_etest
-	$(BUILD)/src/structures_etest
-	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
-		$(BUILD)/src/structures_etest
+	$(MEMCHECK) $(BUILD)/src/buffer_etest
 	$(BUILD)/src/message_etest
-	$(MEMCHECK) --suppressions=$(BASE)/ci/memcheck-musl.supp \
-		$(BUILD)/src/message_etest
+	$(MEMCHECK) $(BUILD)/src/message_etest
 
 cppcheck: headers  ## Static analysis
 	cppcheck -v \

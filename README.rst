@@ -192,7 +192,7 @@ Chirp has a mode to debug macros:
 
    ../configure --dev
    make clean all MACRO_DEBUG=True
-   gdb src/structures_etest
+   gdb src/message_etest
 
 This requires clang-format to be installed.
 

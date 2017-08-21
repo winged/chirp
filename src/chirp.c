@@ -9,7 +9,6 @@
 //
 #include "chirp.h"
 #include "util.h"
-#include "structures.h"
 
 // System includes
 // ===============

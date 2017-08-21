@@ -12,7 +12,6 @@
 #include "chirp.h"
 #include "protocol.h"
 #include "util.h"
-#include "structures.h"
 
 // Declarations
 // ============
@@ -21,7 +20,7 @@
 static
 ch_inline
 int
-_ch_wr_check_send_error(
+_ch_wr_check_write_error(
         ch_chirp_t* chirp,
         ch_writer_t* writer,
         ch_connection_t* conn,
@@ -71,7 +70,7 @@ _ch_wr_connect_cb(uv_connect_t* req, int status);
 // .. c:function::
 static
 void
-_ch_wr_send_actor_cb(uv_write_t* req, int status);
+_ch_wr_write_actor_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after an actor was written.
 //
@@ -95,7 +94,7 @@ _ch_wr_send_actor_cb(uv_write_t* req, int status);
 // .. c:function::
 static
 void
-_ch_wr_send_chirp_header_cb(uv_write_t* req, int status);
+_ch_wr_write_chirp_header_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after the messages header was written.
 //
@@ -114,7 +113,7 @@ _ch_wr_send_chirp_header_cb(uv_write_t* req, int status);
 // .. c:function::
 static
 void
-_ch_wr_send_data_cb(uv_write_t* req, int status);
+_ch_wr_write_data_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after data was written.
 //
@@ -130,7 +129,7 @@ _ch_wr_send_data_cb(uv_write_t* req, int status);
 static
 ch_inline
 void
-_ch_wr_send_finish(
+_ch_wr_write_finish(
         ch_chirp_t* chirp,
         ch_writer_t* writer,
         ch_connection_t* conn
@@ -151,7 +150,7 @@ _ch_wr_send_finish(
 // .. c:function::
 static
 void
-_ch_wr_send_msg_header_cb(uv_write_t* req, int status);
+_ch_wr_write_msg_header_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after the messages was successfully written.
 //
@@ -160,7 +159,7 @@ _ch_wr_send_msg_header_cb(uv_write_t* req, int status);
 //    written. Otherwise, if the message has an actor set, the actor is being
 //    written. Else, if the message has data attached, that data is being
 //    written. In all other cases the sending is being finished using
-//    :c:func:`_ch_wr_send_finish`.
+//    :c:func:`_ch_wr_write_finish`.
 //
 //    :param uv_write_t* req:  Write request.
 //    :param int status:       Write status.
@@ -168,7 +167,7 @@ _ch_wr_send_msg_header_cb(uv_write_t* req, int status);
 // .. c:function::
 static
 void
-_ch_wr_send_timeout_cb(uv_timer_t* handle);
+_ch_wr_write_timeout_cb(uv_timer_t* handle);
 //
 //    Callback which is called after the writer reaches its timeout for
 //    sending. The timeout is set by the chirp configuration and is 5 seconds
@@ -187,7 +186,7 @@ _ch_wr_send_timeout_cb(uv_timer_t* handle);
 static
 ch_inline
 int
-_ch_wr_check_send_error(
+_ch_wr_check_write_error(
         ch_chirp_t* chirp,
         ch_writer_t* writer,
         ch_connection_t* conn,
@@ -195,7 +194,7 @@ _ch_wr_check_send_error(
 )
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_check_send_error`
+//    see: :c:func:`_ch_wr_check_write_error`
 //
 // .. code-block:: cpp
 //
@@ -284,10 +283,10 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
 
 // .. c:function::
 void
-ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
+ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send`
+//    see: :c:func:`ch_wr_write`
 //
 // .. code-block:: cpp
 //
@@ -302,7 +301,7 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
     writer->msg = msg;
     /*int tmp_err = uv_timer_start(
         &writer->send_timeout,
-        _ch_wr_send_timeout_cb,
+        _ch_wr_write_timeout_cb,
         ichirp->config.TIMEOUT * 1000,
         0
     ); TODO reenable write timeout
@@ -345,17 +344,17 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg)
         conn,
         net_msg,
         sizeof(ch_msg_message_t),
-        _ch_wr_send_msg_header_cb
+        _ch_wr_write_msg_header_cb
     );
 }
 
 // .. c:function::
 static
 void
-_ch_wr_send_actor_cb(uv_write_t* req, int status)
+_ch_wr_write_actor_cb(uv_write_t* req, int status)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_actor_cb`
+//    see: :c:func:`_ch_wr_write_actor_cb`
 //
 // .. code-block:: cpp
 //
@@ -365,25 +364,25 @@ _ch_wr_send_actor_cb(uv_write_t* req, int status)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_send_error(chirp, writer, conn, status)) return;
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
     if(msg->data_len > 0)
         ch_cn_write(
             conn,
             msg->data,
             msg->data_len,
-            _ch_wr_send_data_cb
+            _ch_wr_write_data_cb
         );
     else
-        _ch_wr_send_finish(chirp, writer, conn);
+        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
 static
 void
-_ch_wr_send_data_cb(uv_write_t* req, int status)
+_ch_wr_write_data_cb(uv_write_t* req, int status)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_data_cb`
+//    see: :c:func:`_ch_wr_write_data_cb`
 //
 // .. code-block:: cpp
 //
@@ -392,22 +391,22 @@ _ch_wr_send_data_cb(uv_write_t* req, int status)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
-    if(_ch_wr_check_send_error(chirp, writer, conn, status)) return;
-    _ch_wr_send_finish(chirp, writer, conn);
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
+    _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
 static
 ch_inline
 void
-_ch_wr_send_finish(
+_ch_wr_write_finish(
         ch_chirp_t* chirp,
         ch_writer_t* writer,
         ch_connection_t* conn
 )
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_finish`
+//    see: :c:func:`_ch_wr_write_finish`
 //
 // .. code-block:: cpp
 //
@@ -435,10 +434,10 @@ _ch_wr_send_finish(
 // .. c:function::
 static
 void
-_ch_wr_send_chirp_header_cb(uv_write_t* req, int status)
+_ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_chirp_header_cb`
+//    see: :c:func:`_ch_wr_write_chirp_header_cb`
 //
 // .. code-block:: cpp
 //
@@ -448,32 +447,32 @@ _ch_wr_send_chirp_header_cb(uv_write_t* req, int status)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_send_error(chirp, writer, conn, status)) return;
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
     if(msg->actor_len > 0)
         ch_cn_write(
             conn,
             msg->actor,
             msg->actor_len,
-            _ch_wr_send_actor_cb
+            _ch_wr_write_actor_cb
         );
     else if(msg->data_len > 0)
         ch_cn_write(
             conn,
             msg->data,
             msg->data_len,
-            _ch_wr_send_data_cb
+            _ch_wr_write_data_cb
         );
     else
-        _ch_wr_send_finish(chirp, writer, conn);
+        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
 static
 void
-_ch_wr_send_msg_header_cb(uv_write_t* req, int status)
+_ch_wr_write_msg_header_cb(uv_write_t* req, int status)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_msg_header_cb`
+//    see: :c:func:`_ch_wr_write_msg_header_cb`
 //
 // .. code-block:: cpp
 //
@@ -483,39 +482,39 @@ _ch_wr_send_msg_header_cb(uv_write_t* req, int status)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_send_error(chirp, writer, conn, status)) return;
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
     if(msg->header_len > 0) // TODO: && !(msg->_flags & CH_MSG_SENT_HEADER))
         ch_cn_write(
             conn,
             msg->header,
             msg->header_len,
-            _ch_wr_send_chirp_header_cb
+            _ch_wr_write_chirp_header_cb
         );
     else if(msg->actor_len > 0)
         ch_cn_write(
             conn,
             msg->actor,
             msg->actor_len,
-            _ch_wr_send_actor_cb
+            _ch_wr_write_actor_cb
         );
     else if(msg->data_len > 0)
         ch_cn_write(
             conn,
             msg->data,
             msg->data_len,
-            _ch_wr_send_data_cb
+            _ch_wr_write_data_cb
         );
     else
-        _ch_wr_send_finish(chirp, writer, conn);
+        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
 static
 void
-_ch_wr_send_timeout_cb(uv_timer_t* handle)
+_ch_wr_write_timeout_cb(uv_timer_t* handle)
 //    :noindex:
 //
-//    see: :c:func:`_ch_wr_send_timeout_cb`
+//    see: :c:func:`_ch_wr_write_timeout_cb`
 //
 // .. code-block:: cpp
 //
@@ -566,7 +565,23 @@ int
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_send`
+//    see: :c:func:`ch_wr_send`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    if(chirp->_->config.ACKNOWLEDGE != 0)
+        msg->type     = CH_MSG_REQ_ACK;
+    return ch_wr_send(chirp, msg, send_cb);
+}
+
+// .. c:function::
+int
+ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_send`
 //
 // .. code-block:: cpp
 //
@@ -576,7 +591,6 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_connection_t search_conn;
     ch_connection_t* conn;
     msg->_send_cb = send_cb;
-    msg->type     = CH_MSG_REQ_ACK;
     msg->_flags  |= CH_MSG_USED;
     ch_chirp_int_t* ichirp  = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
@@ -659,7 +673,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
         }
     } else
-        ch_wr_send(conn, msg);
+        ch_wr_write(conn, msg);
     return CH_SUCCESS;
 }
 

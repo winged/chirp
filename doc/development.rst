@@ -31,7 +31,6 @@ Internal API
    src/reader.c.rst
    src/remote.h.rst
    src/remote.c.rst
-   src/structures.rg.h.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst
@@ -63,7 +62,6 @@ Test binaries
    src/message_etest.c.rst
    src/quickcheck_etest.c.rst
    src/star_etest.c.rst
-   src/structures_etest.c.rst
    src/uv_error_etest.c
 
 External Libs

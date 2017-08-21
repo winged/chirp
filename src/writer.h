@@ -64,12 +64,12 @@ typedef enum {
 //
 //       Libuv timer handle for setting a timeout when trying to send a
 //       message. At the end of the defined timeout time, the timer triggers
-//       the :c:func:`_ch_wr_send_timeout_cb` callback.
+//       the :c:func:`_ch_wr_write_timeout_cb` callback.
 //
 //    .. c:member:: ch_message_t* msg
 //
 //       Pointer to a message. The message is set when sending through
-//       :c:func:`_ch_wr_send` and being read again during the callbacks.
+//       :c:func:`ch_wr_write` and being read again during the callbacks.
 //
 //    .. c:member:: ch_msg_message_t net_msg
 //
@@ -125,7 +125,7 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 
 // .. c:function::
 void
-ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
+ch_wr_write(ch_connection_t* conn, ch_message_t* msg);
 //
 //    Send the message after a connection has been established.
 //
@@ -133,6 +133,14 @@ ch_wr_send(ch_connection_t* conn, ch_message_t* msg);
 //    :param ch_message_t msg:       The message to send. The memory of the
 //                                   message must stay valid until the callback
 //                                   is called.
+//
+//
+// .. c:function::
+int
+ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
+//    Same as ch_chirp_send just for internal use.
+//
+//    see: :c:func:`ch_chirp_send`
 //
 
 // .. c:function::
