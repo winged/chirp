@@ -297,8 +297,7 @@ _ch_rd_handle_msg(
             ack_msg->serial,
             sizeof(ack_msg->serial)
         );
-        // TODO use queued send
-        ch_wr_write(conn, ack_msg);
+        ch_wr_send(chirp, ack_msg, NULL);
     } else if(msg->type & CH_MSG_ACK) {
         ch_writer_t* writer = &conn->writer;
         if(memcmp(

@@ -201,6 +201,21 @@ ifeq ($(DOC),True)
 	cp -R $(BASE)/doc/_build/html/* $(DEST)$(PREFIX)/share/doc/chirp/
 endif
 
+$(BUILD)/src/mpack_test.o: CFLAGS=$(NWCFLAGS)
+$(BUILD)/src/mpipe_test.h.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/mpipe_test.c.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/qs.h.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/rbtree.h.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/mpack_test.h.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/mpack_test.c.rst:
+	@echo Skip doc for $@
+$(BUILD)/src/mpack-config.h.rst:
+	@echo Skip doc for $@
 
 uninstall:  ## Uninstall chirp
 	rm -f $(DEST)$(PREFIX)/lib/libchirp.a
