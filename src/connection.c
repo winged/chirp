@@ -281,12 +281,21 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
         ch_cn_shutdown(conn, status);
         return;
     }
-    LC(
-        chirp,
-        "Write handshake bytes to connection successful. ",
-        "ch_connection_t:%p",
-        (void*) conn
-    );
+    if(conn->flags & CH_CN_SHUTTING_DOWN) {
+        LC(
+            chirp,
+            "Write shutdown bytes to connection successful. ",
+            "ch_connection_t:%p",
+            (void*) conn
+        );
+    } else {
+        LC(
+            chirp,
+            "Write handshake bytes to connection successful. ",
+            "ch_connection_t:%p",
+            (void*) conn
+        );
+    }
     ch_cn_send_if_pending(conn);
 }
 
@@ -697,12 +706,21 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         1,
         _ch_cn_send_pending_cb
     );
-    LC(
-        chirp,
-        "Sending %d pending handshake bytes. ", "ch_connection_t:%p",
-        read,
-        (void*) conn
-    );
+    if(conn->flags & CH_CN_SHUTTING_DOWN) {
+        LC(
+            chirp,
+            "Sending %d pending shutdown bytes. ", "ch_connection_t:%p",
+            read,
+            (void*) conn
+        );
+    } else {
+        LC(
+            chirp,
+            "Sending %d pending handshake bytes. ", "ch_connection_t:%p",
+            read,
+            (void*) conn
+        );
+    }
 }
 
 // .. c:function::
