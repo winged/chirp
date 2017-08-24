@@ -625,12 +625,12 @@ _ch_rd_read_buffer(
             msg->_flags |= free_flag;
         }
     }
-    if(to_read >= expected) {
+    if((to_read + reader->bytes_read) >= expected) {
         /* We can read everything */
         memcpy(
             *assign_buf + reader->bytes_read,
             src_buf,
-            expected
+            expected - reader->bytes_read
         );
     } else {
         /* Only partial read possible */
