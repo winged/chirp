@@ -178,7 +178,7 @@ __ch__silenence(void)
         uv_mutex_lock(chirp->_log_lock);
         fprintf(
             stderr,
-            "%s%0X%0X %15s:%4d Error: %s" message "\x1B[0m" clear "%s\n",
+            "%s%02X%02X %15s:%4d Error: %s" message "\x1B[0m" clear "%s\n",
             _ch_lg_err,
             chirp->_->identity[0],
             chirp->_->identity[1],
@@ -282,7 +282,7 @@ __ch__silenence(void)
                 uv_mutex_lock(chirp->_log_lock);
                 fprintf(
                     stderr,
-                    "%s%0X%0X %15s:%4d %s",
+                    "%s%02X%02X %15s:%4d %s",
                     _ch_lg_err,
                     chirp->_->identity[0],
                     chirp->_->identity[1],
@@ -338,7 +338,7 @@ __ch__silenence(void)
             uv_mutex_lock(chirp->_log_lock);
             fprintf(
                 stderr,
-                "%s%0X%0X%s %15s:%4d%s " message "\x1B[0m" clear "%s\n",
+                "%s%02X%02X%s %15s:%4d%s " message "\x1B[0m" clear "%s\n",
                 _ch_lg_colors[__ch_log__id_],
                 chirp->_->identity[0],
                 chirp->_->identity[1],
