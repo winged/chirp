@@ -109,6 +109,8 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
     ) {
         ch_cn_shutdown(t, CH_SHUTDOWN);
     }
+    /* Effectively we have cleared the list */
+    protocol->connections = NULL;
     for(
             t = sglib_ch_connection_set_t_it_init(
                 &its,
@@ -369,7 +371,7 @@ ch_pr_read(ch_connection_t* conn)
     )) > 0) {;
         LC(
             chirp,
-            "Read %d bytes. ", "ch_connection_t:%p",
+            "Read %d bytes. (unenc)", "ch_connection_t:%p",
             tmp_err,
             (void*) conn
         );

@@ -433,7 +433,7 @@ _ch_cn_write_cb(uv_write_t* req, int status)
         if(pending < 1) {
             LC(
                 chirp,
-                "Completely sent %d bytes. ", "ch_connection_t:%p",
+                "Completely sent %d bytes (unenc). ", "ch_connection_t:%p",
                 (int) conn->write_written,
                 (void*) conn
             );
@@ -508,7 +508,7 @@ ch_cn_close_cb(uv_handle_t* handle)
         );
     }
     if(conn->shutdown_tasks < 1) {
-        if(ichirp->flags & CH_CHIRP_CLOSING)
+        if(conn->flags & CH_CN_DO_CLOSE_ACCOUTING)
             ichirp->closing_tasks -= 1;
         if(conn->buffer_uv != NULL) {
             ch_free(conn->buffer_uv);
@@ -736,13 +736,30 @@ ch_cn_shutdown(
 // .. code-block:: cpp
 //
 {
-    int tmp_err;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    if(conn->flags & CH_CN_SHUTTING_DOWN) {
+        EC(
+            chirp,
+            "Shutdown in progress. ", "ch_connection_t:%p",
+            (void*) conn
+        );
+        return CH_IN_PRORESS;
+    }
+    conn->flags |= CH_CN_SHUTTING_DOWN;
+    int tmp_err;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
+    /* There are many reasons the connection is not in this data-structure,
+     * therefore we do a blind delete. */
+    ch_connection_t* out_conn;
+    sglib_ch_connection_t_delete_if_member(
+        &protocol->connections,
+        conn,
+        &out_conn
+    );
     LC(
         chirp,
         "Shutdown connection. ", "ch_connection_t:%p",
@@ -759,23 +776,6 @@ ch_cn_shutdown(
             conn->load
         );
     }
-    if(conn->flags & CH_CN_SHUTTING_DOWN) {
-        EC(
-            chirp,
-            "Shutdown in progress. ", "ch_connection_t:%p",
-            (void*) conn
-        );
-        return CH_IN_PRORESS;
-    }
-    /* There are many reasons the connection is not in this data-structure,
-     * therefore we do a blind delete. */
-    ch_connection_t* out_conn;
-    sglib_ch_connection_t_delete_if_member(
-        &protocol->connections,
-        conn,
-        &out_conn
-    );
-    conn->flags |= CH_CN_SHUTTING_DOWN;
     if(conn->flags & CH_CN_ENCRYPTED) {
         tmp_err = SSL_get_verify_result(conn->ssl);
         if(tmp_err != X509_V_OK) {
@@ -814,8 +814,10 @@ ch_cn_shutdown(
         );
         return ch_uv_error_map(tmp_err);
     }
-    if(ichirp->flags & CH_CHIRP_CLOSING)
+    if(ichirp->flags & CH_CHIRP_CLOSING) {
+        conn->flags |= CH_CN_DO_CLOSE_ACCOUTING;
         chirp->_->closing_tasks += 1;
+    }
     tmp_err = uv_timer_start(
         &conn->shutdown_timeout,
         _ch_cn_shutdown_timeout_cb,

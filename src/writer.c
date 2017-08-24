@@ -584,15 +584,21 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp  = chirp->_;
+    if(ichirp->flags & CH_CHIRP_CLOSING || ichirp->flags & CH_CHIRP_CLOSED) {
+        if(send_cb != NULL)
+            send_cb(msg, CH_SHUTDOWN, -1);
+        return CH_SHUTDOWN;
+    }
     int tmp_err;
     ch_connection_t search_conn;
     ch_connection_t* conn;
     msg->_send_cb = send_cb;
     msg->_flags  |= CH_MSG_USED;
-    ch_chirp_int_t* ichirp  = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     search_conn.ip_protocol = msg->ip_protocol;
     search_conn.port        = msg->port;
+    ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
     memcpy(
         search_conn.address,
         msg->address,
@@ -602,7 +608,6 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         protocol->connections,
         &search_conn
     );
-    ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
     if(conn == NULL) {
         conn = ch_alloc(sizeof(ch_connection_t));
         if(!conn) {
@@ -610,6 +615,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 chirp,
                 "Could not allocate memory for connection%s", ""
             );
+            msg->_flags &= ~CH_MSG_USED;
             if(send_cb != NULL)
                 send_cb(msg, CH_ENOMEM, -1);
             return CH_ENOMEM;

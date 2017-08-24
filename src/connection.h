@@ -180,16 +180,22 @@
 //
 //       Indicates that the connection buffer is currently used by libuv.
 //
+//    .. c:member:: CH_CN_DO_CLOSE_ACCOUTING
+//
+//       Indicates that this close should happened during chirp close and
+//       therefore has to be accounted for in closeing_tasks
+//
 // .. code-block:: cpp
 //
 typedef enum {
-    CH_CN_SHUTTING_DOWN  = 1 << 0,
-    CH_CN_WRITE_PENDING  = 1 << 1,
-    CH_CN_TLS_HANDSHAKE  = 1 << 2,
-    CH_CN_ENCRYPTED      = 1 << 3,
-    CH_CN_BUF_WTLS_USED  = 1 << 4,
-    CH_CN_BUF_RTLS_USED  = 1 << 5,
-    CH_CN_BUF_UV_USED    = 1 << 6,
+    CH_CN_SHUTTING_DOWN      = 1 << 0,
+    CH_CN_WRITE_PENDING      = 1 << 1,
+    CH_CN_TLS_HANDSHAKE      = 1 << 2,
+    CH_CN_ENCRYPTED          = 1 << 3,
+    CH_CN_BUF_WTLS_USED      = 1 << 4,
+    CH_CN_BUF_RTLS_USED      = 1 << 5,
+    CH_CN_BUF_UV_USED        = 1 << 6,
+    CH_CN_DO_CLOSE_ACCOUTING = 1 << 7,
 } ch_cn_flags_t;
 
 // .. c:type:: ch_connection_t
@@ -387,7 +393,7 @@ struct ch_connection_s {
     uv_write_t       write_req;
     uv_timer_t       shutdown_timeout;
     int8_t           shutdown_tasks;
-    uint8_t          flags;
+    uint16_t         flags;
     SSL*             ssl;
     BIO*             bio_ssl;
     BIO*             bio_app;
