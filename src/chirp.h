@@ -78,12 +78,21 @@
 #include "protocol.h"
 #include "encryption.h"
 
-// System includes
-// ===============
+// Library includes
+// ================
 //
 // .. code-block:: cpp
 //
-#include "sglib.h"
+#include "qs.h"
+
+// structure prototypes
+// ====================
+//
+// .. code-block:: cpp
+//
+#define ch_mq_next_m(x) (x)->_next
+
+qs_queue_bind_decl_cx_m(ch_mq, ch_message_t)
 
 // Declarations
 // ============
@@ -182,10 +191,6 @@ typedef enum {
 //
 //       The send queue for ch_chirp_send_ts
 //
-//    .. c:member:: ch_message_t* send_ts_queue_end
-//
-//       The end of send queue for ch_chirp_send_ts
-//
 //    .. c:member:: uv_async_t send_ts
 //
 //       Async event for waking up _ch_wr_send_ts_cb
@@ -211,7 +216,6 @@ struct ch_chirp_int_s {
     uint8_t             identity[CH_ID_SIZE];
     uint16_t            public_port;
     ch_message_t*       send_ts_queue;
-    ch_message_t*       send_ts_queue_end;
     uv_async_t          send_ts;
     uv_mutex_t          send_ts_queue_lock;
     ch_recv_cb_t        recv_cb;

@@ -26,6 +26,13 @@
 #   include <unistd.h>
 #endif
 
+// structure prototypes
+// ====================
+//
+// .. code-block:: cpp
+//
+qs_queue_bind_impl_cx_m(ch_mq, ch_message_t)
+
 // Declarations
 // ============
 //

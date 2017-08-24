@@ -546,16 +546,13 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
-    /* TODO unqueue again
-    ch_message_t* cur = ichirp->send_ts_queue;
+
+    ch_message_t* cur;
+    ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
     while(cur != NULL) {
-        ch_message_t* tmp = cur;
-        cur = cur->_next;
-        tmp->_next = NULL; // Share pointer with message queue
-        ch_chirp_send(chirp, tmp, tmp->_send_cb);
-    } */
-    ichirp->send_ts_queue = NULL;
-    ichirp->send_ts_queue_end = NULL;
+        ch_chirp_send(chirp, cur, cur->_send_cb);
+        ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
+    }
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
 }
 
@@ -700,7 +697,7 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         return CH_USED;
     }
     msg->_send_cb = send_cb;
-    // TODO queue again
+    ch_mq_enqueue(&ichirp->send_ts_queue, msg);
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
     uv_async_send(&ichirp->send_ts);
     return CH_SUCCESS;

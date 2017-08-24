@@ -70,6 +70,10 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
 //
 {
     ch_message_t* message;
+    int data_size = 1024;
+    int big = ch_qc_tgen_bool();
+    if(big)
+        data_size = 1024 * 1024;
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(ch_message_t));
     message = (ch_message_t*) track->data;
@@ -89,7 +93,7 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     message->data_len = _ch_test_gen_data_field(
         0.1,
         0.05,
-        1024 * 1024,
+        data_size,
         &message->data
     );
     int ipv6 = ch_qc_tgen_bool();

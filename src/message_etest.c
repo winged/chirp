@@ -28,6 +28,12 @@
 // .. code-block:: cpp
 //
 
+typedef int (*ch_test_chirp_send_t)(
+        ch_chirp_t* chirp,
+        ch_message_t* msg,
+        ch_send_cb_t send_cb
+);
+
 #define ch_tr_other_chirp(x) \
     ( \
         (ch_test_chirp_thread_t*)(x)->user_data \
@@ -149,12 +155,18 @@ ch_send_message(ch_chirp_t* chirp)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
 
     int simple = ch_qc_tgen_bool();
-    simple = 1;
+    int use_ts = ch_qc_tgen_bool();
+
+    ch_test_chirp_send_t send_func;
+    if(use_ts)
+        send_func = ch_chirp_send_ts;
+    else
+        send_func = ch_chirp_send;
 
     if(simple) {
         ch_simple_msg(chirp, &_msg_send);
         _msg_send.port = PORT_ECHO;
-        ch_chirp_send(
+        send_func(
                 chirp,
                 &_msg_send,
                 ch_sent
@@ -162,7 +174,7 @@ ch_send_message(ch_chirp_t* chirp)
     } else {
         ch_message_t* msg = ch_test_gen_message(chirp);
         msg->port = PORT_ECHO;
-        ch_chirp_send(
+        send_func(
                 chirp,
                 msg,
                 ch_sent
