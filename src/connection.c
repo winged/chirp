@@ -418,7 +418,7 @@ _ch_cn_write_cb(uv_write_t* req, int status)
         ch_cn_shutdown(conn, status);
         return;
     }
-    if(conn->write_size < conn->write_written) {
+    if(conn->write_size > conn->write_written) {
         _ch_cn_partial_write(conn);
         LC(
             chirp,
