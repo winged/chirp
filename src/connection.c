@@ -196,13 +196,43 @@ _ch_cn_partial_write(ch_connection_t* conn)
         conn->flags |= CH_CN_WRITE_PENDING;
         conn->flags |= CH_CN_BUF_WTLS_USED;
 #   endif
-    do {
-        int tmp_err;
-        tmp_err = SSL_write(
+    for(;;) {
+        int can_write_more = 1;
+        int pending = BIO_pending(conn->bio_app);
+        while(pending && can_write_more) {
+            int read = BIO_read(
+                conn->bio_app,
+                conn->buffer_wtls + bytes_read,
+                conn->buffer_size - bytes_read
+            );
+            A(read > 0, "BIO_read failure unexpected");
+            if(read < 1) {
+                EC(
+                    chirp,
+                    "SSL error reading from BIO, shutting down connection. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
+                );
+                ch_cn_shutdown(conn, CH_TLS_ERROR);
+                return;
+            }
+            bytes_read += read;
+            int is_write_size_valid = (
+                bytes_encrypted + conn->write_written
+            ) < conn->write_size;
+            int is_buffer_size_valid = bytes_read < conn->buffer_size;
+
+            can_write_more = is_write_size_valid && is_buffer_size_valid;
+            pending = BIO_pending(conn->bio_app);
+        }
+        if(!can_write_more)
+            break;
+        int tmp_err = SSL_write(
             conn->ssl,
             conn->write_buffer + bytes_encrypted + conn->write_written,
             conn->write_size - bytes_encrypted - conn->write_written
         );
+        bytes_encrypted += tmp_err;
         A(tmp_err > -1, "SSL_write failure unexpected");
         if(tmp_err < 0) {
             EC(
@@ -214,28 +244,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
             ch_cn_shutdown(conn, CH_TLS_ERROR);
             return;
         }
-        int read = BIO_read(
-            conn->bio_app,
-            conn->buffer_wtls + bytes_read,
-            conn->buffer_size - bytes_read
-        );
-        A(read > 0, "BIO_read failure unexpected");
-        if(read < 1) {
-            EC(
-                chirp,
-                "SSL error reading from BIO, shutting down connection. ",
-                "ch_connection_t:%p",
-                (void*) conn
-            );
-            ch_cn_shutdown(conn, CH_TLS_ERROR);
-            return;
-        }
-        bytes_encrypted += tmp_err;
-        bytes_read += read;
-    } while(
-        ((bytes_encrypted + conn->write_written) < conn->write_size) &&
-        (bytes_read < conn->buffer_size)
-    );
+    }
     conn->buffer_wtls_uv.len = bytes_read;
     uv_write(
         &conn->write_req,
@@ -418,7 +427,9 @@ _ch_cn_write_cb(uv_write_t* req, int status)
         ch_cn_shutdown(conn, status);
         return;
     }
-    if(conn->write_size > conn->write_written) {
+    /* Check if we can write data */
+    int pending = BIO_pending(conn->bio_app);
+    if(conn->write_size > conn->write_written || pending) {
         _ch_cn_partial_write(conn);
         LC(
             chirp,
@@ -429,50 +440,21 @@ _ch_cn_write_cb(uv_write_t* req, int status)
             (void*) conn
         );
     } else {
-        int pending = BIO_pending(conn->bio_app);
-        if(pending < 1) {
-            LC(
-                chirp,
-                "Completely sent %d bytes (unenc). ", "ch_connection_t:%p",
-                (int) conn->write_written,
-                (void*) conn
-            );
-            conn->write_size = 0;
-            if(conn->write_callback != NULL) {
-                uv_write_cb cb = conn->write_callback;
-                conn->write_callback = NULL;
-                cb(req, status);
-            }
-        } else {
-#           ifndef NDEBUG
-                conn->flags |= CH_CN_WRITE_PENDING;
-                conn->flags |= CH_CN_BUF_WTLS_USED;
-#           endif
-            LC(
-                chirp,
-                "Partially sent %d bytes. ", "ch_connection_t:%p",
-                (int) conn->buffer_size,
-                (void*) chirp
-            );
-            int read = BIO_read(
-                conn->bio_app,
-                conn->buffer_wtls,
-                conn->buffer_size
-            );
-            conn->buffer_wtls_uv.len = read;
-            uv_write(
-                &conn->write_req,
-                (uv_stream_t*) &conn->client,
-                &conn->buffer_wtls_uv,
-                1,
-                _ch_cn_write_cb
-            );
-            LC(
-                chirp,
-                "Called uv_write with %d bytes. ", "ch_connection_t:%p",
-                (int) read,
-                (void*) conn
-            );
+#       ifndef NDEBUG
+            A(pending == 0, "Unexpected pending data on TLS write");
+#       endif
+        LC(
+            chirp,
+            "Completely sent %d bytes (unenc). ", "ch_connection_t:%p",
+            (int) conn->write_written,
+            (void*) conn
+        );
+        conn->write_written = 0;
+        conn->write_size = 0;
+        if(conn->write_callback != NULL) {
+            uv_write_cb cb = conn->write_callback;
+            conn->write_callback = NULL;
+            cb(req, status);
         }
     }
 }

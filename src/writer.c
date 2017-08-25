@@ -294,17 +294,17 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
-    //ch_chirp_int_t* ichirp = chirp->_;
+    ch_chirp_int_t* ichirp = chirp->_;
     msg->_conn = conn;
     writer->flags = 0;
     A(writer->msg == NULL, "Message should be null on new write");
     writer->msg = msg;
-    /*int tmp_err = uv_timer_start(
+    int tmp_err = uv_timer_start(
         &writer->send_timeout,
         _ch_wr_write_timeout_cb,
         ichirp->config.TIMEOUT * 1000,
         0
-    ); TODO reenable write timeout
+    );
     if(tmp_err != CH_SUCCESS) {
         EC(
             chirp,
@@ -312,7 +312,7 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
             tmp_err,
             (void*) conn
         );
-    } */
+    }
 
 // Use the writers net message structure to write the actual message over
 // the connection. The net message structure is of type

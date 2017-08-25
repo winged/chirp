@@ -533,6 +533,14 @@ ch_pr_read_data_cb(
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
+    if(nread == 0) {
+        LC(
+            chirp,
+            "Emtpy read from libuv. Why?? ", "ch_connection_t:%p",
+            (void*) conn
+        );
+        return;
+    }
     if(nread < 0) {
         LC(
             chirp,

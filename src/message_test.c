@@ -72,8 +72,13 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     ch_message_t* message;
     int data_size = 1024;
     int big = ch_qc_tgen_bool();
-    if(big)
-        data_size = 1024 * 1024;
+    if(big) {
+        int very = ch_qc_tgen_bool();
+        if(very)
+            data_size = 1024 * 1024;
+        else
+            data_size = 1024 * 256;
+    }
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(ch_message_t));
     message = (ch_message_t*) track->data;
