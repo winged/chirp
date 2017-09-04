@@ -36,7 +36,7 @@ char _data[] = "hello";
 //
 static
 void
-ch_sent(ch_message_t* msg, int status, float load)
+ch_tst_sent_cb(ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
@@ -46,7 +46,7 @@ ch_sent(ch_message_t* msg, int status, float load)
         ch_chirp_send(
                 msg->chirp,
                 msg,
-                ch_sent
+                ch_tst_sent_cb
         );
     else
         //ch_chirp_close_ts(msg->chirp);
@@ -62,7 +62,7 @@ ch_start(ch_chirp_t* chirp)
         ch_chirp_send(
                 chirp,
                 &msgs[i],
-                ch_sent
+                ch_tst_sent_cb
         );
     }
 }

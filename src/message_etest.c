@@ -36,7 +36,7 @@ typedef enum {
     CH_TEST_TIMEOUT        = 1003,
 } ch_tst_args_t;
 
-typedef int (*ch_test_chirp_send_t)(
+typedef int (*ch_tst_chirp_send_t)(
         ch_chirp_t* chirp,
         ch_message_t* msg,
         ch_send_cb_t send_cb
@@ -52,7 +52,7 @@ typedef int (*ch_test_chirp_send_t)(
 
 static
 void
-ch_send_message(ch_chirp_t* chirp);
+_ch_tst_send_message(ch_chirp_t* chirp);
 
 // Definitions
 //
@@ -65,25 +65,25 @@ MINMAX_FUNCS(int)
 //
 // .. code-block:: cpp
 //
-int _msg_send_count = 0;
-static ch_message_t _msg_send;
-int _msg_echo_count = 0;
-static ch_message_t _msg_echo;
+static int _ch_tst_msg_send_count = 0;
+static ch_message_t _ch_tst_msg;
+static int _msg_echo_count = 0;
+static ch_message_t _ch_tst_msg_echo;
 static char _data[] = "hello";
 
-struct ch_test_chirp_thread_s;
-typedef struct ch_test_chirp_thread_s ch_test_chirp_thread_t;
+struct ch_tst_chirp_thread_s;
+typedef struct ch_tst_chirp_thread_s ch_tst_chirp_thread_t;
 
-struct ch_test_chirp_thread_s {
+struct ch_tst_chirp_thread_s {
     int port;
     ch_start_cb_t init;
-    ch_test_chirp_thread_t* other;
+    ch_tst_chirp_thread_t* other;
     ch_chirp_t* chirp;
 };
 
 static
 void
-ch_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
+_ch_tst_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 {
     ch_msg_init(chirp, msg);
     ch_msg_set_address(
@@ -98,7 +98,7 @@ ch_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 
 static
 void
-ch_echo(ch_message_t* msg, int status, float load)
+_ch_tst_echo_cb(ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
@@ -108,16 +108,16 @@ ch_echo(ch_message_t* msg, int status, float load)
 
 static
 void
-ch_sent(ch_message_t* msg, int status, float load)
+_ch_tst_sent_cb(ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
     (void)(msg);
     ch_chirp_t* chirp = msg->chirp;
     ch_qc_free_mem();
-    _msg_send_count += 1;
-    if(_msg_send_count < 10) {
-        ch_send_message(chirp);
+    _ch_tst_msg_send_count += 1;
+    if(_ch_tst_msg_send_count < 10) {
+        _ch_tst_send_message(chirp);
     } else {
         /* TODO: Insted of sleep, actually wait for the last echoed message to
          * arrive.
@@ -130,7 +130,7 @@ ch_sent(ch_message_t* msg, int status, float load)
 
 static
 void
-ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
+_ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     A(msg != NULL, "Not a ch_message_t*");
@@ -146,38 +146,38 @@ ch_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
             "Echo received a message%s", ""
         )
     }
-    memcpy(&_msg_echo, msg, sizeof(ch_message_t));
+    memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t));
     /* TODO Send an echo message
      * ch_chirp_send(
      *         chirp,
-     *         &_msg_echo,
-     *         ch_echo
+     *         &_ch_tst_msg_echo,
+     *         _ch_tst_echo_cb
      * );
      */
 }
 
 static
 void
-ch_send_message(ch_chirp_t* chirp)
+_ch_tst_send_message(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
 
     int simple = ch_qc_tgen_bool();
     int use_ts = ch_qc_tgen_bool();
 
-    ch_test_chirp_send_t send_func;
+    ch_tst_chirp_send_t send_func;
     if(use_ts)
         send_func = ch_chirp_send_ts;
     else
         send_func = ch_chirp_send;
 
     if(simple) {
-        ch_simple_msg(chirp, &_msg_send);
-        _msg_send.port = PORT_ECHO;
+        _ch_tst_simple_msg(chirp, &_ch_tst_msg);
+        _ch_tst_msg.port = PORT_ECHO;
         send_func(
                 chirp,
-                &_msg_send,
-                ch_sent
+                &_ch_tst_msg,
+                _ch_tst_sent_cb
         );
     } else {
         ch_message_t* msg = ch_test_gen_message(chirp);
@@ -185,32 +185,32 @@ ch_send_message(ch_chirp_t* chirp)
         send_func(
                 chirp,
                 msg,
-                ch_sent
+                _ch_tst_sent_cb
         );
     }
 }
 
 static
 void
-sender_init_handler(ch_chirp_t* chirp)
+_ch_tst_sender_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_send_message(chirp);
+    _ch_tst_send_message(chirp);
 }
 
 static
 void
-echo_init_handler(ch_chirp_t* chirp)
+_ch_tst_echo_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_register_recv_cb(chirp, ch_recv_echo_message_cb);
+    ch_chirp_register_recv_cb(chirp, _ch_tst_recv_echo_message_cb);
 }
 
 static
 void
-_ch_test_run_chirp(void* arg)
+_ch_tst_run_chirp(void* arg)
 {
-    ch_test_chirp_thread_t* args = (ch_test_chirp_thread_t*) arg;
+    ch_tst_chirp_thread_t* args = (ch_tst_chirp_thread_t*) arg;
     ch_chirp_t chirp;
     uv_loop_t loop;
     ch_config_t config;
@@ -275,20 +275,20 @@ main(int argc, char *argv[])
                 exit(1);
         }
     }
-    ch_test_chirp_thread_t sender_thread;
-    ch_test_chirp_thread_t echo_thread;
+    ch_tst_chirp_thread_t sender_thread;
+    ch_tst_chirp_thread_t echo_thread;
     sender_thread.other = &echo_thread;
     echo_thread.other = &sender_thread;
     sender_thread.port = PORT_SENDER;
-    sender_thread.init = sender_init_handler;
+    sender_thread.init = _ch_tst_sender_init_handler;
     echo_thread.port   = PORT_ECHO;
-    echo_thread.init   = echo_init_handler;
+    echo_thread.init   = _ch_tst_echo_init_handler;
     uv_thread_t echo;
     uv_thread_t sender;
     ch_libchirp_init();
-    uv_thread_create(&echo, _ch_test_run_chirp, &echo_thread);
+    uv_thread_create(&echo, _ch_tst_run_chirp, &echo_thread);
     sleep(1);
-    uv_thread_create(&sender, _ch_test_run_chirp, &sender_thread);
+    uv_thread_create(&sender, _ch_tst_run_chirp, &sender_thread);
     uv_thread_join(&echo);
     uv_thread_join(&sender);
     ch_libchirp_cleanup();
