@@ -21,6 +21,7 @@
 // .. code-block:: cpp
 //
 #include <unistd.h>
+#include <getopt.h>
 
 // Declarations
 // ============
@@ -236,9 +237,37 @@ _ch_test_run_chirp(void* arg)
 // .. code-block:: cpp
 
 int
-main()
+main(int argc, char *argv[])
 {
-    // TODO test with and without encryption
+    int c;
+    int option_index;
+    static struct option long_options[] = {
+        {"always-encrypt", no_argument,       0, CH_TEST_ALWAYS_ENCRYPT },
+        {"message-count",  required_argument, 0, CH_TEST_MESSAGE_COUNT },
+        {"timeout",        required_argument, 0, CH_TEST_TIMEOUT },
+        {"buffer-size",    required_argument, 0, CH_TEST_BUFFER_SIZE },
+        {0,                0,                 0, 0 }
+    };
+    for(;;) {
+        c = getopt_long(
+            argc,
+            argv,
+            "abc:d:012",
+            long_options,
+            &option_index
+        );
+        if(c == -1)
+            break;
+        switch(c) {
+            case CH_TEST_ALWAYS_ENCRYPT:
+                printf("Set always encrypt\n");
+                ch_chirp_set_always_encrypt();
+                break;
+            default:
+                fprintf(stderr, "Unknown option\n");
+                exit(1);
+        }
+    }
     ch_test_chirp_thread_t sender_thread;
     ch_test_chirp_thread_t echo_thread;
     sender_thread.other = &echo_thread;
