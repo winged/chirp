@@ -30,10 +30,11 @@
 //
 
 typedef enum {
-    CH_TEST_ALWAYS_ENCRYPT = 1000,
-    CH_TEST_MESSAGE_COUNT  = 1001,
-    CH_TEST_BUFFER_SIZE    = 1002,
-    CH_TEST_TIMEOUT        = 1003,
+    CH_TST_ALWAYS_ENCRYPT = 1000,
+    CH_TST_MESSAGE_COUNT  = 1001,
+    CH_TST_BUFFER_SIZE    = 1002,
+    CH_TST_TIMEOUT        = 1003,
+    CH_TST_HELP           = 1004,
 } ch_tst_args_t;
 
 typedef int (*ch_tst_chirp_send_t)(
@@ -70,6 +71,9 @@ static ch_message_t _ch_tst_msg;
 static int _msg_echo_count = 0;
 static ch_message_t _ch_tst_msg_echo;
 static char _data[] = "hello";
+static int _ch_tst_buffer_size = 0;
+static float _ch_tst_timeout = 5.0;
+static int _ch_tst_message_count = 20;
 
 struct ch_tst_chirp_thread_s;
 typedef struct ch_tst_chirp_thread_s ch_tst_chirp_thread_t;
@@ -116,7 +120,7 @@ _ch_tst_sent_cb(ch_message_t* msg, int status, float load)
     ch_chirp_t* chirp = msg->chirp;
     ch_qc_free_mem();
     _ch_tst_msg_send_count += 1;
-    if(_ch_tst_msg_send_count < 10) {
+    if(_ch_tst_msg_send_count < _ch_tst_message_count) {
         _ch_tst_send_message(chirp);
     } else {
         /* TODO: Insted of sleep, actually wait for the last echoed message to
@@ -215,9 +219,12 @@ _ch_tst_run_chirp(void* arg)
     uv_loop_t loop;
     ch_config_t config;
     ch_chirp_config_init(&config);
-    config.PORT = args->port;
+    config.BUFFER_SIZE    = _ch_tst_buffer_size;
+    config.TIMEOUT        = _ch_tst_timeout;
+    config.REUSE_TIME     = _ch_tst_timeout * 15;
+    config.PORT           = args->port;
     config.CERT_CHAIN_PEM = "./cert.pem";
-    config.DH_PARAMS_PEM = "./dh.pem";
+    config.DH_PARAMS_PEM  = "./dh.pem";
     ch_loop_init(&loop);
     if(ch_chirp_init(
             &chirp,
@@ -242,6 +249,22 @@ _ch_tst_run_chirp(void* arg)
 // ======
 //
 // .. code-block:: cpp
+//
+static
+void
+print_help(struct option long_options[])
+{
+    printf("Usage:\n\n");
+    while(long_options->name != NULL) {
+        printf("    --%s ", long_options->name);
+        if(long_options->has_arg == required_argument)
+            printf("arg");
+        else if(long_options->has_arg == optional_argument)
+            printf("[arg]");
+        printf("\n");
+        long_options++;
+    }
+}
 
 int
 main(int argc, char *argv[])
@@ -249,11 +272,12 @@ main(int argc, char *argv[])
     int c;
     int option_index;
     static struct option long_options[] = {
-        {"always-encrypt", no_argument,       0, CH_TEST_ALWAYS_ENCRYPT },
-        {"message-count",  required_argument, 0, CH_TEST_MESSAGE_COUNT },
-        {"timeout",        required_argument, 0, CH_TEST_TIMEOUT },
-        {"buffer-size",    required_argument, 0, CH_TEST_BUFFER_SIZE },
-        {0,                0,                 0, 0 }
+        {"always-encrypt", no_argument,       0, CH_TST_ALWAYS_ENCRYPT },
+        {"message-count",  required_argument, 0, CH_TST_MESSAGE_COUNT },
+        {"timeout",        required_argument, 0, CH_TST_TIMEOUT },
+        {"buffer-size",    required_argument, 0, CH_TST_BUFFER_SIZE },
+        {"help",           no_argument,       0, CH_TST_HELP },
+        {NULL,             0,                 0, 0 }
     };
     for(;;) {
         c = getopt_long(
@@ -266,12 +290,37 @@ main(int argc, char *argv[])
         if(c == -1)
             break;
         switch(c) {
-            case CH_TEST_ALWAYS_ENCRYPT:
+            case CH_TST_HELP:
+                print_help(long_options);
+                exit(1);
+                break;
+            case CH_TST_ALWAYS_ENCRYPT:
                 printf("Set always encrypt\n");
                 ch_chirp_set_always_encrypt();
                 break;
+            case CH_TST_MESSAGE_COUNT:
+                _ch_tst_message_count = strtol(optarg, NULL, 10);
+                if(errno) {
+                    fprintf(stderr, "message-count must be integer.\n");
+                    exit(1);
+                }
+                break;
+            case CH_TST_BUFFER_SIZE:
+                _ch_tst_buffer_size = strtol(optarg, NULL, 10);
+                if(errno) {
+                    fprintf(stderr, "buffer-size must be integer.\n");
+                    exit(1);
+                }
+                break;
+            case CH_TST_TIMEOUT:
+                _ch_tst_timeout = strtof(optarg, NULL);
+                if(errno) {
+                    fprintf(stderr, "timeout must be float.\n");
+                    exit(1);
+                }
+                break;
             default:
-                fprintf(stderr, "Unknown option\n");
+                fprintf(stderr, "unknown option\n");
                 exit(1);
         }
     }

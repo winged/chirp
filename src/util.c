@@ -90,7 +90,7 @@ ch_is_local_addr(ch_text_address_t* addr)
     if(_ch_always_encrypt)
         return 0;
     else {
-        return !(
+        return (
             strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||
             strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t)) == 0
         );

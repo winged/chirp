@@ -61,7 +61,7 @@ static uv_mutex_t _ch_chirp_log_lock;
 //
 static ch_config_t _ch_config_defaults = {
     .REUSE_TIME         = 30,
-    .TIMEOUT            = 5,
+    .TIMEOUT            = 5.0,
     .PORT               = 2998,
     .BACKLOG            = 100,
     .RETRIES            = 1,

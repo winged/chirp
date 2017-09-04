@@ -371,7 +371,7 @@ ch_pr_read(ch_connection_t* conn)
     )) > 0) {;
         LC(
             chirp,
-            "Read %d bytes. (unenc)", "ch_connection_t:%p",
+            "Read %d bytes. (unenc). ", "ch_connection_t:%p",
             tmp_err,
             (void*) conn
         );
