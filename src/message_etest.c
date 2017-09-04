@@ -29,6 +29,13 @@
 // .. code-block:: cpp
 //
 
+typedef enum {
+    CH_TEST_ALWAYS_ENCRYPT = 1000,
+    CH_TEST_MESSAGE_COUNT  = 1001,
+    CH_TEST_BUFFER_SIZE    = 1002,
+    CH_TEST_TIMEOUT        = 1003,
+} ch_tst_args_t;
+
 typedef int (*ch_test_chirp_send_t)(
         ch_chirp_t* chirp,
         ch_message_t* msg,
@@ -37,7 +44,7 @@ typedef int (*ch_test_chirp_send_t)(
 
 #define ch_tr_other_chirp(x) \
     ( \
-        (ch_test_chirp_thread_t*)(x)->user_data \
+        (ch_tst_chirp_thread_t*)(x)->user_data \
     )->other->chirp
 
 #define PORT_SENDER     59731
