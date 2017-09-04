@@ -171,6 +171,13 @@ typedef struct ch_identity_s {
 // .. c:function::
 CH_EXPORT
 void
+ch_chirp_set_always_encrypt();
+//
+//    Also encrypt local connections.
+
+// .. c:function::
+CH_EXPORT
+void
 ch_chirp_config_init(ch_config_t* config);
 //
 //    Initialize chirp configuration with defaults.

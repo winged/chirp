@@ -39,6 +39,15 @@ ch_free(
 //    :param void* buf: The handle to free.
 
 // .. c:function::
+int
+ch_is_local_addr(ch_text_address_t* addr);
+//
+//    Check if an address is either 127.0.0.1 or ::1
+//
+//    :param ch_text_address_t* addr: Address to check
+
+
+// .. c:function::
 void*
 ch_realloc(
         void*  buf,
@@ -77,28 +86,6 @@ ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
             str += 2;
     }
     *str = 0;
-}
-
-// .. c:function::
-static
-ch_inline
-int
-ch_is_local_addr(ch_text_address_t* addr)
-//
-//    Check if an address is either 127.0.0.1 or ::1
-//
-//    :param ch_text_address_t* addr: Address to check
-//
-// .. code-block:: cpp
-//
-{
-    /* TODO move to util.c, create _ch_always_encrypt and change this code
-     * accordingly. */
-    return 0;
-    return !(
-        strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||
-        strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t)) == 0
-    );
 }
 
 // .. c:function::

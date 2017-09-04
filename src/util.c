@@ -17,6 +17,10 @@
 // ============
 
 static
+int
+_ch_always_encrypt = 0;
+
+static
 ch_free_cb_t
 _ch_free_cb = free;
 
@@ -49,6 +53,19 @@ ch_alloc(size_t size)
 
 // .. c:function::
 void
+ch_chirp_set_always_encrypt()
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_set_always_encrypt`
+//
+// .. code-block:: cpp
+//
+{
+    _ch_always_encrypt = 1;
+}
+
+// .. c:function::
+void
 ch_free(void* buf)
 //    :noindex:
 //
@@ -58,6 +75,26 @@ ch_free(void* buf)
 //
 {
     _ch_free_cb(buf);
+}
+
+// .. c:function::
+int
+ch_is_local_addr(ch_text_address_t* addr)
+//    :noindex:
+//
+//    see: :c:func:`ch_is_local_addr`
+//
+// .. code-block:: cpp
+//
+{
+    if(_ch_always_encrypt)
+        return 0;
+    else {
+        return !(
+            strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||
+            strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t)) == 0
+        );
+    }
 }
 
 // .. c:function::
