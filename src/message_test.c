@@ -22,7 +22,7 @@ static
 size_t _ch_test_gen_data_field(
         float zero_probability,
         float max_probability,
-        int max_size,
+        int max_count,
         ch_buf** data
 )
 //
@@ -31,7 +31,7 @@ size_t _ch_test_gen_data_field(
 //
 //    :param zero_probability: Probability of the len being zero
 //    :param max_probability: Probability of the len being max
-//    :param int max_size: Max size of that field
+//    :param int max_count: Max count of that field
 //    :param ch_buf*: Buffer for the data
 //
 // .. code-block:: cpp
@@ -39,23 +39,22 @@ size_t _ch_test_gen_data_field(
 {
     ch_qc_mem_track_t* track;
     double draw = ch_qc_tgen_double();
-    size_t size = 0;
+    size_t count = 0;
     if(draw > zero_probability) {
         if(draw < max_probability)
-            size = max_size;
+            count = max_count;
         else {
-            size = ch_qc_tgen_double() * max_size;
+            count = ch_qc_tgen_double() * max_count;
         }
     }
-    if(size == 0)
-        return size;
+    if(count == 0)
+        return count;
     track = ch_qc_tgen_bytes();
-    track->data = ch_realloc(track->data, size);
-    if(track->size < size)
-        memset(track->data + track->size, 0, size - track->size);
-    track->size = 0;
+    track->data = ch_realloc(track->data, count);
+    if(track->count < count)
+        memset(track->data + track->count, 0, count - track->count);
     *data = track->data;
-    return size;
+    return count;
 }
 
 
@@ -70,14 +69,14 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
 //
 {
     ch_message_t* message;
-    int data_size = 1024;
+    int data_count = 1024;
     int big = ch_qc_tgen_bool();
     if(big) {
         int very = ch_qc_tgen_bool();
         if(very)
-            data_size = 1024 * 1024;
+            data_count = 1024 * 1024;
         else
-            data_size = 1024 * 256;
+            data_count = 1024 * 256;
     }
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(ch_message_t));
@@ -98,7 +97,7 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     message->data_len = _ch_test_gen_data_field(
         0.1,
         0.05,
-        data_size,
+        data_count,
         &message->data
     );
     int ipv6 = ch_qc_tgen_bool();
