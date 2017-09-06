@@ -2,7 +2,7 @@
 //    :target: https://travis-ci.org/ganwell/rbtree/
 //
 // ==================
-// Red-Black Tree 0.2
+// Red-Black Tree 0.3
 // ==================
 //
 // * Bonus: `qs.h`_ (Queue / Stack), mpipe_ (message-pack over pipe)
@@ -204,7 +204,7 @@
 //
 // .. code-block:: cpp
 //
-//    rb_iter_decl_m(bk, bk_iter, bk_elem);
+//    rb_iter_decl_cx_m(bk, bk_iter, bk_elem);
 //    rb_for_m(bk, tree, bk_iter, bk_elem) {
 //        printf("%s\n", bk_elem->isbn);
 //    }
@@ -527,6 +527,23 @@
 #ifdef NDEBUG
 #   define RB_NO_CHECK
 #endif
+
+// Inline for Windows
+// ------------------
+//
+// .. code-block:: cpp
+//
+
+#ifdef _WIN32
+#   if defined(_MSC_VER) && _MSC_VER < 1600
+#       define rb_inline __inline
+#   else // _MSC_VER
+#       define rb_inline inline
+#   endif // _MSC_VER
+#else
+#   define rb_inline inline
+#endif
+
 //
 // Basic traits
 // ============

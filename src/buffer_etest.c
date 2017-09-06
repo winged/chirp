@@ -22,28 +22,18 @@ typedef struct ch_safe_max_s {
     void* b;
 } ch_safe_max_t;
 
-typedef struct ch_buffer_s {
-    ch_bf_handler_t*    handler;
-    char                color_field;
-    struct ch_buffer_s* left;
-    struct ch_buffer_s* right;
-} ch_buffer_t;
+struct ch_buffer_s;
+typedef struct ch_buffer_s ch_buffer_t;
+struct ch_buffer_s {
+    ch_bf_handler_t* handler;
+    ch_buffer_t*     left;
+    ch_buffer_t*     right;
+    ch_buffer_t*     parent;
+    char             color;
+};
 
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_buffer_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
-
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
-    ch_buffer_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
+#define ch_tst_bf_cmp_m rb_pointer_cmp_m
+rb_bind_m(ch_tst_bf, ch_buffer_t)
 
 // Test functions
 // ==============
@@ -89,6 +79,7 @@ ch_plan_works(ch_buf* data)
 {
     int ret = 1;
     ch_buffer_t* buffers = NULL;
+    ch_tst_bf_tree_init(&buffers);
     ch_buffer_pool_t pool;
     ch_qc_mem_track_t* mem = ch_qc_args(
         ch_qc_mem_track_t*,
@@ -127,8 +118,9 @@ ch_plan_works(ch_buf* data)
             }
             if(handler != NULL) {
                 ch_buffer_t* buffer = ch_alloc(sizeof(ch_buffer_t));
+                ch_tst_bf_node_init(buffer);
                 buffer->handler = handler;
-                sglib_ch_buffer_t_add(&buffers, buffer);
+                ch_tst_bf_insert(&buffers, buffer);
                 count += 1;
                 if(last) {
                     if(count != size) {
@@ -145,16 +137,9 @@ ch_plan_works(ch_buf* data)
             }
         } else {
             if(count > 0) {
-                ch_buffer_t* buffer;
-                struct sglib_ch_buffer_t_iterator it;
-                buffer = sglib_ch_buffer_t_it_init(&it, buffers);
-                if(buffer == NULL) {
-                    printf("No buffer in set\n");
-                    ret = 0;
-                    break;
-                }
+                ch_buffer_t* buffer = buffers;
                 ch_bf_release(&pool, buffer->handler->id);
-                sglib_ch_buffer_t_delete(&buffers, buffer);
+                ch_tst_bf_delete_node(&buffers, buffer);
                 ch_free(buffer);
                 count -= 1;
             }

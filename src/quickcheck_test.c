@@ -47,10 +47,9 @@ static ch_qc_mem_track_t* _ch_qc_mem_track = NULL;
 //
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_LIST_FUNCTIONS( // NOCOV
-    ch_qc_mem_track_t,
-    CH_QC_MEM_TRACK_COMPARATOR,
-    next
+qs_stack_bind_impl_m(
+    ch_qc,
+    ch_qc_mem_track_t
 )
 
 // Functions
@@ -115,20 +114,12 @@ ch_qc_free_mem(void)
 // .. code-block:: cpp
 //
 {
-    ch_qc_mem_track_t* t;
-    struct sglib_ch_qc_mem_track_t_iterator it;
-    for(
-            t = sglib_ch_qc_mem_track_t_it_init(
-                &it,
-                _ch_qc_mem_track
-            );
-            t != NULL;
-            t = sglib_ch_qc_mem_track_t_it_next(&it)
-    ) {
-        ch_free(t->data);
-        ch_free(t);
+    ch_qc_mem_track_t* item;
+    while(_ch_qc_mem_track != NULL) {
+        ch_qc_pop(&_ch_qc_mem_track, &item);
+        ch_free(item->data);
+        ch_free(item);
     }
-    _ch_qc_mem_track = NULL;
 }
 
 // .. c:function::
@@ -171,7 +162,8 @@ _ch_qc_tgen_array(
     item->data = arr;
     item->count = len;
     item->size = size;
-    sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+    item->next = NULL;
+    ch_qc_push(&_ch_qc_mem_track, item);
 
     size_t i;
 
@@ -456,7 +448,8 @@ ch_qc_tgen_string(void)
         item->data = arr;
         item->count = 1;
         item->size = sizeof(char);
-        sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+        item->next = NULL;
+        ch_qc_push(&_ch_qc_mem_track, item);
         *arr = 0;
     } else
         item->data[(item->count * item->size) - 1] = 0;
@@ -479,7 +472,8 @@ ch_qc_track_alloc(size_t size)
     item->data = arr;
     item->count = size;
     item->size = 1;
-    sglib_ch_qc_mem_track_t_add(&_ch_qc_mem_track, item);
+    item->next = NULL;
+    ch_qc_push(&_ch_qc_mem_track, item);
 
     return item;
 }

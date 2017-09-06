@@ -91,7 +91,8 @@
 // .. code-block:: cpp
 //
 #include "common.h"
-#include "sglib.h"
+#include "qs.h"
+#include "rbtree.h"
 
 // System includes
 // ===============
@@ -137,19 +138,14 @@ typedef struct ch_qc_mem_track_s {
     struct ch_qc_mem_track_s *next;
 } ch_qc_mem_track_t;
 
-// Sglib Prototypes
-// ----------------
+// rbtree prototypes
+// -----------------
 //
 // .. code-block:: cpp
 
-/* Not used -> no doc */
-#define CH_QC_MEM_TRACK_COMPARATOR(e1, e2) \
-    (e1->data - e2->data)
-
-SGLIB_DEFINE_LIST_PROTOTYPES( // NOCOV
-    ch_qc_mem_track_t,
-    CH_QC_MEM_TRACK_COMPARATOR,
-    next
+qs_stack_bind_decl_m(
+    ch_qc,
+    ch_qc_mem_track_t
 )
 
 // Macros

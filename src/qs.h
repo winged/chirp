@@ -1,5 +1,5 @@
 // =================
-// Queue / Stack 0.2
+// Queue / Stack 0.3
 // =================
 //
 // Queue and stack with a rbtree-style interface. Both queue and stack use one
@@ -123,9 +123,9 @@
 
 #ifdef _WIN32
 #   if defined(_MSC_VER) && _MSC_VER < 1600
-#       define mpp_inline __inline
+#       define qs_inline __inline
 #   else // _MSC_VER
-#       define mpp_inline inline
+#       define qs_inline inline
 #   endif // _MSC_VER
 #else
 #   define qs_inline inline
