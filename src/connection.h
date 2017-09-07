@@ -421,7 +421,6 @@ struct ch_connection_s {
 // TODO: Move message-queue to ch_remote_t
 // Third pull request
 // TODO: new queuing
-// TODO: remove CH_MSG_USER
 // TODO: join ack and user messages code-path
 // TODO: handle timeout for acks
 // TODO: remove sglib
