@@ -22,18 +22,18 @@ typedef struct ch_safe_max_s {
     void* b;
 } ch_safe_max_t;
 
-struct ch_buffer_s;
-typedef struct ch_buffer_s ch_buffer_t;
-struct ch_buffer_s {
+struct ch_tst_buffer_s;
+typedef struct ch_tst_buffer_s ch_tst_buffer_t;
+struct ch_tst_buffer_s {
     ch_bf_handler_t* handler;
-    ch_buffer_t*     left;
-    ch_buffer_t*     right;
-    ch_buffer_t*     parent;
+    ch_tst_buffer_t*     left;
+    ch_tst_buffer_t*     right;
+    ch_tst_buffer_t*     parent;
     char             color;
 };
 
 #define ch_tst_bf_cmp_m rb_pointer_cmp_m
-rb_bind_m(ch_tst_bf, ch_buffer_t)
+rb_bind_m(ch_tst_bf, ch_tst_buffer_t)
 
 // Test functions
 // ==============
@@ -42,7 +42,7 @@ rb_bind_m(ch_tst_bf, ch_buffer_t)
 
 static
 void
-ch_gen_plan(ch_buf* data)
+ch_tst_gen_plan(ch_buf* data)
 {
     int override = ch_qc_tgen_bool();
     int override_with = ch_qc_tgen_bool();
@@ -60,7 +60,7 @@ ch_gen_plan(ch_buf* data)
 }
 
 void
-ch_qc_print_plan(ch_buf* data)
+ch_tst_print_plan(ch_buf* data)
 {
     ch_qc_mem_track_t* mem = ch_qc_args(
         ch_qc_mem_track_t*,
@@ -75,10 +75,10 @@ ch_qc_print_plan(ch_buf* data)
 
 static
 int
-ch_plan_works(ch_buf* data)
+ch_tst_plan_works(ch_buf* data)
 {
     int ret = 1;
-    ch_buffer_t* buffers = NULL;
+    ch_tst_buffer_t* buffers = NULL;
     ch_tst_bf_tree_init(&buffers);
     ch_buffer_pool_t pool;
     ch_qc_mem_track_t* mem = ch_qc_args(
@@ -117,7 +117,7 @@ ch_plan_works(ch_buf* data)
                 }
             }
             if(handler != NULL) {
-                ch_buffer_t* buffer = ch_alloc(sizeof(ch_buffer_t));
+                ch_tst_buffer_t* buffer = ch_alloc(sizeof(ch_tst_buffer_t));
                 ch_tst_bf_node_init(buffer);
                 buffer->handler = handler;
                 ch_tst_bf_insert(&buffers, buffer);
@@ -137,7 +137,7 @@ ch_plan_works(ch_buf* data)
             }
         } else {
             if(count > 0) {
-                ch_buffer_t* buffer = buffers;
+                ch_tst_buffer_t* buffer = buffers;
                 ch_bf_release(&pool, buffer->handler->id);
                 ch_tst_bf_delete_node(&buffers, buffer);
                 ch_free(buffer);
@@ -158,8 +158,8 @@ int
 main(void)
 {
     ch_qc_init();
-    ch_qc_gen gs0[] = { ch_gen_plan, ch_qc_gen_double };
-    ch_qc_print ps0[] = { ch_qc_print_plan, ch_qc_print_double };
+    ch_qc_gen gs0[] = { ch_tst_gen_plan, ch_qc_gen_double };
+    ch_qc_print ps0[] = { ch_tst_print_plan, ch_qc_print_double };
     printf("Testing acquire/release plan: ");
-    return !ch_qc_for_all(ch_plan_works, 2, gs0, ps0, ch_safe_max_t);
+    return !ch_qc_for_all(ch_tst_plan_works, 2, gs0, ps0, ch_safe_max_t);
 }

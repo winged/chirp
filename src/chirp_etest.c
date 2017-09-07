@@ -15,7 +15,7 @@
 
 static
 void
-start(ch_chirp_t* chirp)
+ch_tst_start(ch_chirp_t* chirp)
 {
     ch_chirp_close_ts(chirp);
 }
@@ -42,7 +42,7 @@ main()
             &chirp,
             &config,
             &loop,
-            start,
+            ch_tst_start,
             NULL,
             NULL
     ) != CH_SUCCESS) {

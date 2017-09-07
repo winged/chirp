@@ -55,7 +55,7 @@ ch_tst_sent_cb(ch_message_t* msg, int status, float load)
 
 static
 void
-ch_start(ch_chirp_t* chirp)
+ch_tst_start(ch_chirp_t* chirp)
 {
     ch_message_t* msgs = chirp->user_data;
     for(int i = 0; i < _msgs_len; i++) {
@@ -69,7 +69,7 @@ ch_start(ch_chirp_t* chirp)
 
 static
 int
-ch_send(
+ch_tst_send(
         int argc,
         char* argv[]
 )
@@ -96,7 +96,7 @@ ch_send(
             &chirp,
             &config,
             &loop,
-            ch_start,
+            ch_tst_start,
             NULL,
             NULL
     ) != CH_SUCCESS) {
@@ -144,7 +144,7 @@ ch_send(
 
 static
 int
-ch_listen(
+ch_tst_listen(
         char* port
 )
 {
@@ -192,7 +192,7 @@ main(
         );
         return 1;
     } else if(argc == 2)
-        ch_listen(argv[1]);
+        ch_tst_listen(argv[1]);
     else
-        ch_send(argc, argv);
+        ch_tst_send(argc, argv);
 }

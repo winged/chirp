@@ -19,7 +19,7 @@
 
 // .. c:function::
 static
-size_t _ch_test_gen_data_field(
+size_t _ch_tst_gen_data_field(
         float zero_probability,
         float max_probability,
         int max_count,
@@ -60,7 +60,7 @@ size_t _ch_test_gen_data_field(
 
 // .. c:function::
 ch_message_t*
-ch_test_gen_message(struct ch_chirp_s* chirp)
+ch_tst_gen_message(struct ch_chirp_s* chirp)
 //    :noindex:
 //
 //    see: :c:func:`ch_ms_gen_message`
@@ -82,19 +82,19 @@ ch_test_gen_message(struct ch_chirp_s* chirp)
     track = ch_qc_track_alloc(sizeof(ch_message_t));
     message = (ch_message_t*) track->data;
     ch_msg_init(chirp, message);
-    message->header_len = _ch_test_gen_data_field(
+    message->header_len = _ch_tst_gen_data_field(
         0.1,
         0.1,
         1024,
         &message->header
     );
-    message->actor_len = _ch_test_gen_data_field(
+    message->actor_len = _ch_tst_gen_data_field(
         0.1,
         0.1,
         2048,
         &message->actor
     );
-    message->data_len = _ch_test_gen_data_field(
+    message->data_len = _ch_tst_gen_data_field(
         0.1,
         0.05,
         data_count,

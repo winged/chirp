@@ -184,7 +184,7 @@ _ch_tst_send_message(ch_chirp_t* chirp)
                 _ch_tst_sent_cb
         );
     } else {
-        ch_message_t* msg = ch_test_gen_message(chirp);
+        ch_message_t* msg = ch_tst_gen_message(chirp);
         msg->port = PORT_ECHO;
         send_func(
                 chirp,
