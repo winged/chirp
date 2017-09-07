@@ -22,6 +22,7 @@
 //
 #include <unistd.h>
 #include <getopt.h>
+#include <assert.h>
 
 // Declarations
 // ============
@@ -185,6 +186,9 @@ _ch_tst_send_message(ch_chirp_t* chirp)
         );
     } else {
         ch_message_t* msg = ch_tst_gen_message(chirp);
+        assert(ch_tst_check_pattern(msg->header, msg->header_len));
+        assert(ch_tst_check_pattern(msg->actor, msg->actor_len));
+        assert(ch_tst_check_pattern(msg->data, msg->data_len));
         msg->port = PORT_ECHO;
         send_func(
                 chirp,

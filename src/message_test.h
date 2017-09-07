@@ -22,6 +22,20 @@
 // ============
 
 // .. c:function::
+int
+ch_tst_check_pattern(
+        ch_buf* data,
+        size_t count
+);
+//
+//    Check if the pattern is correct.
+//
+//    :param ch_buf*: Buffer containing the pattern
+//    :param ch_buf*: The size of data
+//    :rtype: bool
+//
+
+// .. c:function::
 ch_message_t*
 ch_tst_gen_message(ch_chirp_t* chirp);
 //
