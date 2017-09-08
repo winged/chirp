@@ -13,6 +13,7 @@
 #include "reader.h"
 #include "writer.h"
 #include "util.h"
+#include "remote.h"
 
 // Declarations
 // ============
@@ -158,9 +159,12 @@ _ch_rd_handshake(
 // .. code-block:: cpp
 //
 {
+    int tmp_err;
     ch_connection_t* old_conn = NULL;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_remote_t  search_remote;
+    ch_remote_t* remote = NULL;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     if(read < sizeof(ch_rd_handshake_t)) {
@@ -184,36 +188,31 @@ _ch_rd_handshake(
         reader->hs.identity,
         sizeof(conn->remote_identity)
     );
-    ch_cn_find(
-        protocol->connections,
-        conn,
-        &old_conn
-    );
+    ch_rm_init_from_conn(&search_remote, conn);
+    if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
+        remote = ch_alloc(sizeof(ch_remote_t));
+        *remote = search_remote;
+        tmp_err = ch_rm_insert(&protocol->remotes, remote);
+        A(tmp_err == 0, "Inserting remote failed");
+    }
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection */
-    if(old_conn != ch_cn_nil_ptr) {
-        /* Since we reuse the tree members we have to delete the connection
-         * from the old data-structure, before adding it to the new. */
-        L(
-            chirp,
-            "ch_connection_t:%p replaced ch_connection_t:%p",
-            (void*) conn,
-            (void*) old_conn
-        );
-        ch_cn_delete_node(
-            &protocol->connections,
-            old_conn
-        );
-        ch_cn_old_push(
-            &protocol->old_connections,
-            old_conn
-        );
+    old_conn = remote->conn;
+    if(old_conn != NULL) {
+        /* If we found the current connection everything is ok */
+        if(conn != old_conn) {
+            L(
+                chirp,
+                "ch_connection_t:%p replaced ch_connection_t:%p",
+                (void*) conn,
+                (void*) old_conn
+            );
+            ch_cn_old_push(
+                &protocol->old_connections,
+                old_conn
+            );
+        }
     }
-    ch_cn_node_init(conn);
-    ch_cn_insert(
-        &protocol->connections,
-        conn
-    );
 #   ifndef NDEBUG
     {
         ch_text_address_t addr;

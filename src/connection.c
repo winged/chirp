@@ -11,6 +11,7 @@
 #include "connection.h"
 #include "chirp.h"
 #include "util.h"
+#include "remote.h"
 
 // System includes
 // ===============
@@ -19,12 +20,11 @@
 //
 #include <openssl/err.h>
 
-// Rbtree Prototypes
-// =====-===========
+// Data Struc Prototypes
+// =====================
 
 // .. code-block:: cpp
 //
-rb_bind_impl_m(ch_cn, ch_connection_t)
 qs_stack_bind_impl_m(ch_cn_old, ch_connection_t)
 
 // Declarations
@@ -719,14 +719,16 @@ ch_cn_shutdown(
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    /* There are many reasons the connection is not in this data-structure,
-     * therefore we do a blind delete. */
-    ch_connection_t* out_conn;
-    ch_cn_delete(
-        &protocol->connections,
-        conn,
-        &out_conn
+    /* # TODO this should use ch_remote_t directly from function signature */
+    ch_remote_t search_remote;
+    ch_remote_t* remote;
+    ch_rm_init_from_conn(&search_remote, conn);
+    ch_rm_find(
+        protocol->remotes,
+        &search_remote,
+        &remote
     );
+    remote->conn = NULL;
     LC(
         chirp,
         "Shutdown connection. ", "ch_connection_t:%p",

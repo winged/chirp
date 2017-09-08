@@ -11,6 +11,7 @@
 #include "protocol.h"
 #include "chirp.h"
 #include "util.h"
+#include "remote.h"
 
 // System includes
 // ===============
@@ -90,14 +91,18 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
 {
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
-    rb_iter_decl_cx_m(ch_cn, iter, elem);
-    rb_for_m(ch_cn, protocol->connections, iter, elem) {
-        ch_cn_shutdown(elem, CH_SHUTDOWN);
+    /* We may not change the data-structure during iteration */
+    ch_remote_t* remote;
+    while(protocol->remotes != ch_rm_nil_ptr) {
+        remote = protocol->remotes;
+        if(remote->conn != NULL)
+            ch_cn_shutdown(remote->conn, CH_SHUTDOWN);
+        ch_rm_delete_node(&protocol->remotes, remote);
+        ch_free(remote);
     }
-    /* Effectively we have cleared the structure */
-    ch_cn_tree_init(&protocol->connections);
-    rb_for_m(ch_cn_old, protocol->old_connections, iter, elem) {
-        ch_cn_shutdown(elem, CH_SHUTDOWN);
+    rb_iter_decl_cx_m(ch_cn_old, old_iter, old_elem);
+    rb_for_m(ch_cn_old, protocol->old_connections, old_iter, old_elem) {
+        ch_cn_shutdown(old_elem, CH_SHUTDOWN);
     }
     /* Effectively we have cleared the list */
     protocol->old_connections = NULL;
@@ -555,7 +560,8 @@ ch_pr_start(ch_protocol_t* protocol)
     }
     ch_pr_rc_tree_init(&protocol->receipts);
     ch_pr_rc_tree_init(&protocol->late_receipts);
-    ch_cn_tree_init(&protocol->connections);
+    ch_rm_tree_init(&protocol->remotes);
+    protocol->old_connections = NULL;
     return CH_SUCCESS;
 }
 

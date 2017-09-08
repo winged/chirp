@@ -16,6 +16,7 @@
 //
 #include "common.h"
 #include "connection.h"
+#include "rbtree.h"
 
 // Declarations
 // ============
@@ -34,20 +35,40 @@ struct ch_remote_s {
     uint8_t          address[CH_IP_ADDR_SIZE];
     int32_t          port;
     ch_connection_t* conn;
-    char             color_field;
+    char             color;
     ch_remote_t*     parent;
     ch_remote_t*     left;
     ch_remote_t*     right;
 };
 
+// rbtree Prototypes
+// ------------------
+//
+// .. code-block:: cpp
+//
+#define ch_rm_cmp_m(x,y) ch_remote_cmp(x, y)
+
+// .. code-block:: cpp
+//
+rb_bind_decl_m(ch_rm, ch_remote_t)
+
 // .. c:function::
 void
-ch_rm_init(ch_remote_t* remote, ch_message_t* msg);
+ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg);
 //
 //    Initialize the remote data-structure from a message.
 //
 //    :param ch_remote_t* remote: Remote to initialize
 //    :param ch_message_t* msg:   Message to initialize from
+
+// .. c:function::
+void
+ch_rm_init_from_conn(ch_remote_t* remote, ch_connection_t* conn);
+//
+//    Initialize the remote data-structure from a connection.
+//
+//    :param ch_remote_t* remote: Remote to initialize
+//    :param ch_connection_t*:   Connection to initialize from
 
 // Definitions
 // ===========

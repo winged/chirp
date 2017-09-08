@@ -12,6 +12,7 @@
 #include "chirp.h"
 #include "protocol.h"
 #include "util.h"
+#include "remote.h"
 
 // Declarations
 // ============
@@ -591,26 +592,26 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         return CH_SHUTDOWN;
     }
     int tmp_err;
-    ch_connection_t search_conn;
+    ch_remote_t      search_remote;
+    ch_remote_t*     remote;
     ch_connection_t* conn;
     msg->_send_cb = send_cb;
     msg->_flags  |= CH_MSG_USED;
     ch_protocol_t* protocol = &ichirp->protocol;
-    search_conn.ip_protocol = msg->ip_protocol;
-    search_conn.port        = msg->port;
     ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
-    memcpy(
-        search_conn.address,
-        msg->address,
-        msg->ip_protocol == CH_IPV6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
-    );
-    ch_cn_find(
-        protocol->connections,
-        &search_conn,
-        &conn
-    );
-    if(conn == ch_cn_nil_ptr) {
+
+    ch_rm_init_from_msg(&search_remote, msg);
+    if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
+        remote = ch_alloc(sizeof(ch_remote_t));
+        *remote = search_remote;
+        tmp_err = ch_rm_insert(&protocol->remotes, remote);
+        A(tmp_err == 0, "Inserting remote failed");
+    }
+    conn = remote->conn;
+
+    if(conn == NULL) {
         conn = ch_alloc(sizeof(ch_connection_t));
+        remote->conn = conn;
         if(!conn) {
             E(
                 chirp,

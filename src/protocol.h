@@ -17,6 +17,7 @@
 //
 #include "libchirp/chirp.h"
 #include "connection.h"
+#include "rbtree.h"
 
 // Declarations
 // ============
@@ -74,9 +75,9 @@ struct ch_receipt_s {
 //
 //       Reference to the libuv tcp server handle, IPv6.
 //
-//    .. c:member:: ch_connection_t* connections
+//    .. c:member:: ch_remote_t* remotes
 //
-//       Pointer to connections that are used for this protocol.
+//       Pointer to tree of remotes. They can have a connection.
 //
 //    .. c:member:: ch_connection_t* old_connections
 //
@@ -120,7 +121,7 @@ typedef struct ch_protocol_s {
     struct sockaddr_in6 addrv6;
     uv_tcp_t            serverv4;
     uv_tcp_t            serverv6;
-    ch_connection_t*    connections;
+    ch_remote_t*        remotes;
     ch_connection_t*    old_connections;
     ch_receipt_t*       receipts;
     ch_receipt_t*       late_receipts;
