@@ -24,23 +24,8 @@
 
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV // TODO remove
-    ch_connection_t,
-    left,
-    right,
-    color_field,
-    CH_CONNECTION_CMP
-)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV // TODO remove
-    ch_connection_set_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
+rb_bind_impl_m(ch_cn, ch_connection_t)
+qs_stack_bind_impl_m(ch_cn_old, ch_connection_t)
 
 // Declarations
 // ============
@@ -737,7 +722,7 @@ ch_cn_shutdown(
     /* There are many reasons the connection is not in this data-structure,
      * therefore we do a blind delete. */
     ch_connection_t* out_conn;
-    sglib_ch_connection_t_delete_if_member(
+    ch_cn_delete(
         &protocol->connections,
         conn,
         &out_conn

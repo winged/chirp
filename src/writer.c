@@ -604,11 +604,12 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         msg->address,
         msg->ip_protocol == CH_IPV6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
     );
-    conn = sglib_ch_connection_t_find_member(
+    ch_cn_find(
         protocol->connections,
-        &search_conn
+        &search_conn,
+        &conn
     );
-    if(conn == NULL) {
+    if(conn == ch_cn_nil_ptr) {
         conn = ch_alloc(sizeof(ch_connection_t));
         if(!conn) {
             E(

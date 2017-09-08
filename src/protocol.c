@@ -96,30 +96,14 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
 {
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
-    ch_connection_t* t;
-    struct sglib_ch_connection_t_iterator itt;
-    struct sglib_ch_connection_set_t_iterator its;
-    for(
-            t = sglib_ch_connection_t_it_init(
-                &itt,
-                protocol->connections
-            );
-            t != NULL;
-            t = sglib_ch_connection_t_it_next(&itt)
-    ) {
-        ch_cn_shutdown(t, CH_SHUTDOWN);
+    rb_iter_decl_cx_m(ch_cn, iter, elem);
+    rb_for_m(ch_cn, protocol->connections, iter, elem) {
+        ch_cn_shutdown(elem, CH_SHUTDOWN);
     }
-    /* Effectively we have cleared the list */
-    protocol->connections = NULL;
-    for(
-            t = sglib_ch_connection_set_t_it_init(
-                &its,
-                protocol->old_connections
-            );
-            t != NULL;
-            t = sglib_ch_connection_set_t_it_next(&its)
-    ) {
-        ch_cn_shutdown(t, CH_SHUTDOWN);
+    /* Effectively we have cleared the structure */
+    ch_cn_tree_init(&protocol->connections);
+    rb_for_m(ch_cn_old, protocol->old_connections, iter, elem) {
+        ch_cn_shutdown(elem, CH_SHUTDOWN);
     }
     /* Effectively we have cleared the list */
     protocol->old_connections = NULL;
@@ -400,6 +384,84 @@ ch_pr_read(ch_connection_t* conn)
 }
 
 // .. c:function::
+void
+ch_pr_read_data_cb(
+        uv_stream_t* stream,
+        ssize_t nread,
+        const uv_buf_t* buf
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_read_data_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = stream->data;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+#   ifndef NDEBUG
+        conn->flags &= ~CH_CN_BUF_UV_USED;
+#   endif
+    if(nread == UV_EOF) {
+        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
+        return;
+    }
+    if(nread == 0) {
+        LC(
+            chirp,
+            "Emtpy read from libuv. Why?? ", "ch_connection_t:%p",
+            (void*) conn
+        );
+        return;
+    }
+    if(nread < 0) {
+        LC(
+            chirp,
+            "Reader got error %d -> shutdown. ", "ch_connection_t:%p",
+            (int) nread,
+            (void*) conn
+        );
+        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
+        return;
+    }
+    LC(
+        chirp,
+        "%d available bytes. ", "ch_connection_t:%p",
+        (int) nread,
+        (void*) conn
+    );
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        size_t bytes_decrypted = 0;
+        size_t snread = (size_t) nread;
+        do {
+            int tmp_err;
+            tmp_err = BIO_write(
+                conn->bio_app,
+                buf->base + bytes_decrypted,
+                nread - bytes_decrypted
+            );
+            if(tmp_err < 1) {
+                EC(
+                    chirp,
+                    "SSL error writing to BIO, shutting down connection. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
+                );
+                ch_cn_shutdown(conn, CH_TLS_ERROR);
+                return;
+            }
+            bytes_decrypted += tmp_err;
+            if(conn->flags & CH_CN_TLS_HANDSHAKE)
+                _ch_pr_do_handshake(conn);
+            else
+                ch_pr_read(conn);
+        } while(bytes_decrypted < snread);
+    } else
+        ch_rd_read(conn, buf->base, nread);
+}
+
+// .. c:function::
 ch_error_t
 ch_pr_start(ch_protocol_t* protocol)
 //    :noindex:
@@ -503,90 +565,11 @@ ch_pr_start(ch_protocol_t* protocol)
         );
         return CH_EADDRINUSE; // NOCOV errors happend for IPV4
     }
-    protocol->receipts = NULL;
+    protocol->receipts = NULL; // TODO fix this
     protocol->late_receipts = NULL;
-    protocol->connections = NULL;
+    ch_cn_tree_init(&protocol->connections);
     return CH_SUCCESS;
 }
-
-// .. c:function::
-void
-ch_pr_read_data_cb(
-        uv_stream_t* stream,
-        ssize_t nread,
-        const uv_buf_t* buf
-)
-//    :noindex:
-//
-//    see: :c:func:`ch_pr_read_data_cb`
-//
-// .. code-block:: cpp
-//
-{
-    ch_connection_t* conn = stream->data;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-#   ifndef NDEBUG
-        conn->flags &= ~CH_CN_BUF_UV_USED;
-#   endif
-    if(nread == UV_EOF) {
-        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
-        return;
-    }
-    if(nread == 0) {
-        LC(
-            chirp,
-            "Emtpy read from libuv. Why?? ", "ch_connection_t:%p",
-            (void*) conn
-        );
-        return;
-    }
-    if(nread < 0) {
-        LC(
-            chirp,
-            "Reader got error %d -> shutdown. ", "ch_connection_t:%p",
-            (int) nread,
-            (void*) conn
-        );
-        ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
-        return;
-    }
-    LC(
-        chirp,
-        "%d available bytes. ", "ch_connection_t:%p",
-        (int) nread,
-        (void*) conn
-    );
-    if(conn->flags & CH_CN_ENCRYPTED) {
-        size_t bytes_decrypted = 0;
-        size_t snread = (size_t) nread;
-        do {
-            int tmp_err;
-            tmp_err = BIO_write(
-                conn->bio_app,
-                buf->base + bytes_decrypted,
-                nread - bytes_decrypted
-            );
-            if(tmp_err < 1) {
-                EC(
-                    chirp,
-                    "SSL error writing to BIO, shutting down connection. ",
-                    "ch_connection_t:%p",
-                    (void*) conn
-                );
-                ch_cn_shutdown(conn, CH_TLS_ERROR);
-                return;
-            }
-            bytes_decrypted += tmp_err;
-            if(conn->flags & CH_CN_TLS_HANDSHAKE)
-                _ch_pr_do_handshake(conn);
-            else
-                ch_pr_read(conn);
-        } while(bytes_decrypted < snread);
-    } else
-        ch_rd_read(conn, buf->base, nread);
-}
-
 
 // .. c:function::
 ch_error_t

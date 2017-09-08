@@ -184,13 +184,14 @@ _ch_rd_handshake(
         reader->hs.identity,
         sizeof(conn->remote_identity)
     );
-    old_conn = sglib_ch_connection_t_find_member(
+    ch_cn_find(
         protocol->connections,
-        conn
+        conn,
+        &old_conn
     );
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection */
-    if(old_conn != NULL) {
+    if(old_conn != ch_cn_nil_ptr) {
         /* Since we reuse the tree members we have to delete the connection
          * from the old data-structure, before adding it to the new. */
         L(
@@ -199,16 +200,17 @@ _ch_rd_handshake(
             (void*) conn,
             (void*) old_conn
         );
-        sglib_ch_connection_t_delete(
+        ch_cn_delete_node(
             &protocol->connections,
             old_conn
         );
-        sglib_ch_connection_set_t_add(
+        ch_cn_old_push(
             &protocol->old_connections,
             old_conn
         );
     }
-    sglib_ch_connection_t_add(
+    ch_cn_node_init(conn);
+    ch_cn_insert(
         &protocol->connections,
         conn
     );

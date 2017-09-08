@@ -143,7 +143,8 @@
 //
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
-#include "sglib.h"
+#include "rbtree.h"
+#include "qs.h"
 
 // Declarations
 // ============
@@ -401,15 +402,15 @@ struct ch_connection_s {
     float            load;
     ch_reader_t      reader;
     ch_writer_t      writer;
-    char             color_field; // TODO remove
+    char             color; // TODO remove
     ch_connection_t* left; // TODO remove
     ch_connection_t* right; // TODO remove
+    ch_connection_t* parent; // TODO remove
+    ch_connection_t* next;
 };
 
 
 // First pull request
-// TODO: Implement qs_head/qs_tail
-// TODO: Make macros lowercase
 // TODO: Use rbtree for ch_remote_t dictionary
 // TODO: Create ch_remote_t
 // TODO: All callbacks use ch_remote_t and have to check the pointer to
@@ -426,34 +427,17 @@ struct ch_connection_s {
 // TODO: remove sglib
 // TODO: remove old queue header
 
-typedef ch_connection_t ch_connection_set_t;
-
-// Sglib Prototypes
-// ----------------
+// Data Struct Prototypes
+// ----------------------
 //
 // .. code-block:: cpp
 //
-#define CH_CONNECTION_CMP(x,y) ch_connection_cmp(x, y)
+#define ch_cn_cmp_m(x,y) ch_connection_cmp(x, y)
 
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_connection_t,
-    left,
-    right,
-    color_field,
-    CH_CONNECTION_CMP
-)
-
-// .. code-block:: cpp
-//
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_connection_set_t,
-    left,
-    right,
-    color_field,
-    SGLIB_NUMERIC_COMPARATOR
-)
+rb_bind_decl_m(ch_cn, ch_connection_t)
+qs_stack_bind_decl_m(ch_cn_old, ch_connection_t)
 
 // .. c:function::
 void
