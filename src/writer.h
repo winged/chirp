@@ -18,7 +18,6 @@
 #include "common.h"
 #include "libchirp/callbacks.h"
 #include "libchirp/message.h"
-#include "sglib.h"
 
 // Declarations
 // ============

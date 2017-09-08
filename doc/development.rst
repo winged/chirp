@@ -71,6 +71,5 @@ External Libs
    :maxdepth: 2
    :includehidden:
 
-   src/sglib.h.rst
    sds.rst
 

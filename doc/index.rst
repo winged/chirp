@@ -35,10 +35,6 @@ Development and internals
 
    development.rst
 
-* `SGLIB - Simple Generic Library`_
-
-.. _`SGLIB - Simple Generic Library`: sglib.html
-
 Indices and tables
 ==================
 

@@ -19,8 +19,8 @@
 //
 #include <openssl/err.h>
 
-// Sglib Prototypes
-// ================
+// Rbtree Prototypes
+// =====-===========
 
 // .. code-block:: cpp
 //

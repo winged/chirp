@@ -424,7 +424,6 @@ struct ch_connection_s {
 // TODO: new queuing
 // TODO: join ack and user messages code-path
 // TODO: handle timeout for acks
-// TODO: remove sglib
 // TODO: remove old queue header
 
 // Data Struct Prototypes

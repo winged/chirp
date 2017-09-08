@@ -17,7 +17,6 @@
 //
 #include "libchirp/chirp.h"
 #include "connection.h"
-#include "sglib.h"
 
 // Declarations
 // ============

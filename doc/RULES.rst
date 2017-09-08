@@ -16,7 +16,7 @@ RULES
 * The following are our given abstractions:
 
   - libuv
-  - sglib
+  - rbtree
   - openssl
   - sds (for tests only)
   - We try not do add our own abstractions, to keep complexity low

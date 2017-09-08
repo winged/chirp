@@ -42,8 +42,8 @@ static ch_qc_mem_track_t* _ch_qc_mem_track = NULL;
 // Definitions
 // ===========
 //
-// Sglib Prototypes
-// ----------------
+// qs Prototypes
+// -------------
 //
 // .. code-block:: cpp
 //
