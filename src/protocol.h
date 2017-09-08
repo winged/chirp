@@ -49,9 +49,10 @@
 //
 struct ch_receipt_s {
     uint8_t       receipt[CH_ID_SIZE];
-    char          color_field;
+    char          color;
     ch_receipt_t* left;
     ch_receipt_t* right;
+    ch_receipt_t* parent;
 };
 
 // .. c:type:: ch_protocol_t
@@ -127,10 +128,10 @@ typedef struct ch_protocol_s {
     ch_chirp_t*         chirp;
 } ch_protocol_t;
 
-// Sglib Prototypes
-// ----------------
+// Rbtree Prototypes
+// -----------------
 
-// .. c:macro:: CH_RECEIPT_CMP
+// .. c:macro:: ch_pr_rc_cmp_m
 //
 //    Compares two receipts memorywise as byte strings, assuming that both byte
 //    strings are 16 bytes long.
@@ -140,17 +141,11 @@ typedef struct ch_protocol_s {
 //
 // .. code-block:: cpp
 //
-#define CH_RECEIPT_CMP(x,y) \
+#define ch_pr_rc_cmp_m(x,y) \
     memcmp(x->receipt, y->receipt, CH_ID_SIZE)
 
 
-SGLIB_DEFINE_RBTREE_PROTOTYPES( // NOCOV
-    ch_receipt_t,
-    left,
-    right,
-    color_field,
-    CH_RECEIPT_CMP
-)
+rb_bind_decl_m(ch_pr_rc, ch_receipt_t)
 
 // .. c:function::
 ch_error_t

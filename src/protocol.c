@@ -19,18 +19,12 @@
 //
 #include <openssl/err.h>
 
-// Sglib Prototypes
-// ================
+// Rbtree Prototypes
+// =================
 
 // .. code-block:: cpp
 //
-SGLIB_DEFINE_RBTREE_FUNCTIONS( // NOCOV
-    ch_receipt_t,
-    left,
-    right,
-    color_field,
-    CH_RECEIPT_CMP
-)
+rb_bind_impl_m(ch_pr_rc, ch_receipt_t)
 
 
 // Declarations
@@ -60,12 +54,12 @@ _ch_pr_do_handshake(ch_connection_t* conn);
 static
 ch_inline
 void
-_ch_pr_free_receipts(ch_receipt_t* receipts);
+_ch_pr_free_receipts(ch_receipt_t** receipts);
 //
 //    Free all remaining items in a receipts set.
 //
-//    :param ch_receipt_t* receipts: Pointer to a set of receipts which shall
-//                                   have its items freed.
+//    :param ch_receipt_t** receipts: D-pointer to a set of receipts which
+//                                    shall have its items freed.
 
 // .. c:function::
 static
@@ -154,7 +148,7 @@ _ch_pr_do_handshake(ch_connection_t* conn)
 static
 ch_inline
 void
-_ch_pr_free_receipts(ch_receipt_t* receipts)
+_ch_pr_free_receipts(ch_receipt_t** receipts)
 //    :noindex:
 //
 //    see: :c:func:`_ch_pr_free_receipts`
@@ -162,18 +156,12 @@ _ch_pr_free_receipts(ch_receipt_t* receipts)
 // .. code-block:: cpp
 //
 {
-    ch_receipt_t* t;
-    struct sglib_ch_receipt_t_iterator it;
-    for(
-            t = sglib_ch_receipt_t_it_init(
-                &it,
-                receipts
-            );
-            t != NULL;
-            t = sglib_ch_receipt_t_it_next(&it) // NOCOV TODO remove
-    ) {
-        ch_free(t); // NOCOV TODO remove
-    } // NOCOV TODO remove
+    rb_iter_decl_cx_m(ch_pr_rc, iter, elem);
+    rb_for_m(ch_pr_rc, *receipts, iter, elem) {
+        ch_free(elem);
+    }
+    /* Effectively we have cleared the structure */
+    ch_pr_rc_tree_init(receipts);
 }
 
 // .. c:function::
@@ -565,8 +553,8 @@ ch_pr_start(ch_protocol_t* protocol)
         );
         return CH_EADDRINUSE; // NOCOV errors happend for IPV4
     }
-    protocol->receipts = NULL; // TODO fix this
-    protocol->late_receipts = NULL;
+    ch_pr_rc_tree_init(&protocol->receipts);
+    ch_pr_rc_tree_init(&protocol->late_receipts);
     ch_cn_tree_init(&protocol->connections);
     return CH_SUCCESS;
 }
@@ -588,7 +576,7 @@ ch_pr_stop(ch_protocol_t* protocol)
     uv_close((uv_handle_t*) &protocol->serverv4, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &protocol->serverv6, ch_chirp_close_cb);
     chirp->_->closing_tasks += 2;
-    _ch_pr_free_receipts(protocol->receipts);
-    _ch_pr_free_receipts(protocol->late_receipts);
+    _ch_pr_free_receipts(&protocol->receipts);
+    _ch_pr_free_receipts(&protocol->late_receipts);
     return CH_SUCCESS;
 }
