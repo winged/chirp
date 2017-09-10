@@ -133,6 +133,8 @@ In-source build is also possible.
 Windows
 -------
 
+NOTE: Currently not implemented (has to be ported from the old build system)
+
 * Install Visual Studio 2015 if you want to build for python 3
 
   * Select Git for Windows in Visual Studio Installer or install it
