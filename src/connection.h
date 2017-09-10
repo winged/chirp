@@ -420,6 +420,7 @@ struct ch_connection_s {
 // TODO: join ack and user messages code-path
 // TODO: handle timeout for acks
 // TODO: remove old queue header
+// TODO: remove try patches
 
 // Data Struct Prototypes
 // ----------------------
