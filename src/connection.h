@@ -401,10 +401,6 @@ struct ch_connection_s {
     float            load;
     ch_reader_t      reader;
     ch_writer_t      writer;
-    char             color; // TODO remove
-    ch_connection_t* left; // TODO remove
-    ch_connection_t* right; // TODO remove
-    ch_connection_t* parent; // TODO remove
     ch_connection_t* next;
 };
 
