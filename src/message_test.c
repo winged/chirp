@@ -92,7 +92,12 @@ _ch_tst_gen_data_field(
     strncpy(track->data, "pattern", 7);
     while(pos < count) {
         uint8_t i = 0;
-        uint8_t pat_len = (uint8_t) (ch_qc_tgen_double() * 254) + 1;
+        /* The pattern length must always be at least 1, so we scale pat_len to
+         * UCHAR_MAX - 1 (254) and add 1. This ensures that there is no string
+         * of zeros which might not detect a bug.*/
+        uint8_t pat_len = (uint8_t) (
+            ch_qc_tgen_double() * (UCHAR_MAX - 1)
+        ) + 1;
         track->data[pos] = pat_len;
         pos += 1;
         while(pos < count && i < pat_len) {
