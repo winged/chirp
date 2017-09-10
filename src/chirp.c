@@ -328,6 +328,7 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     uv_mutex_destroy(&ichirp->send_ts_queue_lock);
     L(chirp, "Closed.%s", "");
     chirp->_ = NULL;
+    ch_bf_free(&ichirp->pool);
     ch_free(ichirp);
 }
 
@@ -787,6 +788,18 @@ ch_chirp_init(
     ichirp->send_ts.data = chirp;
     uv_mutex_init(&ichirp->send_ts_queue_lock);
 
+    tmp_err = ch_bf_init(&ichirp->pool, ichirp->config.MAX_HANDLERS);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Could initialize buffer pool: %d",
+            tmp_err
+        );
+        ch_free(ichirp);
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
+        return tmp_err;
+    }
     ch_pr_init(chirp, protocol);
     tmp_err = ch_pr_start(protocol);
     if(tmp_err != CH_SUCCESS) {
@@ -795,6 +808,7 @@ ch_chirp_init(
             "Could not start protocol: %d",
             tmp_err
         );
+        ch_bf_free(&ichirp->pool);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -812,6 +826,7 @@ ch_chirp_init(
                 "Could not start encryption: %d",
                 tmp_err
             );
+            ch_bf_free(&ichirp->pool);
             ch_free(ichirp);
             chirp->_init = 0;
             uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -1034,6 +1049,7 @@ ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
 // .. code-block:: cpp
 //
 {
+    // TODO make this correct
     ch_chirp_int_t* ichirp = chirp->_;
     ichirp->recv_cb = recv_cb;
 }

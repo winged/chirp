@@ -110,10 +110,6 @@ typedef struct ch_rd_handshake_s {
 //
 //       Buffer used for ack message
 //
-//    .. c:member:: ch_buffer_pool_t pool
-//
-//       Data structure containing preallocated buffers for the chirp handlers.
-//
 //    .. c:member:: size_t bytes_read
 //
 //       Counter for how many bytes were already read by the reader. This is
@@ -132,7 +128,6 @@ typedef struct ch_reader_s {
     ch_rd_handshake_t hs;
     ch_bf_handler_t*  handler;
     ch_message_t      ack_msg;
-    ch_buffer_pool_t  pool;
     size_t            bytes_read;
     int               last;
 } ch_reader_t;
@@ -154,36 +149,16 @@ ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
 static
 ch_inline
 void
-ch_rd_free(ch_reader_t* reader)
-//
-//    Free the (data-) buffer pool of the given reader instance.
-//
-//    :param ch_reader_t* reader: The reader instance whose buffer
-//                                pool shall be freed.
-//
-// .. code-block:: cpp
-//
-{
-    ch_bf_free(&reader->pool);
-}
-
-// .. c:function::
-static
-ch_inline
-ch_error_t
-ch_rd_init(ch_reader_t* reader, uint8_t max_buffers)
+ch_rd_init(ch_reader_t* reader)
 //
 //    Initialize the reader structure
 //
 //    :param ch_reader_t* reader: The reader instance whose buffer pool shall
 //                                be initialized with ``max_buffers``.
-//    :param uint8_t max_buffers: The number of buffers to allocate.
-//
 // .. code-block:: cpp
 //
 {
     reader->state = CH_RD_START;
-    return ch_bf_init(&reader->pool, max_buffers);
 }
 
 #endif //ch_reader_h

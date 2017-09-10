@@ -375,7 +375,7 @@ _ch_rd_handle_msg(
 #   endif
 
     /* TODO release to done */
-    ch_bf_release(&reader->pool, msg->_handler);
+    ch_bf_release(&ichirp->pool, msg->_handler);
 
 }
 
@@ -469,7 +469,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 /* TODO add read timeout (dos protection) */
                 if(reader->bytes_read == 0) {
                     reader->handler = ch_bf_acquire(
-                        &reader->pool,
+                        &ichirp->pool,
                         &reader->last
                     );
                 }

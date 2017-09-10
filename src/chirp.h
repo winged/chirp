@@ -57,6 +57,7 @@
 //                remote dictionary (ch_remote_t)
 //                old connection dictionary (ch_connection_t)
 //            ch_encryption_t (interface to \*ssl)
+//            ch_buffer_pool_t
 //
 //    ch_remote_t (allows replacing connection to remote note)
 //        \*ch_connection_t (can be NULL)
@@ -199,6 +200,15 @@ typedef enum {
 //
 //       Mutex to lock the send_ts_queue
 //
+//    .. c:member:: ch_recv_cb_t recv_cb
+//
+//       Callback when message is received TODO make this a datastructure for
+//       an callback per actor.
+//
+//    .. c:member:: ch_buffer_pool_t pool
+//
+//       Data structure containing preallocated buffers for the chirp handlers.
+//
 // .. code-block:: cpp
 //
 struct ch_chirp_int_s {
@@ -219,6 +229,7 @@ struct ch_chirp_int_s {
     uv_async_t          send_ts;
     uv_mutex_t          send_ts_queue_lock;
     ch_recv_cb_t        recv_cb;
+    ch_buffer_pool_t    pool;
 };
 
 // .. c:function::

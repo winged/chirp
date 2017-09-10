@@ -336,7 +336,6 @@ _ch_cn_shutdown_cb(
         );
     } else {
         uv_read_stop(req->handle);
-        ch_rd_free(&conn->reader);
         ch_wr_free(&conn->writer);
         uv_close(handle, ch_cn_close_cb);
         uv_close((uv_handle_t*) &conn->shutdown_timeout, ch_cn_close_cb);
@@ -518,16 +517,7 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->chirp           = chirp;
     conn->flags          |= flags;
     conn->write_req.data  = conn;
-    tmp_err = ch_rd_init(&conn->reader, ichirp->config.MAX_HANDLERS);
-    if(tmp_err != CH_SUCCESS) {
-        EC(
-            chirp,
-            "Could not initialize reader: %d. ", "ch_connection_t:%p",
-            tmp_err,
-            (void*) conn
-        );
-        return tmp_err;
-    }
+    ch_rd_init(&conn->reader);
     ch_wr_init(&conn->writer, conn);
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
