@@ -176,7 +176,7 @@ _ch_rd_handshake(
         reader->hs.identity,
         sizeof(conn->remote_identity)
     );
-    ch_rm_init_from_conn(&search_remote, conn);
+    ch_rm_init_from_conn(chirp, &search_remote, conn);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(ch_remote_t));
         *remote = search_remote;

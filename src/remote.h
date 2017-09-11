@@ -28,6 +28,56 @@
 //
 //    .. c:member:: uint8_t ip_protocol
 //
+//       What IP protocol (IPv4 or IPv6) shall be used for connections.
+//
+//    .. c:member:: uint8_t[16] address
+//
+//       IPv4/6 address of the sender if the message was received.  IPv4/6
+//       address of the recipient if the message is going to be sent.
+//
+//    .. c:member:: int32_t port
+//
+//       The port that shall be used for connections.
+//
+//    .. c:member:: uint8_t receipt[CH_ID_SIZE]
+//
+//       The last receipt for this remote. Used to detect duplicate messages.
+//
+//    .. c:member:: ch_connection_t* conn
+//
+//       The active connection to this remote. Can be NULL. Callbacks always
+//       have to check if the connection is NULL. The code that sets the
+//       connection to NULL has to initiate retry and notify the user. So
+//       callbacks can safely abort if conn is NULL.
+//
+//    .. c:member:: ch_message_t* msg_queue
+//
+//       The message queue, the head of this queue is the active message.
+//
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
+//
+//    .. c:member:: float load
+//
+//       Last reported load of the remote
+//
+//    .. c:member:: char color
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* left
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* right
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* parent
+//
+//       rbtree member
+//
 // .. code-block:: cpp
 //
 struct ch_remote_s {
@@ -36,6 +86,9 @@ struct ch_remote_s {
     int32_t          port;
     uint8_t          receipt[CH_ID_SIZE];
     ch_connection_t* conn;
+    ch_message_t*    msg_queue;
+    ch_chirp_t*      chirp;
+    float            load;
     char             color;
     ch_remote_t*     parent;
     ch_remote_t*     left;
@@ -55,7 +108,11 @@ rb_bind_decl_m(ch_rm, ch_remote_t)
 
 // .. c:function::
 void
-ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg);
+ch_rm_init_from_msg(
+        ch_chirp_t* chirp,
+        ch_remote_t* remote,
+        ch_message_t* msg
+);
 //
 //    Initialize the remote data-structure from a message.
 //
@@ -64,7 +121,11 @@ ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg);
 
 // .. c:function::
 void
-ch_rm_init_from_conn(ch_remote_t* remote, ch_connection_t* conn);
+ch_rm_init_from_conn(
+        ch_chirp_t* chirp,
+        ch_remote_t* remote,
+        ch_connection_t* conn
+);
 //
 //    Initialize the remote data-structure from a connection.
 //

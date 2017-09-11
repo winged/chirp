@@ -712,7 +712,7 @@ ch_cn_shutdown(
     /* # TODO this should use ch_remote_t directly from function signature */
     ch_remote_t search_remote;
     ch_remote_t* remote;
-    ch_rm_init_from_conn(&search_remote, conn);
+    ch_rm_init_from_conn(chirp, &search_remote, conn);
     ch_rm_find(
         protocol->remotes,
         &search_remote,

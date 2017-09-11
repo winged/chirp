@@ -22,9 +22,32 @@ rb_bind_impl_m(ch_rm, ch_remote_t)
 //
 // .. code-block:: cpp
 
+static
+ch_inline
+void
+_ch_rm_init(
+        ch_chirp_t* chirp,
+        ch_remote_t* remote
+)
+//
+//    Initialize remote
+//
+// .. code-block:: cpp
+//
+{
+    memset(remote, 0, sizeof(ch_remote_t));
+    ch_rm_node_init(remote);
+    remote->load  = -1;
+    remote->chirp = chirp;
+}
+
 // .. c:function::
 void
-ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg)
+ch_rm_init_from_msg(
+        ch_chirp_t* chirp,
+        ch_remote_t* remote,
+        ch_message_t* msg
+)
 //    :noindex:
 //
 //    see: :c:func:`ch_rm_init_from_msg`
@@ -32,8 +55,7 @@ ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg)
 // .. code-block:: cpp
 //
 {
-    memset(remote, 0, sizeof(ch_remote_t));
-    ch_rm_node_init(remote);
+    _ch_rm_init(chirp, remote);
     remote->ip_protocol = msg->ip_protocol;
     remote->port        = msg->port;
     memcpy(
@@ -46,7 +68,11 @@ ch_rm_init_from_msg(ch_remote_t* remote, ch_message_t* msg)
 
 // .. c:function::
 void
-ch_rm_init_from_conn(ch_remote_t* remote, ch_connection_t* conn)
+ch_rm_init_from_conn(
+        ch_chirp_t* chirp,
+        ch_remote_t* remote,
+        ch_connection_t* conn
+)
 //    :noindex:
 //
 //    see: :c:func:`ch_rm_init_from_conn`
@@ -54,8 +80,7 @@ ch_rm_init_from_conn(ch_remote_t* remote, ch_connection_t* conn)
 // .. code-block:: cpp
 //
 {
-    memset(remote, 0, sizeof(ch_remote_t));
-    ch_rm_node_init(remote);
+    _ch_rm_init(chirp, remote);
     remote->ip_protocol = conn->ip_protocol;
     remote->port        = conn->port;
     memcpy(

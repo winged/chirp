@@ -527,7 +527,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
 
-    ch_rm_init_from_msg(&search_remote, msg);
+    ch_rm_init_from_msg(chirp, &search_remote, msg);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(ch_remote_t));
         *remote = search_remote;
