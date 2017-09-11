@@ -59,6 +59,12 @@
 
 #define CH_TCP_KEEPALIVE 60
 
+// Hard limit for message size
+//
+// .. code-block:: cpp
+
+#define CH_MSG_SIZE_HARDLIMIT 1024 * 1024 * 100 // 100M
+
 // Log available ciphers. Used to debug connections failures.
 //
 // .. code-block:: cpp

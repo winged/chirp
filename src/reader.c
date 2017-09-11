@@ -480,6 +480,19 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 }
                 msg->header_len    = ntohs(msg->header_len);
                 msg->data_len      = ntohl(msg->data_len);
+                if((
+                        msg->header_len + msg->data_len
+                ) > CH_MSG_SIZE_HARDLIMIT)
+                {
+                    EC(
+                        chirp,
+                        "Message size exceeds hardlimit. ",
+                        "ch_connection_t:%p",
+                        (void*) conn
+                    );
+                    ch_cn_shutdown(conn, CH_ENOMEM);
+                    return;
+                }
                 msg->ip_protocol   = conn->ip_protocol;
                 msg->port          = conn->port;
                 memcpy(
@@ -581,6 +594,12 @@ _ch_rd_read_buffer(
         } else {
             *assign_buf = ch_alloc(expected);
             if(*assign_buf == NULL) {
+                EC(
+                    conn->chirp,
+                    "Could not allocate memory for message. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
+                );
                 ch_cn_shutdown(conn, CH_ENOMEM);
                 return CH_ENOMEM;
             }
