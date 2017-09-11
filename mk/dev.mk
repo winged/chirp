@@ -78,7 +78,7 @@ etests: all
 	$(BUILD)/src/message_etest
 	$(MEMCHECK) $(BUILD)/src/message_etest
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt
-	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --message-count 500
+	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --message-count 50
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --buffer-size 1024
 
 cppcheck: headers  ## Static analysis
