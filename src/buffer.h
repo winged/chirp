@@ -2,7 +2,7 @@
 // Buffer header
 // =============
 //
-// Implements a buffer pool. There is header, actor and data buffer per chrip
+// Implements a buffer pool. There is header and data buffer per chrip
 // handler.
 //
 // .. code-block:: cpp
@@ -34,10 +34,6 @@
 //
 //       Preallocated buffer for the chirp header.
 //
-//    .. c:member:: char* actor
-//
-//       Preallocated buffer for the actor.
-//
 //    .. c:member:: ch_buf* data
 //
 //       Preallocated buffer for the data.
@@ -55,7 +51,6 @@
 typedef struct ch_bf_handler_s {
     ch_message_t msg;
     ch_buf  header[CH_BF_PREALLOC_HEADER];
-    char    actor[CH_BF_PREALLOC_ACTOR];
     ch_buf  data[CH_BF_PREALLOC_DATA];
     uint8_t id;
     uint8_t used;

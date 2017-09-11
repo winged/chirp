@@ -46,13 +46,6 @@
 
 #define CH_BF_PREALLOC_HEADER 32
 
-// Preallocated buffer size for actor. If the size is to small the buffer gets
-// allocated using ch_alloc().
-//
-// .. code-block:: cpp
-
-#define CH_BF_PREALLOC_ACTOR 256
-
 // Preallocated buffer size for data. If the size is to small the buffer gets
 // allocated using ch_alloc().
 //

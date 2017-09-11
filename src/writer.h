@@ -80,7 +80,7 @@ typedef enum {
 //       type :c:type:`ch_message_t` and ``net_msg`` of type
 //       :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
 //       essentially only the identity, the serial number, the message type and
-//       the lengths of the header, the actor and the data.
+//       the lengths of the header and the data.
 //
 //    .. c:member:: ch_message_t* msg
 //

@@ -62,7 +62,7 @@ _ch_tst_gen_data_field(
 )
 //
 //   Allocates memory for one of the data field in a chirp message: header,
-//   actor, data and writes a pattern into it.
+//   data and writes a pattern into it.
 //
 //    :param zero_probability: Probability of the len being zero
 //    :param max_probability: Probability of the len being max
@@ -139,12 +139,6 @@ ch_tst_gen_message(struct ch_chirp_s* chirp)
         0.1,
         1024,
         &message->header
-    );
-    message->actor_len = _ch_tst_gen_data_field(
-        0.1,
-        0.1,
-        2048,
-        &message->actor
     );
     message->data_len = _ch_tst_gen_data_field(
         0.1,

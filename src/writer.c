@@ -71,30 +71,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status);
 // .. c:function::
 static
 void
-_ch_wr_write_actor_cb(uv_write_t* req, int status);
-//
-//    Callback which is called after an actor was written.
-//
-//    This callback is called, when (message-) data is being sent over a
-//    connection. Upon successful sending the (message-) data, the message
-//    header callback is called.
-//
-//    The message header callback writes the message header and calls then the
-//    chirp header callback, which, in its turn, calls this callback when an
-//    actor was present and written. If a message has no header, the message
-//    header callback writes the actor directly --- if a such is present ---
-//    and then calls this callback.
-//
-//    Cancels (void) if the sending was erroneous. If the sending was
-//    successful and the writers message contains data, the data is being
-//    written.
-//
-//    :param uv_write_t* req:  Write request.
-//    :param int status:       Write status.
-
-// .. c:function::
-static
-void
 _ch_wr_write_chirp_header_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after the messages header was written.
@@ -103,10 +79,8 @@ _ch_wr_write_chirp_header_cb(uv_write_t* req, int status);
 //    message header callback, which, in its turn, then calls this callback ---
 //    if a header is present.
 //
-//    Cancels (void) if the sending was erroneous. If the sending was
-//    successful an actor is being written, if the writers message has an actor
-//    set. Otherwise, if the writers message has data set, the data is being
-//    written. If no actor and no data is set, sending is being finished.
+//    Cancels (void) if the sending was erroneous. Next data will be written if
+//    the message has data.
 //
 //    :param uv_write_t* req:  Write request.
 //    :param int status:       Write status.
@@ -117,9 +91,6 @@ void
 _ch_wr_write_data_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after data was written.
-//
-//    This callback is called after the successful write of either an actor or
-//    a message header.
 //
 //    Cancels (void) if the writing was erroneous, finishes sending otherwise.
 //
@@ -157,8 +128,7 @@ _ch_wr_write_msg_header_cb(uv_write_t* req, int status);
 //
 //    Cancels (void) if the writing was erroneous, finishes sending otherwise.
 //    If the message (coming from the writer) has a header set, the header is
-//    written. Otherwise, if the message has an actor set, the actor is being
-//    written. Else, if the message has data attached, that data is being
+//    written. Otherwise, if the message has data attached, that data is being
 //    written. In all other cases the sending is being finished using
 //    :c:func:`_ch_wr_write_finish`.
 //
@@ -322,7 +292,7 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
 // type :c:type:`ch_message_t` and ``net_msg`` of type
 // :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
 // essentially only the identity, the serial number, the message type and
-// the lengths of the header, the actor and the data.
+// the lengths of the header and the data.
 //
 // .. code-block:: cpp
 //
@@ -339,7 +309,6 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
     );
     net_msg->type         = msg->type;
     net_msg->header_len   = htons(msg->header_len);
-    net_msg->actor_len    = htons(msg->actor_len);
     net_msg->data_len     = htonl(msg->data_len);
     ch_cn_write(
         conn,
@@ -347,34 +316,6 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
         sizeof(ch_msg_message_t),
         _ch_wr_write_msg_header_cb
     );
-}
-
-// .. c:function::
-static
-void
-_ch_wr_write_actor_cb(uv_write_t* req, int status)
-//    :noindex:
-//
-//    see: :c:func:`_ch_wr_write_actor_cb`
-//
-// .. code-block:: cpp
-//
-{
-    ch_connection_t* conn = req->data;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_writer_t* writer = &conn->writer;
-    ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->data_len > 0)
-        ch_cn_write(
-            conn,
-            msg->data,
-            msg->data_len,
-            _ch_wr_write_data_cb
-        );
-    else
-        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
@@ -449,14 +390,7 @@ _ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->actor_len > 0)
-        ch_cn_write(
-            conn,
-            msg->actor,
-            msg->actor_len,
-            _ch_wr_write_actor_cb
-        );
-    else if(msg->data_len > 0)
+    if(msg->data_len > 0)
         ch_cn_write(
             conn,
             msg->data,
@@ -490,13 +424,6 @@ _ch_wr_write_msg_header_cb(uv_write_t* req, int status)
             msg->header,
             msg->header_len,
             _ch_wr_write_chirp_header_cb
-        );
-    else if(msg->actor_len > 0)
-        ch_cn_write(
-            conn,
-            msg->actor,
-            msg->actor_len,
-            _ch_wr_write_actor_cb
         );
     else if(msg->data_len > 0)
         ch_cn_write(

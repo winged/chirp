@@ -2,7 +2,7 @@
 Chirp
 =====
 
-Message-passing and actor-based programming for everyone
+Message-passing for everyone
 
 It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 

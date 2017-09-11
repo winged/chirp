@@ -295,7 +295,7 @@ $VAR1 = {
                                                 },
                            'CH_WIRE_MESSAGE' => {
                                                   'Header' => 'message.h',
-                                                  'Value' => 'uint8_t identity[CH_ID_SIZE]; uint8_t serial[CH_ID_SIZE]; uint8_t type; uint16_t header_len; uint16_t actor_len; uint32_t data_len'
+                                                  'Value' => 'uint8_t identity[CH_ID_SIZE]; uint8_t serial[CH_ID_SIZE]; uint8_t type; uint16_t header_len; uint32_t data_len'
                                                 },
                            'ch_inline' => {
                                             'Header' => 'common.h',
@@ -6274,17 +6274,17 @@ $VAR1 = {
           'SymbolInfo' => {
                             '1045' => {
                                         'Header' => 'message.h',
-                                        'Line' => '185',
+                                        'Line' => '164',
                                         'Param' => {
                                                      '0' => {
                                                               'algn' => '8',
                                                               'name' => 'message',
-                                                              'type' => '1301'
+                                                              'type' => '1303'
                                                             },
                                                      '1' => {
                                                               'algn' => '8',
                                                               'name' => 'address',
-                                                              'type' => '1449'
+                                                              'type' => '1448'
                                                             }
                                                    },
                                         'Return' => '22',
@@ -6310,7 +6310,7 @@ $VAR1 = {
                                      },
                             '193' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '367',
+                                       'Line' => '374',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6328,7 +6328,7 @@ $VAR1 = {
                                      },
                             '230' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '350',
+                                       'Line' => '357',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6348,7 +6348,7 @@ $VAR1 = {
                                     },
                             '264' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '326',
+                                       'Line' => '333',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6371,7 +6371,7 @@ $VAR1 = {
                                      },
                             '308' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '305',
+                                       'Line' => '312',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6394,7 +6394,7 @@ $VAR1 = {
                                      },
                             '346' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '276',
+                                       'Line' => '283',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6423,7 +6423,7 @@ $VAR1 = {
                             '384' => {
                                        'Header' => 'chirp.h',
                                        'InLine' => 1,
-                                       'Line' => '260',
+                                       'Line' => '267',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6465,7 +6465,7 @@ $VAR1 = {
                                    },
                             '432' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '223',
+                                       'Line' => '230',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6509,7 +6509,7 @@ $VAR1 = {
                                     },
                             '489' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '211',
+                                       'Line' => '218',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6522,7 +6522,7 @@ $VAR1 = {
                                      },
                             '558' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '199',
+                                       'Line' => '206',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6530,7 +6530,7 @@ $VAR1 = {
                                                              'type' => '211'
                                                            }
                                                   },
-                                       'Return' => '710',
+                                       'Return' => '711',
                                        'ShortName' => 'ch_chirp_get_identity'
                                      },
                             '604' => {
@@ -6550,7 +6550,7 @@ $VAR1 = {
                                      },
                             '633' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '183',
+                                       'Line' => '190',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6588,20 +6588,20 @@ $VAR1 = {
                                      'Return' => '22',
                                      'ShortName' => 'ch_libchirp_init'
                                    },
-                            '714' => {
+                            '715' => {
                                        'Header' => 'chirp.h',
-                                       'Line' => '174',
+                                       'Line' => '181',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
                                                              'name' => 'config',
-                                                             'type' => '895'
+                                                             'type' => '897'
                                                            }
                                                   },
                                        'Return' => '10',
                                        'ShortName' => 'ch_chirp_config_init'
                                      },
-                            '765' => {
+                            '766' => {
                                        'Header' => 'wrappers.h',
                                        'Line' => '25',
                                        'Param' => {
@@ -6614,9 +6614,15 @@ $VAR1 = {
                                        'Return' => '240',
                                        'ShortName' => 'ch_loop_init'
                                      },
-                            '855' => {
+                            '805' => {
+                                       'Header' => 'chirp.h',
+                                       'Line' => '174',
+                                       'Return' => '10',
+                                       'ShortName' => 'ch_chirp_set_always_encrypt'
+                                     },
+                            '858' => {
                                        'Header' => 'message.h',
-                                       'Line' => '216',
+                                       'Line' => '195',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6636,7 +6642,7 @@ $VAR1 = {
                                                     '3' => {
                                                              'algn' => '4',
                                                              'name' => 'port',
-                                                             'type' => '875'
+                                                             'type' => '878'
                                                            }
                                                   },
                                        'Return' => '22',
@@ -6648,9 +6654,9 @@ $VAR1 = {
                                       'Return' => '22',
                                       'ShortName' => 'ch_en_openssl_threading_cleanup'
                                     },
-                            '948' => {
+                            '950' => {
                                        'Header' => 'message.h',
-                                       'Line' => '203',
+                                       'Line' => '182',
                                        'Param' => {
                                                     '0' => {
                                                              'algn' => '8',
@@ -6729,7 +6735,7 @@ $VAR1 = {
                                       'Name' => 'void(*)(uv_handle_t*)',
                                       'Param' => {
                                                    '0' => {
-                                                            'type' => '1325'
+                                                            'type' => '1326'
                                                           }
                                                  },
                                       'Return' => '10',
@@ -6743,16 +6749,16 @@ $VAR1 = {
                                       'Size' => '16',
                                       'Type' => 'Array'
                                     },
-                          '1126' => {
+                          '1128' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1255',
+                                      'BaseType' => '1257',
                                       'Header' => 'uv.h',
                                       'Line' => '216',
                                       'Name' => 'uv_signal_t',
                                       'Size' => '152',
                                       'Type' => 'Typedef'
                                     },
-                          '1189' => {
+                          '1190' => {
                                       'Algn' => '8',
                                       'Header' => 'uv.h',
                                       'Line' => '763',
@@ -6765,7 +6771,7 @@ $VAR1 = {
                                                   '1' => {
                                                            'algn' => '8',
                                                            'name' => 'reserved',
-                                                           'type' => '1262'
+                                                           'type' => '1264'
                                                          }
                                                 },
                                       'Name' => 'uv_async_s::anon-union-uv.h-763',
@@ -6773,7 +6779,7 @@ $VAR1 = {
                                       'Size' => '32',
                                       'Type' => 'Union'
                                     },
-                          '1196' => {
+                          '1197' => {
                                       'Algn' => '4',
                                       'BaseType' => '240',
                                       'Name' => 'int[10]',
@@ -6787,7 +6793,7 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Pointer'
                                    },
-                          '1255' => {
+                          '1257' => {
                                       'Algn' => '8',
                                       'Header' => 'uv.h',
                                       'Line' => '1316',
@@ -6805,7 +6811,7 @@ $VAR1 = {
                                                   '10' => {
                                                             'algn' => '8',
                                                             'name' => 'tree_entry',
-                                                            'type' => '2753'
+                                                            'type' => '2750'
                                                           },
                                                   '11' => {
                                                             'algn' => '4',
@@ -6820,12 +6826,12 @@ $VAR1 = {
                                                   '2' => {
                                                            'algn' => '4',
                                                            'name' => 'type',
-                                                           'type' => '867'
+                                                           'type' => '870'
                                                          },
                                                   '3' => {
                                                            'algn' => '8',
                                                            'name' => 'close_cb',
-                                                           'type' => '966'
+                                                           'type' => '968'
                                                          },
                                                   '4' => {
                                                            'algn' => '8',
@@ -6840,7 +6846,7 @@ $VAR1 = {
                                                   '6' => {
                                                            'algn' => '8',
                                                            'name' => 'next_closing',
-                                                           'type' => '1325'
+                                                           'type' => '1326'
                                                          },
                                                   '7' => {
                                                            'algn' => '4',
@@ -6850,7 +6856,7 @@ $VAR1 = {
                                                   '8' => {
                                                            'algn' => '8',
                                                            'name' => 'signal_cb',
-                                                           'type' => '2756'
+                                                           'type' => '2753'
                                                          },
                                                   '9' => {
                                                            'algn' => '4',
@@ -6862,14 +6868,14 @@ $VAR1 = {
                                       'Size' => '152',
                                       'Type' => 'Struct'
                                     },
-                          '1262' => {
+                          '1264' => {
                                       'Algn' => '8',
                                       'BaseType' => '48',
                                       'Name' => 'void*[4]',
                                       'Size' => '32',
                                       'Type' => 'Array'
                                     },
-                          '1286' => {
+                          '1288' => {
                                       'Algn' => '8',
                                       'BaseType' => '1426',
                                       'Header' => 'uv.h',
@@ -6878,18 +6884,18 @@ $VAR1 = {
                                       'Size' => '96',
                                       'Type' => 'Typedef'
                                     },
-                          '1299' => {
+                          '1301' => {
                                       'Algn' => '4',
                                       'BaseType' => '1443',
                                       'Header' => 'message.h',
-                                      'Line' => '151',
+                                      'Line' => '138',
                                       'Name' => 'ch_msg_message_t',
-                                      'Size' => '44',
+                                      'Size' => '40',
                                       'Type' => 'Typedef'
                                     },
-                          '1301' => {
+                          '1303' => {
                                       'Algn' => 8,
-                                      'BaseType' => '1448',
+                                      'BaseType' => '1447',
                                       'Header' => 'common.h',
                                       'Name' => 'ch_message_t const*',
                                       'Size' => '8',
@@ -6902,17 +6908,17 @@ $VAR1 = {
                                      'Size' => '1',
                                      'Type' => 'Const'
                                    },
-                          '1325' => {
+                          '1326' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1286',
+                                      'BaseType' => '1288',
                                       'Header' => 'uv.h',
                                       'Name' => 'uv_handle_t*',
                                       'Size' => '8',
                                       'Type' => 'Pointer'
                                     },
-                          '1340' => {
+                          '1341' => {
                                       'Algn' => '4',
-                                      'BaseType' => '1196',
+                                      'BaseType' => '1197',
                                       'Name' => 'int[10] volatile',
                                       'Size' => '40',
                                       'Type' => 'Volatile'
@@ -6956,12 +6962,12 @@ $VAR1 = {
                                                   '2' => {
                                                            'algn' => '4',
                                                            'name' => 'type',
-                                                           'type' => '867'
+                                                           'type' => '870'
                                                          },
                                                   '3' => {
                                                            'algn' => '8',
                                                            'name' => 'close_cb',
-                                                           'type' => '966'
+                                                           'type' => '968'
                                                          },
                                                   '4' => {
                                                            'algn' => '8',
@@ -6976,7 +6982,7 @@ $VAR1 = {
                                                   '6' => {
                                                            'algn' => '8',
                                                            'name' => 'next_closing',
-                                                           'type' => '1325'
+                                                           'type' => '1326'
                                                          },
                                                   '7' => {
                                                            'algn' => '4',
@@ -7000,7 +7006,7 @@ $VAR1 = {
                           '1443' => {
                                       'Algn' => '4',
                                       'Header' => 'message.h',
-                                      'Line' => '149',
+                                      'Line' => '136',
                                       'Memb' => {
                                                   '0' => {
                                                            'algn' => '1',
@@ -7023,29 +7029,24 @@ $VAR1 = {
                                                            'type' => '618'
                                                          },
                                                   '4' => {
-                                                           'algn' => '2',
-                                                           'name' => 'actor_len',
-                                                           'type' => '618'
-                                                         },
-                                                  '5' => {
                                                            'algn' => '4',
                                                            'name' => 'data_len',
-                                                           'type' => '784'
+                                                           'type' => '702'
                                                          }
                                                 },
                                       'Name' => 'struct ch_msg_message_s',
-                                      'Size' => '44',
+                                      'Size' => '40',
                                       'Type' => 'Struct'
                                     },
-                          '1448' => {
+                          '1447' => {
                                       'Algn' => '8',
                                       'BaseType' => '334',
                                       'Header' => 'common.h',
                                       'Name' => 'ch_message_t const',
-                                      'Size' => '144',
+                                      'Size' => '136',
                                       'Type' => 'Const'
                                     },
-                          '1449' => {
+                          '1448' => {
                                       'Algn' => 8,
                                       'BaseType' => '413',
                                       'Header' => 'common.h',
@@ -7071,9 +7072,9 @@ $VAR1 = {
                                      'Size' => '4',
                                      'Type' => 'Enum'
                                    },
-                          '1493' => {
+                          '1491' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1638',
+                                      'BaseType' => '1635',
                                       'Name' => 'void volatile*[5] volatile',
                                       'Size' => '40',
                                       'Type' => 'Volatile'
@@ -7093,25 +7094,25 @@ $VAR1 = {
                                      'Size' => '4',
                                      'Type' => 'Intrinsic'
                                    },
-                          '1628' => {
+                          '1625' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1783',
+                                      'BaseType' => '1782',
                                       'Header' => 'uv.h',
                                       'Line' => '304',
                                       'Name' => 'uv_async_cb',
                                       'Size' => '8',
                                       'Type' => 'Typedef'
                                     },
-                          '1638' => {
+                          '1635' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1797',
+                                      'BaseType' => '1796',
                                       'Name' => 'void volatile*[5]',
                                       'Size' => '40',
                                       'Type' => 'Array'
                                     },
-                          '1667' => {
+                          '1665' => {
                                       'Algn' => '8',
-                                      'BaseType' => '792',
+                                      'BaseType' => '794',
                                       'Header' => 'uv.h',
                                       'Name' => 'struct uv_loop_s*',
                                       'Size' => '8',
@@ -7132,7 +7133,7 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'FuncPtr'
                                    },
-                          '1783' => {
+                          '1782' => {
                                       'Algn' => '8',
                                       'Name' => 'void(*)(uv_async_t*)',
                                       'Param' => {
@@ -7153,14 +7154,14 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Typedef'
                                    },
-                          '1797' => {
+                          '1796' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1798',
+                                      'BaseType' => '1797',
                                       'Name' => 'void volatile*',
                                       'Size' => '8',
                                       'Type' => 'Pointer'
                                     },
-                          '1798' => {
+                          '1797' => {
                                       'Algn' => '1',
                                       'BaseType' => '10',
                                       'Name' => 'void volatile',
@@ -7271,7 +7272,7 @@ $VAR1 = {
                                                   '1' => {
                                                            'algn' => '8',
                                                            'name' => 'reserved',
-                                                           'type' => '1262'
+                                                           'type' => '1264'
                                                          }
                                                 },
                                       'Name' => 'uv_signal_s::anon-union-uv.h-1317',
@@ -7358,10 +7359,10 @@ $VAR1 = {
                                       'Name' => 'void(*)(struct uv_loop_s*, struct uv__async*, unsigned int)',
                                       'Param' => {
                                                    '0' => {
-                                                            'type' => '1667'
+                                                            'type' => '1665'
                                                           },
                                                    '1' => {
-                                                            'type' => '2888'
+                                                            'type' => '2885'
                                                           },
                                                    '2' => {
                                                             'type' => '57'
@@ -7407,7 +7408,7 @@ $VAR1 = {
                                                   '1' => {
                                                            'algn' => '8',
                                                            'name' => 'reserved',
-                                                           'type' => '1262'
+                                                           'type' => '1264'
                                                          }
                                                 },
                                       'Name' => 'uv_handle_s::anon-union-uv.h-421',
@@ -7417,11 +7418,21 @@ $VAR1 = {
                                     },
                           '2436' => {
                                       'Algn' => '8',
-                                      'BaseType' => '2638',
+                                      'BaseType' => '2637',
                                       'Header' => 'uv-unix.h',
                                       'Line' => '141',
                                       'Name' => 'uv_rwlock_t',
                                       'Size' => '56',
+                                      'Type' => 'Typedef'
+                                    },
+                          '2437' => {
+                                      'Algn' => '4',
+                                      'Artificial' => 1,
+                                      'BaseType' => '1443',
+                                      'Header' => 'message.h',
+                                      'Line' => '136',
+                                      'Name' => 'ch_msg_message_s',
+                                      'Size' => '40',
                                       'Type' => 'Typedef'
                                     },
                           '248' => {
@@ -7475,7 +7486,7 @@ $VAR1 = {
                                     },
                           '2504' => {
                                       'Algn' => '8',
-                                      'BaseType' => '2697',
+                                      'BaseType' => '2695',
                                       'Header' => 'uv-unix.h',
                                       'Line' => '85',
                                       'Name' => 'uv__io_cb',
@@ -7497,7 +7508,17 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'FuncPtr'
                                    },
-                          '2626' => {
+                          '2518' => {
+                                      'Algn' => '8',
+                                      'Artificial' => 1,
+                                      'BaseType' => '372',
+                                      'Header' => 'message.h',
+                                      'Line' => '111',
+                                      'Name' => 'ch_message_s',
+                                      'Size' => '136',
+                                      'Type' => 'Typedef'
+                                    },
+                          '2625' => {
                                       'Algn' => '8',
                                       'BaseType' => '99',
                                       'Header' => 'alltypes.h',
@@ -7506,7 +7527,7 @@ $VAR1 = {
                                       'Size' => '8',
                                       'Type' => 'Typedef'
                                     },
-                          '2638' => {
+                          '2637' => {
                                       'Algn' => '8',
                                       'Header' => 'alltypes.h',
                                       'Line' => '91',
@@ -7514,32 +7535,22 @@ $VAR1 = {
                                                   '0' => {
                                                            'algn' => '8',
                                                            'name' => '__u',
-                                                           'type' => '2833'
+                                                           'type' => '2830'
                                                          }
                                                 },
                                       'Name' => 'struct pthread_rwlock_t',
                                       'Size' => '56',
                                       'Type' => 'Struct'
                                     },
-                          '2641' => {
-                                      'Algn' => '4',
-                                      'Artificial' => 1,
-                                      'BaseType' => '1443',
-                                      'Header' => 'message.h',
-                                      'Line' => '149',
-                                      'Name' => 'ch_msg_message_s',
-                                      'Size' => '44',
-                                      'Type' => 'Typedef'
-                                    },
-                          '2697' => {
+                          '2695' => {
                                       'Algn' => '8',
                                       'Name' => 'void(*)(struct uv_loop_s*, struct uv__io_s*, unsigned int)',
                                       'Param' => {
                                                    '0' => {
-                                                            'type' => '1667'
+                                                            'type' => '1665'
                                                           },
                                                    '1' => {
-                                                            'type' => '3271'
+                                                            'type' => '3268'
                                                           },
                                                    '2' => {
                                                             'type' => '57'
@@ -7549,19 +7560,7 @@ $VAR1 = {
                                       'Size' => '8',
                                       'Type' => 'FuncPtr'
                                     },
-                          '27' => {
-                                    'Algn' => '8',
-                                    'Name' => 'void*(*)(size_t)',
-                                    'Param' => {
-                                                 '0' => {
-                                                          'type' => '69'
-                                                        }
-                                               },
-                                    'Return' => '48',
-                                    'Size' => '8',
-                                    'Type' => 'FuncPtr'
-                                  },
-                          '2700' => {
+                          '2698' => {
                                       'Algn' => '8',
                                       'Header' => 'uv-unix.h',
                                       'Line' => '104',
@@ -7586,17 +7585,19 @@ $VAR1 = {
                                       'Size' => '72',
                                       'Type' => 'Struct'
                                     },
-                          '2711' => {
-                                      'Algn' => '8',
-                                      'Artificial' => 1,
-                                      'BaseType' => '372',
-                                      'Header' => 'message.h',
-                                      'Line' => '124',
-                                      'Name' => 'ch_message_s',
-                                      'Size' => '144',
-                                      'Type' => 'Typedef'
-                                    },
-                          '2753' => {
+                          '27' => {
+                                    'Algn' => '8',
+                                    'Name' => 'void*(*)(size_t)',
+                                    'Param' => {
+                                                 '0' => {
+                                                          'type' => '69'
+                                                        }
+                                               },
+                                    'Return' => '48',
+                                    'Size' => '8',
+                                    'Type' => 'FuncPtr'
+                                  },
+                          '2750' => {
                                       'Algn' => '8',
                                       'Header' => 'uv.h',
                                       'Line' => '1320',
@@ -7604,17 +7605,17 @@ $VAR1 = {
                                                   '0' => {
                                                            'algn' => '8',
                                                            'name' => 'rbe_left',
-                                                           'type' => '3131'
+                                                           'type' => '3128'
                                                          },
                                                   '1' => {
                                                            'algn' => '8',
                                                            'name' => 'rbe_right',
-                                                           'type' => '3131'
+                                                           'type' => '3128'
                                                          },
                                                   '2' => {
                                                            'algn' => '8',
                                                            'name' => 'rbe_parent',
-                                                           'type' => '3131'
+                                                           'type' => '3128'
                                                          },
                                                   '3' => {
                                                            'algn' => '4',
@@ -7627,16 +7628,16 @@ $VAR1 = {
                                       'Size' => '32',
                                       'Type' => 'Struct'
                                     },
-                          '2756' => {
+                          '2753' => {
                                       'Algn' => '8',
-                                      'BaseType' => '2947',
+                                      'BaseType' => '2944',
                                       'Header' => 'uv.h',
                                       'Line' => '357',
                                       'Name' => 'uv_signal_cb',
                                       'Size' => '8',
                                       'Type' => 'Typedef'
                                     },
-                          '2833' => {
+                          '2830' => {
                                       'Algn' => '8',
                                       'Header' => 'alltypes.h',
                                       'Line' => '91',
@@ -7654,7 +7655,7 @@ $VAR1 = {
                                                   '2' => {
                                                            'algn' => '8',
                                                            'name' => '__p',
-                                                           'type' => '3598'
+                                                           'type' => '3597'
                                                          }
                                                 },
                                       'Name' => 'pthread_rwlock_t::anon-union-alltypes.h-91',
@@ -7662,9 +7663,9 @@ $VAR1 = {
                                       'Size' => '56',
                                       'Type' => 'Union'
                                     },
-                          '2888' => {
+                          '2885' => {
                                       'Algn' => '8',
-                                      'BaseType' => '2700',
+                                      'BaseType' => '2698',
                                       'Header' => 'uv-unix.h',
                                       'Name' => 'struct uv__async*',
                                       'Size' => '8',
@@ -7715,7 +7716,7 @@ $VAR1 = {
                                      'Size' => '176',
                                      'Type' => 'Struct'
                                    },
-                          '2918' => {
+                          '2915' => {
                                       'Algn' => '8',
                                       'Artificial' => 1,
                                       'BaseType' => '563',
@@ -7733,12 +7734,12 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Pointer'
                                    },
-                          '2947' => {
+                          '2944' => {
                                       'Algn' => '8',
                                       'Name' => 'void(*)(uv_signal_t*, int)',
                                       'Param' => {
                                                    '0' => {
-                                                            'type' => '3325'
+                                                            'type' => '3322'
                                                           },
                                                    '1' => {
                                                             'type' => '240'
@@ -7757,7 +7758,7 @@ $VAR1 = {
                                     'Size' => '8',
                                     'Type' => 'Typedef'
                                   },
-                          '3007' => {
+                          '3004' => {
                                       'Algn' => '8',
                                       'Artificial' => 1,
                                       'BaseType' => '1426',
@@ -7767,15 +7768,15 @@ $VAR1 = {
                                       'Size' => '96',
                                       'Type' => 'Typedef'
                                     },
-                          '3131' => {
+                          '3128' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1255',
+                                      'BaseType' => '1257',
                                       'Header' => 'uv.h',
                                       'Name' => 'struct uv_signal_s*',
                                       'Size' => '8',
                                       'Type' => 'Pointer'
                                     },
-                          '3271' => {
+                          '3268' => {
                                       'Algn' => '8',
                                       'BaseType' => '2500',
                                       'Header' => 'uv-unix.h',
@@ -7783,9 +7784,9 @@ $VAR1 = {
                                       'Size' => '8',
                                       'Type' => 'Pointer'
                                     },
-                          '3325' => {
+                          '3322' => {
                                       'Algn' => '8',
-                                      'BaseType' => '1126',
+                                      'BaseType' => '1128',
                                       'Header' => 'uv.h',
                                       'Name' => 'uv_signal_t*',
                                       'Size' => '8',
@@ -7797,15 +7798,25 @@ $VAR1 = {
                                      'Header' => 'common.h',
                                      'Line' => '69',
                                      'Name' => 'ch_message_t',
-                                     'Size' => '144',
+                                     'Size' => '136',
                                      'Type' => 'Typedef'
                                    },
-                          '3598' => {
+                          '3597' => {
                                       'Algn' => '8',
                                       'BaseType' => '48',
                                       'Name' => 'void*[7]',
                                       'Size' => '56',
                                       'Type' => 'Array'
+                                    },
+                          '3689' => {
+                                      'Algn' => '8',
+                                      'Artificial' => 1,
+                                      'BaseType' => '1257',
+                                      'Header' => 'uv.h',
+                                      'Line' => '1316',
+                                      'Name' => 'uv_signal_s',
+                                      'Size' => '152',
+                                      'Type' => 'Typedef'
                                     },
                           '369' => {
                                      'Algn' => '8',
@@ -7815,20 +7826,10 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Pointer'
                                    },
-                          '3690' => {
-                                      'Algn' => '8',
-                                      'Artificial' => 1,
-                                      'BaseType' => '1255',
-                                      'Header' => 'uv.h',
-                                      'Line' => '1316',
-                                      'Name' => 'uv_signal_s',
-                                      'Size' => '152',
-                                      'Type' => 'Typedef'
-                                    },
                           '372' => {
                                      'Algn' => '8',
                                      'Header' => 'message.h',
-                                     'Line' => '124',
+                                     'Line' => '111',
                                      'Memb' => {
                                                  '0' => {
                                                           'algn' => '1',
@@ -7841,44 +7842,39 @@ $VAR1 = {
                                                           'type' => '421'
                                                         },
                                                  '10' => {
-                                                           'algn' => '1',
-                                                           'name' => 'address',
-                                                           'type' => '421'
-                                                         },
-                                                 '11' => {
-                                                           'algn' => '4',
-                                                           'name' => 'port',
-                                                           'type' => '875'
-                                                         },
-                                                 '12' => {
                                                            'algn' => '8',
                                                            'name' => 'chirp',
                                                            'type' => '211'
                                                          },
-                                                 '13' => {
+                                                 '11' => {
                                                            'algn' => '8',
                                                            'name' => 'user_data',
                                                            'type' => '48'
                                                          },
-                                                 '14' => {
+                                                 '12' => {
                                                            'algn' => '1',
                                                            'name' => '_flags',
                                                            'type' => '479'
                                                          },
-                                                 '15' => {
+                                                 '13' => {
                                                            'algn' => '8',
                                                            'name' => '_send_cb',
                                                            'type' => '179'
                                                          },
-                                                 '16' => {
+                                                 '14' => {
                                                            'algn' => '8',
                                                            'name' => '_conn',
                                                            'type' => '48'
                                                          },
-                                                 '17' => {
+                                                 '15' => {
                                                            'algn' => '4',
                                                            'name' => '_handler',
                                                            'type' => '240'
+                                                         },
+                                                 '16' => {
+                                                           'algn' => '8',
+                                                           'name' => '_next',
+                                                           'type' => '293'
                                                          },
                                                  '2' => {
                                                           'algn' => '1',
@@ -7891,38 +7887,38 @@ $VAR1 = {
                                                           'type' => '618'
                                                         },
                                                  '4' => {
-                                                          'algn' => '2',
-                                                          'name' => 'actor_len',
-                                                          'type' => '618'
-                                                        },
-                                                 '5' => {
                                                           'algn' => '4',
                                                           'name' => 'data_len',
-                                                          'type' => '784'
+                                                          'type' => '702'
+                                                        },
+                                                 '5' => {
+                                                          'algn' => '8',
+                                                          'name' => 'header',
+                                                          'type' => '786'
                                                         },
                                                  '6' => {
                                                           'algn' => '8',
-                                                          'name' => 'header',
-                                                          'type' => '880'
+                                                          'name' => 'data',
+                                                          'type' => '786'
                                                         },
                                                  '7' => {
-                                                          'algn' => '8',
-                                                          'name' => 'actor',
-                                                          'type' => '44'
-                                                        },
-                                                 '8' => {
-                                                          'algn' => '8',
-                                                          'name' => 'data',
-                                                          'type' => '880'
-                                                        },
-                                                 '9' => {
                                                           'algn' => '1',
                                                           'name' => 'ip_protocol',
                                                           'type' => '479'
+                                                        },
+                                                 '8' => {
+                                                          'algn' => '1',
+                                                          'name' => 'address',
+                                                          'type' => '421'
+                                                        },
+                                                 '9' => {
+                                                          'algn' => '4',
+                                                          'name' => 'port',
+                                                          'type' => '878'
                                                         }
                                                },
                                      'Name' => 'struct ch_message_s',
-                                     'Size' => '144',
+                                     'Size' => '136',
                                      'Type' => 'Struct'
                                    },
                           '413' => {
@@ -7980,7 +7976,7 @@ $VAR1 = {
                                      'Size' => '46',
                                      'Type' => 'Struct'
                                    },
-                          '4673' => {
+                          '4672' => {
                                       'Algn' => '8',
                                       'Header' => 'uv.h',
                                       'Line' => '1470',
@@ -8055,7 +8051,7 @@ $VAR1 = {
                                     'Size' => '8',
                                     'Type' => 'FuncPtr'
                                   },
-                          '5200' => {
+                          '5199' => {
                                       'Algn' => '4',
                                       'BaseType' => '240',
                                       'Name' => 'int[2]',
@@ -8194,7 +8190,7 @@ $VAR1 = {
                                                  '9' => {
                                                           'algn' => '4',
                                                           'name' => 'BUFFER_SIZE',
-                                                          'type' => '784'
+                                                          'type' => '702'
                                                         }
                                                },
                                      'Name' => 'struct ch_config_s',
@@ -8240,12 +8236,12 @@ $VAR1 = {
                                                  '2' => {
                                                           'algn' => '4',
                                                           'name' => 'type',
-                                                          'type' => '867'
+                                                          'type' => '870'
                                                         },
                                                  '3' => {
                                                           'algn' => '8',
                                                           'name' => 'close_cb',
-                                                          'type' => '966'
+                                                          'type' => '968'
                                                         },
                                                  '4' => {
                                                           'algn' => '8',
@@ -8255,12 +8251,12 @@ $VAR1 = {
                                                  '5' => {
                                                           'algn' => '8',
                                                           'name' => 'u',
-                                                          'type' => '1189'
+                                                          'type' => '1190'
                                                         },
                                                  '6' => {
                                                           'algn' => '8',
                                                           'name' => 'next_closing',
-                                                          'type' => '1325'
+                                                          'type' => '1326'
                                                         },
                                                  '7' => {
                                                           'algn' => '4',
@@ -8270,7 +8266,7 @@ $VAR1 = {
                                                  '8' => {
                                                           'algn' => '8',
                                                           'name' => 'async_cb',
-                                                          'type' => '1628'
+                                                          'type' => '1625'
                                                         },
                                                  '9' => {
                                                           'algn' => '8',
@@ -8299,16 +8295,16 @@ $VAR1 = {
                                    },
                           '629' => {
                                      'Algn' => 8,
-                                     'BaseType' => '709',
+                                     'BaseType' => '710',
                                      'Header' => 'uv.h',
                                      'Name' => 'uv_loop_t*',
                                      'Size' => '8',
                                      'Type' => 'Pointer'
                                    },
-                          '6337' => {
+                          '6336' => {
                                       'Algn' => '8',
                                       'Artificial' => 1,
-                                      'BaseType' => '792',
+                                      'BaseType' => '794',
                                       'Header' => 'uv.h',
                                       'Line' => '1461',
                                       'Name' => 'uv_loop_s',
@@ -8317,7 +8313,7 @@ $VAR1 = {
                                     },
                           '688' => {
                                      'Algn' => '8',
-                                     'BaseType' => '773',
+                                     'BaseType' => '774',
                                      'Header' => 'uv-unix.h',
                                      'Name' => 'uv_mutex_t*',
                                      'Size' => '8',
@@ -8338,18 +8334,27 @@ $VAR1 = {
                                      'Size' => '2',
                                      'Type' => 'Intrinsic'
                                    },
-                          '709' => {
+                          '702' => {
+                                     'Algn' => '4',
+                                     'BaseType' => '57',
+                                     'Header' => 'alltypes.h',
+                                     'Line' => '172',
+                                     'Name' => 'uint32_t',
+                                     'Size' => '4',
+                                     'Type' => 'Typedef'
+                                   },
+                          '710' => {
                                      'Algn' => '8',
-                                     'BaseType' => '792',
+                                     'BaseType' => '794',
                                      'Header' => 'uv.h',
                                      'Line' => '200',
                                      'Name' => 'uv_loop_t',
                                      'Size' => '848',
                                      'Type' => 'Typedef'
                                    },
-                          '710' => {
+                          '711' => {
                                      'Algn' => 1,
-                                     'BaseType' => '797',
+                                     'BaseType' => '799',
                                      'Header' => 'chirp.h',
                                      'Line' => '169',
                                      'Name' => 'ch_identity_t',
@@ -8368,16 +8373,16 @@ $VAR1 = {
                                     'Size' => '8',
                                     'Type' => 'FuncPtr'
                                   },
-                          '773' => {
+                          '774' => {
                                      'Algn' => '8',
-                                     'BaseType' => '870',
+                                     'BaseType' => '873',
                                      'Header' => 'uv-unix.h',
                                      'Line' => '140',
                                      'Name' => 'uv_mutex_t',
                                      'Size' => '40',
                                      'Type' => 'Typedef'
                                    },
-                          '774' => {
+                          '775' => {
                                      'Algn' => '8',
                                      'Artificial' => 1,
                                      'BaseType' => '289',
@@ -8387,16 +8392,15 @@ $VAR1 = {
                                      'Size' => '176',
                                      'Type' => 'Typedef'
                                    },
-                          '784' => {
-                                     'Algn' => '4',
-                                     'BaseType' => '57',
-                                     'Header' => 'alltypes.h',
-                                     'Line' => '172',
-                                     'Name' => 'uint32_t',
-                                     'Size' => '4',
-                                     'Type' => 'Typedef'
+                          '786' => {
+                                     'Algn' => '8',
+                                     'BaseType' => '531',
+                                     'Header' => 'common.h',
+                                     'Name' => 'ch_buf*',
+                                     'Size' => '8',
+                                     'Type' => 'Pointer'
                                    },
-                          '792' => {
+                          '794' => {
                                      'Algn' => '8',
                                      'Header' => 'uv.h',
                                      'Line' => '1461',
@@ -8429,7 +8433,7 @@ $VAR1 = {
                                                  '13' => {
                                                            'algn' => '8',
                                                            'name' => 'wq_mutex',
-                                                           'type' => '773'
+                                                           'type' => '774'
                                                          },
                                                  '14' => {
                                                            'algn' => '8',
@@ -8444,7 +8448,7 @@ $VAR1 = {
                                                  '16' => {
                                                            'algn' => '8',
                                                            'name' => 'closing_handles',
-                                                           'type' => '1325'
+                                                           'type' => '1326'
                                                          },
                                                  '17' => {
                                                            'algn' => '8',
@@ -8479,27 +8483,27 @@ $VAR1 = {
                                                  '22' => {
                                                            'algn' => '8',
                                                            'name' => 'async_watcher',
-                                                           'type' => '2700'
+                                                           'type' => '2698'
                                                          },
                                                  '23' => {
                                                            'algn' => '8',
                                                            'name' => 'timer_heap',
-                                                           'type' => '4673'
+                                                           'type' => '4672'
                                                          },
                                                  '24' => {
                                                            'algn' => '8',
                                                            'name' => 'timer_counter',
-                                                           'type' => '2626'
+                                                           'type' => '2625'
                                                          },
                                                  '25' => {
                                                            'algn' => '8',
                                                            'name' => 'time',
-                                                           'type' => '2626'
+                                                           'type' => '2625'
                                                          },
                                                  '26' => {
                                                            'algn' => '4',
                                                            'name' => 'signal_pipefd',
-                                                           'type' => '5200'
+                                                           'type' => '5199'
                                                          },
                                                  '27' => {
                                                            'algn' => '8',
@@ -8509,7 +8513,7 @@ $VAR1 = {
                                                  '28' => {
                                                            'algn' => '8',
                                                            'name' => 'child_watcher',
-                                                           'type' => '1126'
+                                                           'type' => '1128'
                                                          },
                                                  '29' => {
                                                            'algn' => '4',
@@ -8571,7 +8575,7 @@ $VAR1 = {
                                      'Size' => '848',
                                      'Type' => 'Struct'
                                    },
-                          '797' => {
+                          '799' => {
                                      'Algn' => '1',
                                      'Header' => 'chirp.h',
                                      'Line' => '167',
@@ -8586,7 +8590,7 @@ $VAR1 = {
                                      'Size' => '16',
                                      'Type' => 'Struct'
                                    },
-                          '867' => {
+                          '870' => {
                                      'Algn' => '4',
                                      'Header' => 'uv.h',
                                      'Line' => '187',
@@ -8672,7 +8676,7 @@ $VAR1 = {
                                      'Size' => '4',
                                      'Type' => 'Enum'
                                    },
-                          '870' => {
+                          '873' => {
                                      'Algn' => '8',
                                      'Header' => 'alltypes.h',
                                      'Line' => '71',
@@ -8680,14 +8684,14 @@ $VAR1 = {
                                                  '0' => {
                                                           'algn' => '8',
                                                           'name' => '__u',
-                                                          'type' => '972'
+                                                          'type' => '974'
                                                         }
                                                },
                                      'Name' => 'struct pthread_mutex_t',
                                      'Size' => '40',
                                      'Type' => 'Struct'
                                    },
-                          '875' => {
+                          '878' => {
                                      'Algn' => 4,
                                      'BaseType' => '240',
                                      'Header' => 'alltypes.h',
@@ -8696,15 +8700,7 @@ $VAR1 = {
                                      'Size' => '4',
                                      'Type' => 'Typedef'
                                    },
-                          '880' => {
-                                     'Algn' => '8',
-                                     'BaseType' => '531',
-                                     'Header' => 'common.h',
-                                     'Name' => 'ch_buf*',
-                                     'Size' => '8',
-                                     'Type' => 'Pointer'
-                                   },
-                          '895' => {
+                          '897' => {
                                      'Algn' => 8,
                                      'BaseType' => '539',
                                      'Header' => 'common.h',
@@ -8712,7 +8708,7 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Pointer'
                                    },
-                          '966' => {
+                          '968' => {
                                      'Algn' => '8',
                                      'BaseType' => '1065',
                                      'Header' => 'uv.h',
@@ -8721,7 +8717,7 @@ $VAR1 = {
                                      'Size' => '8',
                                      'Type' => 'Typedef'
                                    },
-                          '972' => {
+                          '974' => {
                                      'Algn' => '8',
                                      'Header' => 'alltypes.h',
                                      'Line' => '71',
@@ -8729,17 +8725,17 @@ $VAR1 = {
                                                  '0' => {
                                                           'algn' => '4',
                                                           'name' => '__i',
-                                                          'type' => '1196'
+                                                          'type' => '1197'
                                                         },
                                                  '1' => {
                                                           'algn' => '4',
                                                           'name' => '__vi',
-                                                          'type' => '1340'
+                                                          'type' => '1341'
                                                         },
                                                  '2' => {
                                                           'algn' => '8',
                                                           'name' => '__p',
-                                                          'type' => '1493'
+                                                          'type' => '1491'
                                                         }
                                                },
                                      'Name' => 'pthread_mutex_t::anon-union-alltypes.h-71',
@@ -8753,10 +8749,10 @@ $VAR1 = {
                                     'Size' => '8',
                                     'Type' => 'Intrinsic'
                                   },
-                          '994' => {
+                          '995' => {
                                      'Algn' => '1',
                                      'Artificial' => 1,
-                                     'BaseType' => '797',
+                                     'BaseType' => '799',
                                      'Header' => 'chirp.h',
                                      'Line' => '167',
                                      'Name' => 'ch_identity_s',

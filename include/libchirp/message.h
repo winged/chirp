@@ -52,11 +52,6 @@
 //
 //       Length of the message header.
 //
-//    .. c:member:: uint16_t actor_len
-//
-//       Length of the actor. The default actor is defined as
-//       :code:`actor_len = 0`.
-//
 //    .. c:member:: uint32_t data_len
 //
 //       Length of the data the message contains.
@@ -68,7 +63,6 @@
     uint8_t  serial[CH_ID_SIZE]; \
     uint8_t  type; \
     uint16_t header_len; \
-    uint16_t actor_len; \
     uint32_t data_len \
 
 // .. c:type:: ch_message_t
@@ -83,13 +77,6 @@
 //    .. c:member:: ch_buf* header
 //
 //       Header of the message defined as (char-) buffer.
-//
-//    .. c:member:: char* actor
-//
-//       The actor of the message. The actor is defined by the actor length,
-//       :c:member:`actor_len` and its default encoding is
-//       :code:`actor_len = 0`. An actor is an universal primitive of concurrent
-//       computation.
 //
 //    .. c:member:: ch_buf* data
 //
@@ -126,7 +113,6 @@ struct ch_message_s {
     CH_WIRE_MESSAGE;
     // These fields follow the message in this order (see *_len above)
     ch_buf*        header;
-    char*          actor;
     ch_buf*        data;
     // Local       only data
     uint8_t        ip_protocol;
@@ -157,14 +143,9 @@ typedef struct ch_msg_message_s {
 //
 //    ch_message_t msg;
 //    recv_wait(buffer=&msg, size=39)
-//    msg.actor = malloc(msg.actor_len) *
 //    if(msg.header_len) {
 //        msg.header = malloc(msg.header_len) *
 //        recv_exactly(buffer=msg.header, msg.header_len)
-//    }
-//    if(msg.actor_len) {
-//        msg.actor = malloc(msg.actor_len) *
-//        recv_exactly(buffer=msg.actor, msg.actor_len)
 //    }
 //    if(msg.data_len) {
 //        msg.data  = malloc(msg.data_len) *
@@ -172,13 +153,10 @@ typedef struct ch_msg_message_s {
 //    }
 //
 // * Please use MAX_HANDLERS preallocated buffers of size 32 for header
-// * Please use MAX_HANDLERS preallocated buffers of size 256 for actor
 // * Please use MAX_HANDLERS preallocated buffers of size 512 for data
 //
 // Either fields may exceed the limit, in which case you have to alloc and set
 // the free_* field.
-//
-// The default actor is encoded as actor_len = 0
 
 // .. c:function::
 CH_EXPORT

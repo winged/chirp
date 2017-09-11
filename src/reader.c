@@ -95,7 +95,6 @@ static
 ch_inline
 int
 _ch_rd_read_buffer(
-        ch_connection_t* conn,
         ch_reader_t*     reader,
         ch_message_t*    msg,
         ch_buf*          src_buf,
@@ -138,7 +137,6 @@ char* _ch_rd_state_names[] = {
     "CH_RD_HANDSHAKE",
     "CH_RD_WAIT",
     "CH_RD_HEADER",
-    "CH_RD_ACTOR",
     "CH_RD_DATA",
 };
 
@@ -289,7 +287,6 @@ _ch_rd_handle_msg(
         );
         ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
-        ack_msg->actor_len  = 0;
         ack_msg->data_len   = 0;
         ack_msg->chirp      = chirp;
         ack_msg->port       = msg->port;
@@ -492,7 +489,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     return;
                 }
                 msg->header_len    = ntohs(msg->header_len);
-                msg->actor_len     = ntohs(msg->actor_len);
                 msg->data_len      = ntohl(msg->data_len);
                 msg->ip_protocol   = conn->ip_protocol;
                 msg->port          = conn->port;
@@ -508,8 +504,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 /* Direct jump to next read state */
                 if(msg->header_len > 0)
                     reader->state = CH_RD_HEADER;
-                else if(msg->actor_len > 0)
-                    reader->state = CH_RD_ACTOR;
                 else if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
                 else
@@ -519,7 +513,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 handler = reader->handler;
                 msg     = &handler->msg;
                 if(_ch_rd_read_buffer(
-                        conn,
                         reader,
                         msg,
                         buf + bytes_handled,
@@ -534,32 +527,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                     return;
                 }
                 /* Direct jump to next read state */
-                if(msg->actor_len > 0)
-                    reader->state = CH_RD_ACTOR;
-                else if(msg->data_len > 0)
-                    reader->state = CH_RD_DATA;
-                else
-                    _ch_rd_handle_msg(conn, reader, msg);
-                break;
-            case CH_RD_ACTOR:
-                handler = reader->handler;
-                msg     = &handler->msg;
-                if(_ch_rd_read_buffer(
-                        conn,
-                        reader,
-                        msg,
-                        buf + bytes_handled,
-                        to_read,
-                        &msg->actor,
-                        handler->actor,
-                        CH_BF_PREALLOC_ACTOR,
-                        msg->actor_len,
-                        CH_MSG_FREE_ACTOR,
-                        &bytes_handled
-                ) != CH_SUCCESS) {
-                    return;
-                }
-                /* Direct jump to next read state */
                 if(msg->data_len > 0)
                     reader->state = CH_RD_DATA;
                 else
@@ -569,7 +536,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 handler = reader->handler;
                 msg     = &handler->msg;
                 if(_ch_rd_read_buffer(
-                        conn,
                         reader,
                         msg,
                         buf + bytes_handled,
@@ -597,7 +563,6 @@ static
 ch_inline
 int
 _ch_rd_read_buffer(
-        ch_connection_t* conn,
         ch_reader_t*     reader,
         ch_message_t*    msg,
         ch_buf*          src_buf,
@@ -616,7 +581,6 @@ _ch_rd_read_buffer(
 // .. code-block:: cpp
 //
 {
-    (void)(conn); // TODO remove?
     if(reader->bytes_read == 0) {
         if(expected <= dest_buf_size) {
             /* Preallocated buf is large enough */

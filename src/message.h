@@ -40,10 +40,6 @@ typedef enum {
 //
 //       Header data has to be freed before releasing the buffer
 //
-//    .. c:member:: CH_MSG_FREE_ACTOR
-//
-//       Header data has to be freed before releasing the buffer
-//
 //    .. c:member:: CH_MSG_FREE_DATA
 //
 //       Data has to be freed before releasing the buffer
@@ -60,9 +56,8 @@ typedef enum {
 //
 typedef enum {
     CH_MSG_FREE_HEADER = 1 << 0,
-    CH_MSG_FREE_ACTOR  = 1 << 1,
-    CH_MSG_FREE_DATA   = 1 << 2,
-    CH_MSG_USED        = 1 << 3,
+    CH_MSG_FREE_DATA   = 1 << 1,
+    CH_MSG_USED        = 1 << 2,
 } ch_msg_flags_t;
 
 #endif //ch_msg_message_h

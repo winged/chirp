@@ -1049,7 +1049,7 @@ ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
 // .. code-block:: cpp
 //
 {
-    // TODO make this correct
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ichirp->recv_cb = recv_cb;
 }

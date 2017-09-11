@@ -37,10 +37,6 @@
 //
 //       Read header.
 //
-//    .. c:member:: CH_RD_ACTOR
-//
-//       Read actor.
-//
 //    .. c:member:: CH_RD_DATA
 //
 //       Read data.
@@ -52,8 +48,7 @@ typedef enum {
     CH_RD_HANDSHAKE = 1,
     CH_RD_WAIT      = 2,
     CH_RD_HEADER    = 3,
-    CH_RD_ACTOR     = 4,
-    CH_RD_DATA      = 5,
+    CH_RD_DATA      = 4,
 } ch_rd_state_t;
 
 // .. c:type:: ch_rd_handshake_t

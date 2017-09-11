@@ -202,8 +202,7 @@ typedef enum {
 //
 //    .. c:member:: ch_recv_cb_t recv_cb
 //
-//       Callback when message is received TODO make this a datastructure for
-//       an callback per actor.
+//       Callback when message is received
 //
 //    .. c:member:: ch_buffer_pool_t pool
 //
