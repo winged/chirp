@@ -37,9 +37,6 @@
 //    Check if a connection has been idle for RESUE_TIME seconds, since the
 //    connection is not valid: close it if needed and cleanup ch_remote_t.
 //
-// reco = reconnect
-//    Reconnect immediately.
-//
 // wait = wait
 //    Reconnect after waiting for TIMEOUT / 2 seconds.
 //
@@ -107,7 +104,7 @@
 // +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
 // |xxx          | 1| 1| 0| xxx | xxx | xxx | xxx | xxx | xxx | xxx  | xxx |
 // +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
-// |sending      | 1| 1| 1| enqu| send| dequ| send| reco| cing| chck | send|
+// |sending      | 1| 1| 1| enqu| send| dequ| send| wait| cing| chck | send|
 // |             |  |  |  |     |     |     | idle|     |     |      |     |
 // +-------------+--+--+--+-----+-----+-----+-----+-----+-----+------+-----+
 //
