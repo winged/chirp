@@ -95,6 +95,7 @@ static
 ch_inline
 int
 _ch_rd_read_buffer(
+        ch_connection_t* conn,
         ch_reader_t*     reader,
         ch_message_t*    msg,
         ch_buf*          src_buf,
@@ -106,23 +107,12 @@ _ch_rd_read_buffer(
         int              free_flag,
         size_t*          bytes_handled
 );
-//    TODO update doc
-//    Reads ``read`` bytes from the given buffer ``source_buf`` over the given
-//    connection with respect to the current state.
 //
-//    :param ch_connection_t* conn: Pointer to a connection instance.
-//    :param ch_readert* reader:    Pointer to a reader instance.
-//    :param ch_buf* source_buf:    Buffer containing ``read`` bytes to be
-//                                  read, acting as data source.
-//    :param size_t read:           Number of bytes to read.
-//    :param ch_rd_state_t state:   The readers current state (finite-state
-//                                  machine).
+//    Read data from the read buffer provided by libuv ``src_buf`` to the field
+//    of the message ``assign_buf``. A preallocated buffer will be used if the
+//    message is small enough, otherwise a buffer will be allocated. The
+//    function also handles partial reads.
 //
-//    :return:                      The state of the reading.
-//                                  0: The reading was not successful.
-//                                  1: The reading was successful.
-//    :rtype:                       int
-
 // Definitions
 // ===========
 
@@ -513,6 +503,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 handler = reader->handler;
                 msg     = &handler->msg;
                 if(_ch_rd_read_buffer(
+                        conn,
                         reader,
                         msg,
                         buf + bytes_handled,
@@ -536,6 +527,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 handler = reader->handler;
                 msg     = &handler->msg;
                 if(_ch_rd_read_buffer(
+                        conn,
                         reader,
                         msg,
                         buf + bytes_handled,
@@ -563,6 +555,7 @@ static
 ch_inline
 int
 _ch_rd_read_buffer(
+        ch_connection_t* conn,
         ch_reader_t*     reader,
         ch_message_t*    msg,
         ch_buf*          src_buf,
@@ -587,6 +580,10 @@ _ch_rd_read_buffer(
             *assign_buf = dest_buf;
         } else {
             *assign_buf = ch_alloc(expected);
+            if(*assign_buf == NULL) {
+                ch_cn_shutdown(conn, CH_ENOMEM);
+                return CH_ENOMEM;
+            }
             msg->_flags |= free_flag;
         }
     }
