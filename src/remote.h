@@ -34,6 +34,7 @@ struct ch_remote_s {
     uint8_t          ip_protocol;
     uint8_t          address[CH_IP_ADDR_SIZE];
     int32_t          port;
+    uint8_t          receipt[CH_ID_SIZE];
     ch_connection_t* conn;
     char             color;
     ch_remote_t*     parent;

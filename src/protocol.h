@@ -22,39 +22,6 @@
 // Declarations
 // ============
 
-// .. c:type:: ch_receipt_t
-//
-//    Receipt set implemented as red-black tree.
-//
-//    .. c:member:: uint8_t receipt[16]
-//
-//       Identity of the receipt, represented as 16 byte long byte string.
-//
-//    .. c:member:: char color_field
-//
-//       The color of the current (protocol-) node. This may either be red or
-//       black, as receipts are built as a red-black tree.
-//
-//    .. c:member:: ch_receipt_t* left
-//
-//       (Struct-) Pointer to the left child of the current receipt (node)
-//       in the red-black tree.
-//
-//    .. c:member:: ch_receipt_t* right
-//
-//       (Struct-) Pointer to the right child of the current receipt (node)
-//       in the red-black tree.
-//
-// .. code-block:: cpp
-//
-struct ch_receipt_s {
-    uint8_t       receipt[CH_ID_SIZE];
-    char          color;
-    ch_receipt_t* left;
-    ch_receipt_t* right;
-    ch_receipt_t* parent;
-};
-
 // .. c:type:: ch_protocol_t
 //
 //    Protocol object.
@@ -85,31 +52,6 @@ struct ch_receipt_s {
 //       network race condition. The then current connections will be replaced
 //       and saved as old connections for garbage collection.
 //
-//    .. c:member:: ch_receipt_t* receipts
-//
-//       Pointer to a set of receipts.
-//
-//       A receipt gets added whenever the reader receives a message, that
-//       requires an ACK. In that case, if a connections has a receipt set,
-//       that receipt is removed from the set of (currently valid) receipts and
-//       the serial number (identifier) of the the current message is added as
-//       a new receipt.
-//
-//       A receipt is attached to a connection, whereas a protocol may have
-//       multiple connections.
-//
-//    .. c:member:: ch_receipt_t* late_receipts
-//
-//       Pointer to a set of late receipts.
-//
-//       A late receipt gets added when a read on a certain connection was
-//       cancelled. This might happen on events like timeouts, incomplete
-//       reads, resets of the connection, broken pipes, extra data or an
-//       exception when unpacking data.
-//       A late receipt acts as a pending task (a todo-item): Remove the
-//       receipt with the same (message-) identifier after N seconds, if this
-//       specific receipt is still (or again) in the queue of receipts.
-//
 //    .. c:member:: ch_chirp_t* chirp
 //
 //       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
@@ -123,29 +65,8 @@ typedef struct ch_protocol_s {
     uv_tcp_t            serverv6;
     ch_remote_t*        remotes;
     ch_connection_t*    old_connections;
-    ch_receipt_t*       receipts;
-    ch_receipt_t*       late_receipts;
     ch_chirp_t*         chirp;
 } ch_protocol_t;
-
-// Rbtree Prototypes
-// -----------------
-
-// .. c:macro:: ch_pr_rc_cmp_m
-//
-//    Compares two receipts memorywise as byte strings, assuming that both byte
-//    strings are 16 bytes long.
-//
-//    :param x: First red-black tree node to get receipt (byte string) from.
-//    :param y: Second red-black tree node to get receipt (byte string) from.
-//
-// .. code-block:: cpp
-//
-#define ch_pr_rc_cmp_m(x,y) \
-    memcmp(x->receipt, y->receipt, CH_ID_SIZE)
-
-
-rb_bind_decl_m(ch_pr_rc, ch_receipt_t)
 
 // .. c:function::
 ch_error_t

@@ -20,13 +20,6 @@
 //
 #include <openssl/err.h>
 
-// Rbtree Prototypes
-// =================
-
-// .. code-block:: cpp
-//
-rb_bind_impl_m(ch_pr_rc, ch_receipt_t)
-
 
 // Declarations
 // ============
@@ -50,17 +43,6 @@ _ch_pr_do_handshake(ch_connection_t* conn);
 //    Do a handshake on the given connection.
 //
 //    :param ch_connection_t* conn: Pointer to a connection handle.
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_pr_free_receipts(ch_receipt_t** receipts);
-//
-//    Free all remaining items in a receipts set.
-//
-//    :param ch_receipt_t** receipts: D-pointer to a set of receipts which
-//                                    shall have its items freed.
 
 // .. c:function::
 static
@@ -147,26 +129,6 @@ _ch_pr_do_handshake(ch_connection_t* conn)
         }
     }
     ch_cn_send_if_pending(conn);
-}
-
-// .. c:function::
-static
-ch_inline
-void
-_ch_pr_free_receipts(ch_receipt_t** receipts)
-//    :noindex:
-//
-//    see: :c:func:`_ch_pr_free_receipts`
-//
-// .. code-block:: cpp
-//
-{
-    rb_iter_decl_cx_m(ch_pr_rc, iter, elem);
-    rb_for_m(ch_pr_rc, *receipts, iter, elem) {
-        ch_free(elem);
-    }
-    /* Effectively we have cleared the structure */
-    ch_pr_rc_tree_init(receipts);
 }
 
 // .. c:function::
@@ -558,8 +520,6 @@ ch_pr_start(ch_protocol_t* protocol)
         );
         return CH_EADDRINUSE; // NOCOV errors happend for IPV4
     }
-    ch_pr_rc_tree_init(&protocol->receipts);
-    ch_pr_rc_tree_init(&protocol->late_receipts);
     ch_rm_tree_init(&protocol->remotes);
     protocol->old_connections = NULL;
     return CH_SUCCESS;
@@ -582,7 +542,5 @@ ch_pr_stop(ch_protocol_t* protocol)
     uv_close((uv_handle_t*) &protocol->serverv4, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &protocol->serverv6, ch_chirp_close_cb);
     chirp->_->closing_tasks += 2;
-    _ch_pr_free_receipts(&protocol->receipts);
-    _ch_pr_free_receipts(&protocol->late_receipts);
     return CH_SUCCESS;
 }
