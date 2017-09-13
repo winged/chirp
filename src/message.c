@@ -11,6 +11,18 @@
 #include "message.h"
 #include "util.h"
 
+// Definitions
+// ===========
+
+// Queue definition
+// ----------------
+//
+
+qs_queue_bind_impl_cx_m(ch_msg, ch_message_t)
+
+// Interface definitions
+// ---------------------
+
 // .. c:function::
 CH_EXPORT
 ch_error_t

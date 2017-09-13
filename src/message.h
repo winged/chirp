@@ -11,7 +11,20 @@
 
 // Project includes
 // ================
+//
+// .. code-block:: cpp
+//
 #include "libchirp/message.h"
+#include "qs.h"
+
+// Queue declarations
+// ==================
+//
+// .. code-block:: cpp
+//
+#define ch_msg_next_m(x) (x)->_next
+qs_queue_bind_decl_cx_m(ch_msg, ch_message_t)
+
 
 // .. c:type:: ch_msg_type_t
 //
@@ -30,7 +43,7 @@
 typedef enum {
     CH_MSG_REQ_ACK = 1 << 0,
     CH_MSG_ACK     = 1 << 1,
-} ch_msg_type_t;
+} ch_msg_types_t;
 
 // .. c:type:: ch_msg_flags_t
 //
