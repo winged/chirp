@@ -114,9 +114,6 @@ __ch__silenence(void)
 // Definitions
 // -----------
 //
-// .. code-block:: cpp
-//
-#define CH_EMPTY
 // .. c:macro:: ch_lg_get_id_m
 //
 //    Creates a id from 0-7 based on the identity of a chirp object.

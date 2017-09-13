@@ -102,6 +102,16 @@ typedef struct ch_writer_s {
 
 // .. c:function::
 void
+_ch_wr_send_ts_cb(uv_async_t* handle);
+//
+//    Send all messages in the message queue.
+//
+//    :param uv_async_t* handle: Async handler used to trigger sending message
+//                               queue.
+
+
+// .. c:function::
+void
 ch_wr_free(ch_writer_t* writer);
 //
 //    Free the writer data structure.
@@ -123,17 +133,20 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //    :param ch_connection_t* conn:  Pointer to a connection instance.
 
 // .. c:function::
-void
-ch_wr_write(ch_connection_t* conn, ch_message_t* msg);
+int
+ch_wr_proccess_queues(ch_remote_t* remote);
 //
-//    Send the message after a connection has been established.
+//    Sends queued message according to the following priorities:
 //
-//    :param ch_connection_t* conn:  Connection to send the message over.
-//    :param ch_message_t msg:       The message to send. The memory of the
-//                                   message must stay valid until the callback
-//                                   is called.
+//    1. Do nothing if the writer still has an active message
+//    2. Send messages that don't require an ack (which might be acks)
+//    3. If CH_RM_RETRY_WAITING_MSG is set, resend the message currently
+//       waiting for an ack
+//    4. Send messages that require an ack
+//    5. Do nothing
 //
-//
+//    :param ch_remote_t* remote: The remote to process queues
+
 // .. c:function::
 int
 ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
@@ -144,11 +157,15 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 
 // .. c:function::
 void
-_ch_wr_send_ts_cb(uv_async_t* handle);
+ch_wr_write(ch_connection_t* conn, ch_message_t* msg);
 //
-//    Send all messages in the message queue.
+//    Send the message after a connection has been established.
 //
-//    :param uv_async_t* handle: Async handler used to trigger sending message
-//                               queue.
+//    :param ch_connection_t* conn:  Connection to send the message over.
+//    :param ch_message_t msg:       The message to send. The memory of the
+//                                   message must stay valid until the callback
+//                                   is called.
+
+
 
 #endif //ch_writer_h

@@ -84,6 +84,15 @@
 //
 //       Indicates that the message has not been sent completely.
 //
+//    .. c:member:: CH_BUSY
+//
+//       Indicates that the writer was busy and therefore no message as been
+//       processed.
+//
+//    .. c:member:: CH_EMPTY
+//
+//       Indicates that queues are empty and no message has been sent.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -103,6 +112,8 @@ typedef enum {
     CH_QUEUED         = 13,
     CH_USED           = 14,
     CH_MORE           = 15,
+    CH_BUSY           = 16,
+    CH_EMPTY          = 17,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

@@ -86,14 +86,32 @@ struct ch_remote_s {
     int32_t          port;
     uint8_t          receipt[CH_ID_SIZE];
     ch_connection_t* conn;
-    ch_message_t*    msg_queue;
+    ch_message_t*    no_ack_msg_queue;
+    ch_message_t*    ack_msg_queue;
+    ch_message_t*    wait_ack_message;
     ch_chirp_t*      chirp;
     float            load;
+    uint8_t          flags;
     char             color;
     ch_remote_t*     parent;
     ch_remote_t*     left;
     ch_remote_t*     right;
 };
+
+// .. c:type:: ch_rm_flags_t
+//
+//    Represents remote flags.
+//
+//    .. c:member:: CH_RM_RETRY_WAITING_MSG
+//
+//       If this flag is set ch_wr_process_queues will retry the message wating
+//       for an ack.
+//
+// .. code-block:: cpp
+//
+typedef enum {
+    CH_RM_RETRY_WAITING_MSG = 1 << 0,
+} ch_rm_flags_t;
 
 // rbtree Prototypes
 // ------------------

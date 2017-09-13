@@ -508,6 +508,42 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
 
 // .. c:function::
 int
+ch_wr_proccess_queues(ch_remote_t* remote)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_proccess_queues`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = remote->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_connection_t* conn = remote->conn;
+    ch_message_t* msg = NULL;
+    A(conn != NULL, "The connection must be set");
+    if(conn->writer.msg != NULL)
+        return CH_BUSY;
+    if(remote->flags & CH_RM_RETRY_WAITING_MSG) {
+        A(
+            remote->wait_ack_message,
+            "When retrying the wait_ack_message should be set"
+        )
+        ch_wr_write(conn, remote->wait_ack_message);
+        return CH_SUCCESS;
+    } else if(remote->no_ack_msg_queue != NULL) {
+        ch_msg_dequeue(&remote->no_ack_msg_queue, &msg);
+        ch_wr_write(conn, msg);
+        return CH_SUCCESS;
+    } else if(remote->ack_msg_queue != NULL) {
+        ch_msg_dequeue(&remote->ack_msg_queue, &msg);
+        ch_wr_write(conn, msg);
+        return CH_SUCCESS;
+    }
+    return CH_EMPTY;
+}
+
+// .. c:function::
+int
 ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
