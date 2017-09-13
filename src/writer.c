@@ -266,10 +266,10 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
 
     ch_message_t* cur;
-    ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
+    ch_msg_dequeue(&ichirp->send_ts_queue, &cur);
     while(cur != NULL) {
         ch_chirp_send(chirp, cur, cur->_send_cb);
-        ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
+        ch_msg_dequeue(&ichirp->send_ts_queue, &cur);
     }
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
 }
@@ -457,7 +457,7 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         return CH_USED;
     }
     msg->_send_cb = send_cb;
-    ch_mq_enqueue(&ichirp->send_ts_queue, msg);
+    ch_msg_enqueue(&ichirp->send_ts_queue, msg);
     uv_mutex_unlock(&ichirp->send_ts_queue_lock);
     uv_async_send(&ichirp->send_ts);
     return CH_SUCCESS;

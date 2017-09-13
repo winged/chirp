@@ -79,22 +79,6 @@
 #include "protocol.h"
 #include "encryption.h"
 
-// Library includes
-// ================
-//
-// .. code-block:: cpp
-//
-#include "qs.h"
-
-// structure prototypes
-// ====================
-//
-// .. code-block:: cpp
-//
-#define ch_mq_next_m(x) (x)->_next
-
-qs_queue_bind_decl_cx_m(ch_mq, ch_message_t)
-
 // Declarations
 // ============
 
