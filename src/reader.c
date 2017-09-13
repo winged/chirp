@@ -183,6 +183,7 @@ _ch_rd_handshake(
         tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
     }
+    conn->remote = remote;
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection */
     old_conn = remote->conn;
@@ -227,12 +228,8 @@ _ch_rd_handshake(
         );
     }
 #   endif
-    ch_writer_t* writer = &conn->writer;
-    if(writer->send_msg != NULL) {
-        ch_message_t* msg = writer->send_msg;
-        writer->send_msg = NULL;
-        ch_wr_write(conn, msg);
-    }
+    A(conn->remote != NULL, "The remote has to be set");
+    ch_wr_proccess_queues(conn->remote);
 }
 
 // .. c:function::

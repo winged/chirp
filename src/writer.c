@@ -234,7 +234,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             (void*) conn
         );
         /* Here we join the code called on accept. */
-        conn->writer.send_msg = msg;
         ch_pr_conn_start(chirp, conn, &conn->client, 0);
     } else {
         EC(
@@ -575,8 +574,13 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
     }
-    conn = remote->conn;
 
+    if(msg->type & CH_MSG_REQ_ACK)
+        ch_msg_enqueue(&remote->ack_msg_queue, msg);
+    else
+        ch_msg_enqueue(&remote->no_ack_msg_queue, msg);
+
+    conn = remote->conn;
     if(conn == NULL) {
         conn = ch_alloc(sizeof(ch_connection_t));
         remote->conn = conn;
@@ -595,6 +599,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         conn->port         = msg->port;
         conn->ip_protocol  = msg->ip_protocol;
         conn->connect.data = msg;
+        conn->remote       = remote;
         ch_text_address_t taddr;
         ch_msg_get_address(msg, &taddr);
         if(!(
@@ -646,7 +651,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
         }
     } else
-        ch_wr_write(conn, msg);
+        ch_wr_proccess_queues(remote);
     return CH_SUCCESS;
 }
 

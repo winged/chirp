@@ -279,6 +279,10 @@ typedef enum {
 //
 //       Pointer to the write buffer. The buffer that will be written to.
 //
+//    .. c:member:: ch_remote_t* remote
+//
+//       Pointer to the remote of this connection.
+//
 //    .. c:member:: ch_chirp_t* chirp
 //
 //       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
@@ -386,6 +390,7 @@ struct ch_connection_s {
     size_t           write_size;
     ch_buf*          write_buffer;
     ch_chirp_t*      chirp;
+    ch_remote_t*     remote;
     uv_shutdown_t    shutdown_req;
     uv_write_t       write_req;
     uv_timer_t       shutdown_timeout;

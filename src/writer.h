@@ -96,7 +96,6 @@ typedef struct ch_writer_s {
     uv_timer_t         send_timeout;
     ch_message_t*      msg;
     ch_msg_message_t   net_msg;
-    ch_message_t*      send_msg;
     char               flags;
 } ch_writer_t;
 
