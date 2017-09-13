@@ -9,6 +9,7 @@
 //
 #include "chirp.h"
 #include "util.h"
+#include "remote.h"
 
 // System includes
 // ===============
@@ -858,7 +859,7 @@ ch_chirp_init(
 void
 ch_chirp_try_message_finish(
         ch_chirp_t* chirp,
-        ch_writer_t* writer,
+        ch_connection_t* conn,
         ch_message_t* msg,
         int status,
         float load
@@ -870,6 +871,7 @@ ch_chirp_try_message_finish(
 // .. code-block:: cpp
 //
 {
+    ch_writer_t* writer = &conn->writer;
     char flags = writer->flags;
     if(flags & CH_WR_ACK_RECEIVED && flags & CH_WR_WRITE_DONE) {
 #   ifndef NDEBUG
@@ -889,6 +891,7 @@ ch_chirp_try_message_finish(
 #   endif
         writer->flags = 0;
         writer->msg = NULL;
+        conn->remote->wait_ack_message = NULL;
         msg->_flags &= ~CH_MSG_USED;
         if(msg->_send_cb != NULL) {
             /* The user may free the message in the cb */

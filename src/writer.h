@@ -133,7 +133,7 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 
 // .. c:function::
 int
-ch_wr_proccess_queues(ch_remote_t* remote);
+ch_wr_process_queues(ch_remote_t* remote);
 //
 //    Sends queued message according to the following priorities:
 //

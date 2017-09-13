@@ -86,8 +86,8 @@
 //
 //    .. c:member:: CH_BUSY
 //
-//       Indicates that the writer was busy and therefore no message as been
-//       processed.
+//       Indicates that the writer was busy or we are still busy waiting for an
+//       ack. Therefore no message was processed.
 //
 //    .. c:member:: CH_EMPTY
 //

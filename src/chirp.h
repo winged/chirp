@@ -244,7 +244,7 @@ ch_chirp_close_cb(uv_handle_t* handle);
 void
 ch_chirp_try_message_finish(
         ch_chirp_t* chirp,
-        ch_writer_t* writer,
+        ch_connection_t* conn,
         ch_message_t* msg,
         int status,
         float load
@@ -255,7 +255,7 @@ ch_chirp_try_message_finish(
 //    ACK as been received.
 //
 //    :param ch_chirp_t* writer: Chirp instance
-//    :param ch_writer_t* writer: Pointer to writer
+//    :param ch_connection_t* conn: Pointer to connection
 //    :param ch_message_t* msg: Pointer to the message
 //    :param int status: Error code
 //    :param float load: The load of the remote peer

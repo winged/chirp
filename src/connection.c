@@ -729,7 +729,7 @@ ch_cn_shutdown(
         writer->flags = CH_WR_FAILURE;
         ch_chirp_try_message_finish(
             chirp,
-            writer,
+            conn,
             msg,
             reason,
             conn->load

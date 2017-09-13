@@ -350,7 +350,7 @@ _ch_wr_write_finish(
     writer->flags |= CH_WR_WRITE_DONE;
     ch_chirp_try_message_finish(
         chirp,
-        writer,
+        conn,
         msg,
         CH_SUCCESS,
         conn->load
@@ -507,10 +507,10 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
 
 // .. c:function::
 int
-ch_wr_proccess_queues(ch_remote_t* remote)
+ch_wr_process_queues(ch_remote_t* remote)
 //    :noindex:
 //
-//    see: :c:func:`ch_wr_proccess_queues`
+//    see: :c:func:`ch_wr_process_queues`
 //
 // .. code-block:: cpp
 //
@@ -534,9 +534,13 @@ ch_wr_proccess_queues(ch_remote_t* remote)
         ch_wr_write(conn, msg);
         return CH_SUCCESS;
     } else if(remote->ack_msg_queue != NULL) {
-        ch_msg_dequeue(&remote->ack_msg_queue, &msg);
-        ch_wr_write(conn, msg);
-        return CH_SUCCESS;
+        if(remote->wait_ack_message == NULL) {
+            ch_msg_dequeue(&remote->ack_msg_queue, &msg);
+            remote->wait_ack_message = msg;
+            ch_wr_write(conn, msg);
+            return CH_SUCCESS;
+        } else
+            return CH_BUSY;
     }
     return CH_EMPTY;
 }
@@ -651,7 +655,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
         }
     } else
-        ch_wr_proccess_queues(remote);
+        ch_wr_process_queues(remote);
     return CH_SUCCESS;
 }
 

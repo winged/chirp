@@ -229,7 +229,7 @@ _ch_rd_handshake(
     }
 #   endif
     A(conn->remote != NULL, "The remote has to be set");
-    ch_wr_proccess_queues(conn->remote);
+    ch_wr_process_queues(conn->remote);
 }
 
 // .. c:function::
@@ -286,7 +286,7 @@ _ch_rd_handle_msg(
     } else if(msg->type & CH_MSG_ACK) {
         ch_writer_t* writer = &conn->writer;
         if(memcmp(
-                writer->msg->identity,
+                conn->remote->wait_ack_message,
                 msg->identity,
                 CH_ID_SIZE
         ) == 0) {
@@ -294,7 +294,7 @@ _ch_rd_handle_msg(
             writer->flags |= CH_WR_ACK_RECEIVED;
             ch_chirp_try_message_finish(
                 chirp,
-                writer,
+                conn,
                 wmsg,
                 CH_SUCCESS,
                 conn->load
