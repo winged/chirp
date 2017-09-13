@@ -724,7 +724,7 @@ ch_chirp_init(
     ch_encryption_t* enc    = &ichirp->encryption;
     chirp->_                = ichirp;
     if(log_cb != NULL)
-        ch_chirp_register_log_cb(chirp, log_cb);
+        ch_chirp_register_log_handler(chirp, log_cb);
     tmp_err = _ch_chirp_verify_cfg(chirp);
     if(tmp_err != CH_SUCCESS) {
         chirp->_init = 0;
@@ -1043,10 +1043,10 @@ ch_libchirp_init(void)
 // .. c:function::
 CH_EXPORT
 void
-ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
+ch_chirp_register_recv_handler(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_register_recv_cb`
+//    see: :c:func:`ch_chirp_register_recv_handler`
 //
 // .. code-block:: cpp
 //

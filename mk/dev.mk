@@ -9,7 +9,7 @@ ifeq ($(ALPINE_AND_CLANG),True)
 endif
 
 ifneq ($(TLS),openssl)
-	MEMCHECK := valgrind --tool=memcheck --error-exitcode=1 --suppressions=$(BASE)/ci/memcheck-musl.supp
+	MEMCHECK := valgrind --tool=memcheck --leak-check=full --error-exitcode=1 --suppressions=$(BASE)/ci/memcheck-musl.supp
 else
 	MEMCHECK := valgrind --tool=memcheck --suppressions=$(BASE)/ci/memcheck-musl.supp
 endif

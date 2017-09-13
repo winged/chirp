@@ -254,7 +254,7 @@ ch_chirp_init(
 static
 ch_inline
 void
-ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
+ch_chirp_register_log_handler(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 //
 //    Register a callback for sending log messages.
 //
@@ -270,12 +270,24 @@ ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 // .. c:function::
 CH_EXPORT
 void
-ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
+ch_chirp_register_recv_handler(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
 //
 //    Register a callback for receiving a message.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_message_t* msg: The message which was received.
+//
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_release_recv_handler(ch_message_t* msg);
+//
+//    Release the internal receive handler. Must be called when the message
+//    isn't needed anymore. IMPORTANT: Neglecting to release the handler will
+//    lockup chirp.
+//
+//    :param ch_message_t* msg: The message representing the handler.
 //
 
 // .. c:function::

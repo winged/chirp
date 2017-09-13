@@ -1,6 +1,12 @@
 {
-   musl
+   musl internal free
    Memcheck:Free
    fun:free
+   fun:reclaim_gaps
+   fun:map_library
+   fun:load_library
+   fun:load_preload
+   fun:__dls3
+   fun:__dls2
    obj:/lib/ld-musl-x86_64.so.1
 }

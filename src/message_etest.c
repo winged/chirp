@@ -154,7 +154,7 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
             "Echo received a message%s", ""
         )
     }
-    memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t));
+    memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t)); // TODO remove
     /* TODO Send an echo message
      * ch_chirp_send(
      *         chirp,
@@ -213,7 +213,7 @@ void
 _ch_tst_echo_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_register_recv_cb(chirp, _ch_tst_recv_echo_message_cb);
+    ch_chirp_register_recv_handler(chirp, _ch_tst_recv_echo_message_cb);
 }
 
 static
