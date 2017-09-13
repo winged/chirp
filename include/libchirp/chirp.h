@@ -170,22 +170,6 @@ typedef struct ch_identity_s {
 
 // .. c:function::
 CH_EXPORT
-void
-ch_chirp_set_always_encrypt();
-//
-//    Also encrypt local connections.
-
-// .. c:function::
-CH_EXPORT
-void
-ch_chirp_config_init(ch_config_t* config);
-//
-//    Initialize chirp configuration with defaults.
-//
-//    :param ch_config_t* config: Pointer to a chirp configuration.
-
-// .. c:function::
-CH_EXPORT
 ch_error_t
 ch_chirp_close_ts(ch_chirp_t* chirp);
 //
@@ -199,6 +183,15 @@ ch_chirp_close_ts(ch_chirp_t* chirp);
 //
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_config_init(ch_config_t* config);
+//
+//    Initialize chirp configuration with defaults.
+//
+//    :param ch_config_t* config: Pointer to a chirp configuration.
 
 // .. c:function::
 CH_EXPORT
@@ -257,9 +250,6 @@ ch_chirp_init(
 //    :rtype: ch_error_t
 //
 
-// Definitions
-// ===========
-
 // .. c:function::
 static
 ch_inline
@@ -276,6 +266,17 @@ ch_chirp_register_log_cb(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 {
     chirp->_log = log_cb;
 }
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
+//
+//    Register a callback for receiving a message.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_message_t* msg: The message which was received.
+//
 
 // .. c:function::
 CH_EXPORT
@@ -354,6 +355,13 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 // .. c:function::
 CH_EXPORT
 void
+ch_chirp_set_always_encrypt();
+//
+//    Also encrypt local connections.
+
+// .. c:function::
+CH_EXPORT
+void
 ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //
 //    Tells chirp to stop the uv-loop when closing (by setting the
@@ -366,19 +374,6 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
-// .. code-block:: cpp
-
-// .. c:function::
-CH_EXPORT
-void
-ch_chirp_register_recv_cb(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
-//
-//    Register a callback for receiving a message.
-//
-//    :param ch_chirp_t* chirp: Pointer to a chirp object.
-//    :param ch_message_t* msg: The message which was received.
-//
-// .. code-block:: cpp
-//
+//    .. code-block:: cpp
 
 #endif //ch_libchirp_chirp_h
