@@ -57,10 +57,6 @@ typedef enum {
 //
 //       Data has to be freed before releasing the buffer
 //
-//    .. c:member:: CH_MSG_QUEUED
-//
-//       The message is being queue
-//
 //    .. c:member:: CH_MSG_USED
 //
 //       The message is used by chirp
