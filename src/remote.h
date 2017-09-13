@@ -50,9 +50,13 @@
 //       connection to NULL has to initiate retry and notify the user. So
 //       callbacks can safely abort if conn is NULL.
 //
-//    .. c:member:: ch_message_t* msg_queue
+//    .. c:member:: ch_message_t* no_rack_msg_queue
 //
-//       The message queue, the head of this queue is the active message.
+//       Queue of messages that don't require an ACK.
+//
+//    .. c:member:: ch_message_t* rack_msg_queue
+//
+//       Queue of messages that require an ACK.
 //
 //    .. c:member:: ch_chirp_t* chirp
 //
@@ -86,8 +90,8 @@ struct ch_remote_s {
     int32_t          port;
     uint8_t          receipt[CH_ID_SIZE];
     ch_connection_t* conn;
-    ch_message_t*    no_ack_msg_queue;
-    ch_message_t*    ack_msg_queue;
+    ch_message_t*    no_rack_msg_queue;
+    ch_message_t*    rack_msg_queue;
     ch_message_t*    wait_ack_message;
     ch_chirp_t*      chirp;
     float            load;

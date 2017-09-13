@@ -871,9 +871,9 @@ ch_chirp_try_message_finish(
 // .. code-block:: cpp
 //
 {
-    ch_writer_t* writer = &conn->writer;
-    char flags = writer->flags;
-    if(flags & CH_WR_ACK_RECEIVED && flags & CH_WR_WRITE_DONE) {
+    char flags = msg->_flags;
+    if(flags & CH_MSG_ACK_RECEIVED && flags & CH_MSG_WRITE_DONE) {
+        msg->_flags &= ~(CH_MSG_ACK_RECEIVED | CH_MSG_WRITE_DONE);
 #   ifndef NDEBUG
         char id_str[33];
         ch_bytes_to_hex(
@@ -889,8 +889,6 @@ ch_chirp_try_message_finish(
             (void*) msg
         );
 #   endif
-        writer->flags = 0;
-        writer->msg = NULL;
         conn->remote->wait_ack_message = NULL;
         msg->_flags &= ~CH_MSG_USED;
         if(msg->_send_cb != NULL) {

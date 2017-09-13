@@ -345,9 +345,10 @@ _ch_wr_write_finish(
             !(msg->type & CH_MSG_REQ_ACK)
     )) {
         uv_timer_stop(&writer->send_timeout);
-        writer->flags |= CH_WR_ACK_RECEIVED; /* Emulate ACK */
+        msg->_flags |= CH_MSG_ACK_RECEIVED; /* Emulate ACK */
     }
-    writer->flags |= CH_WR_WRITE_DONE;
+    msg->_flags |= CH_MSG_WRITE_DONE;
+    writer->msg = NULL;
     ch_chirp_try_message_finish(
         chirp,
         conn,
@@ -518,8 +519,8 @@ ch_wr_process_queues(ch_remote_t* remote)
     ch_chirp_t* chirp = remote->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_connection_t* conn = remote->conn;
-    ch_message_t* msg = NULL;
     A(conn != NULL, "The connection must be set");
+    ch_message_t* msg = NULL;
     if(conn->writer.msg != NULL)
         return CH_BUSY;
     if(remote->flags & CH_RM_RETRY_WAITING_MSG) {
@@ -527,15 +528,16 @@ ch_wr_process_queues(ch_remote_t* remote)
             remote->wait_ack_message,
             "When retrying the wait_ack_message should be set"
         )
+        remote->flags  &= ~CH_RM_RETRY_WAITING_MSG;
         ch_wr_write(conn, remote->wait_ack_message);
         return CH_SUCCESS;
-    } else if(remote->no_ack_msg_queue != NULL) {
-        ch_msg_dequeue(&remote->no_ack_msg_queue, &msg);
+    } else if(remote->no_rack_msg_queue != NULL) {
+        ch_msg_dequeue(&remote->no_rack_msg_queue, &msg);
         ch_wr_write(conn, msg);
         return CH_SUCCESS;
-    } else if(remote->ack_msg_queue != NULL) {
+    } else if(remote->rack_msg_queue != NULL) {
         if(remote->wait_ack_message == NULL) {
-            ch_msg_dequeue(&remote->ack_msg_queue, &msg);
+            ch_msg_dequeue(&remote->rack_msg_queue, &msg);
             remote->wait_ack_message = msg;
             ch_wr_write(conn, msg);
             return CH_SUCCESS;
@@ -580,9 +582,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     }
 
     if(msg->type & CH_MSG_REQ_ACK)
-        ch_msg_enqueue(&remote->ack_msg_queue, msg);
+        ch_msg_enqueue(&remote->rack_msg_queue, msg);
     else
-        ch_msg_enqueue(&remote->no_ack_msg_queue, msg);
+        ch_msg_enqueue(&remote->no_rack_msg_queue, msg);
 
     conn = remote->conn;
     if(conn == NULL) {
@@ -675,7 +677,6 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
     ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
     msg->_conn = conn;
-    writer->flags = 0;
     A(writer->msg == NULL, "Message should be null on new write");
     writer->msg = msg;
     int tmp_err = uv_timer_start(

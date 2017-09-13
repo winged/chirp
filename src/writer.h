@@ -22,32 +22,6 @@
 // Declarations
 // ============
 //
-// .. c:type:: ch_wr_flags_t
-//
-//    Represents writer flags. Once the writer is done and the ack is received
-//    the message can be finished.
-//
-//    .. c:member:: CH_WR_ACK_RECEIVED
-//
-//       Writer has received ACK.
-//
-//    .. c:member:: CH_WR_WRITE_DONE
-//
-//       Write is done (last callback has been called).
-//
-//    .. c:member:: CH_WR_FAILURE
-//
-//       On failure we still want to finish the message, therefore failure is
-//       CH_WR_ACK_RECEIVED || CH_WR_WRITE_DONE.
-//
-// .. code-block:: cpp
-//
-typedef enum {
-    CH_WR_ACK_RECEIVED   = 1 << 0,
-    CH_WR_WRITE_DONE     = 1 << 1,
-    CH_WR_FAILURE        = CH_WR_ACK_RECEIVED | CH_WR_WRITE_DONE,
-} ch_wr_flags_t;
-
 // Direct declarations
 // -------------------
 //
@@ -86,17 +60,12 @@ typedef enum {
 //
 //       Pointer to the message that should be sent after handshake.
 //
-//    .. c:member:: char flags
-//
-//       Writer flags are CH_WR_ACK_RECEIVED, CH_WR_WRITE_DONE
-//
 // .. code-block:: cpp
 //
 typedef struct ch_writer_s {
     uv_timer_t         send_timeout;
     ch_message_t*      msg;
     ch_msg_message_t   net_msg;
-    char               flags;
 } ch_writer_t;
 
 // .. c:function::

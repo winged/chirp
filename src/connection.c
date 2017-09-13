@@ -726,7 +726,7 @@ ch_cn_shutdown(
     );
     uv_read_stop((uv_stream_t*) &conn->client);
     if(msg != NULL) {
-        writer->flags = CH_WR_FAILURE;
+        msg->_flags = CH_MSG_FAILURE;
         ch_chirp_try_message_finish(
             chirp,
             conn,

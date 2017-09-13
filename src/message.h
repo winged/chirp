@@ -61,12 +61,28 @@ typedef enum {
 //
 //       The message is used by chirp
 //
+//    .. c:member:: CH_MSG_ACK_RECEIVED
+//
+//       Writer has received ACK.
+//
+//    .. c:member:: CH_MSG_WRITE_DONE
+//
+//       Write is done (last callback has been called).
+//
+//    .. c:member:: CH_MSG_FAILURE
+//
+//       On failure we still want to finish the message, therefore failure is
+//       CH_MSG_ACK_RECEIVED || CH_MSG_WRITE_DONE.
+//
 // .. code-block:: cpp
 //
 typedef enum {
-    CH_MSG_FREE_HEADER = 1 << 0,
-    CH_MSG_FREE_DATA   = 1 << 1,
-    CH_MSG_USED        = 1 << 2,
+    CH_MSG_FREE_HEADER  = 1 << 0,
+    CH_MSG_FREE_DATA    = 1 << 1,
+    CH_MSG_USED         = 1 << 2,
+    CH_MSG_ACK_RECEIVED = 1 << 3,
+    CH_MSG_WRITE_DONE   = 1 << 4,
+    CH_MSG_FAILURE      = CH_MSG_ACK_RECEIVED | CH_MSG_WRITE_DONE,
 } ch_msg_flags_t;
 
 #endif //ch_msg_message_h

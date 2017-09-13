@@ -284,18 +284,17 @@ _ch_rd_handle_msg(
         );
         ch_wr_send(chirp, ack_msg, NULL);
     } else if(msg->type & CH_MSG_ACK) {
-        ch_writer_t* writer = &conn->writer;
+        ch_message_t* wam = conn->remote->wait_ack_message;
         if(memcmp(
-                conn->remote->wait_ack_message,
+                wam,
                 msg->identity,
                 CH_ID_SIZE
         ) == 0) {
-            ch_message_t* wmsg = writer->msg;
-            writer->flags |= CH_WR_ACK_RECEIVED;
+            wam->_flags |= CH_MSG_ACK_RECEIVED;
             ch_chirp_try_message_finish(
                 chirp,
                 conn,
-                wmsg,
+                wam,
                 CH_SUCCESS,
                 conn->load
             );
