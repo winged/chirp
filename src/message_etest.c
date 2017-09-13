@@ -154,6 +154,11 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
             "Echo received a message%s", ""
         )
     }
+    /* TODO use ch_chirp_release_recv_handler */
+    if(msg->_flags & CH_MSG_FREE_DATA)
+        ch_free(msg->data);
+    if(msg->_flags & CH_MSG_FREE_HEADER)
+        ch_free(msg->header);
     memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t)); // TODO remove
     /* TODO Send an echo message
      * ch_chirp_send(

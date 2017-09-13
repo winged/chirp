@@ -378,7 +378,7 @@ ch_en_start(ch_encryption_t* enc)
             "Could not set the dh-params %s",
             ichirp->config.DH_PARAMS_PEM
         );
-        ch_free(dh);
+        DH_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
@@ -394,7 +394,7 @@ ch_en_start(ch_encryption_t* enc)
             chirp,
             "Could not set the cipher list%s", ""
         );
-        ch_free(dh);
+        DH_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
@@ -402,9 +402,7 @@ ch_en_start(ch_encryption_t* enc)
         chirp,
         "Created SSL context for chirp%s", ""
     );
-#   ifdef CH_OPENSSL_10_API
-        ch_free(dh); // Well no comment, just use libressl
-#   endif
+    DH_free(dh);
     return CH_SUCCESS;
 }
 
