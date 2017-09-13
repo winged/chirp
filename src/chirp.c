@@ -898,6 +898,7 @@ ch_chirp_try_message_finish(
             cb(msg, status, load);
         }
     }
+    ch_wr_process_queues(conn->remote);
 }
 
 // .. c:function::
