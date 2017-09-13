@@ -145,6 +145,12 @@ ch_tst_plan_works(ch_buf* data)
             }
         }
     }
+    while(buffers != ch_tst_bf_nil_ptr) {
+        ch_tst_buffer_t* buffer = buffers;
+        ch_bf_release(&pool, buffer->handler->id);
+        ch_tst_bf_delete_node(&buffers, buffer);
+        ch_free(buffer);
+    }
     ch_bf_free(&pool);
     return ret;
 }
