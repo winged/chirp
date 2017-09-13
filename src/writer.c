@@ -251,71 +251,56 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
     }
 }
 
-
 // .. c:function::
 void
-ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
+_ch_wr_send_ts_cb(uv_async_t* handle)
 //    :noindex:
 //
-//    see: :c:func:`ch_wr_write`
+//    see: :c:func:`_ch_wr_send_ts_cb`
 //
 // .. code-block:: cpp
 //
 {
-    ch_chirp_t* chirp = conn->chirp;
+    ch_chirp_t* chirp = handle->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
-    msg->_conn = conn;
-    writer->flags = 0;
-    A(writer->msg == NULL, "Message should be null on new write");
-    writer->msg = msg;
-    int tmp_err = uv_timer_start(
-        &writer->send_timeout,
-        _ch_wr_write_timeout_cb,
-        ichirp->config.TIMEOUT * 1000,
-        0
-    );
-    if(tmp_err != CH_SUCCESS) {
-        EC(
-            chirp,
-            "Starting send timeout failed: %d. ", "ch_connection_t:%p",
-            tmp_err,
-            (void*) conn
-        );
-    }
+    uv_mutex_lock(&ichirp->send_ts_queue_lock);
 
-// Use the writers net message structure to write the actual message over
-// the connection. The net message structure is of type
-// :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
-// The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
-// type :c:type:`ch_message_t` and ``net_msg`` of type
-// :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
-// essentially only the identity, the serial number, the message type and
-// the lengths of the header and the data.
+    ch_message_t* cur;
+    ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
+    while(cur != NULL) {
+        ch_chirp_send(chirp, cur, cur->_send_cb);
+        ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
+    }
+    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
+}
+
+// .. c:function::
+static
+void
+_ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
+//    :noindex:
+//
+//    see: :c:func:`_ch_wr_write_chirp_header_cb`
 //
 // .. code-block:: cpp
 //
-    ch_msg_message_t* net_msg = &writer->net_msg;
-    memcpy(
-        net_msg->serial,
-        msg->serial,
-        sizeof(net_msg->serial)
-    );
-    memcpy(
-        net_msg->identity,
-        msg->identity,
-        sizeof(net_msg->identity)
-    );
-    net_msg->type         = msg->type;
-    net_msg->header_len   = htons(msg->header_len);
-    net_msg->data_len     = htonl(msg->data_len);
-    ch_cn_write(
-        conn,
-        net_msg,
-        sizeof(ch_msg_message_t),
-        _ch_wr_write_msg_header_cb
-    );
+{
+    ch_connection_t* conn = req->data;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_writer_t* writer = &conn->writer;
+    ch_message_t* msg = writer->msg;
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
+    if(msg->data_len > 0)
+        ch_cn_write(
+            conn,
+            msg->data,
+            msg->data_len,
+            _ch_wr_write_data_cb
+        );
+    else
+        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
@@ -371,34 +356,6 @@ _ch_wr_write_finish(
         CH_SUCCESS,
         conn->load
     );
-}
-
-// .. c:function::
-static
-void
-_ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
-//    :noindex:
-//
-//    see: :c:func:`_ch_wr_write_chirp_header_cb`
-//
-// .. code-block:: cpp
-//
-{
-    ch_connection_t* conn = req->data;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_writer_t* writer = &conn->writer;
-    ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->data_len > 0)
-        ch_cn_write(
-            conn,
-            msg->data,
-            msg->data_len,
-            _ch_wr_write_data_cb
-        );
-    else
-        _ch_wr_write_finish(chirp, writer, conn);
 }
 
 // .. c:function::
@@ -461,30 +418,6 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle)
 }
 
 // .. c:function::
-void
-_ch_wr_send_ts_cb(uv_async_t* handle)
-//    :noindex:
-//
-//    see: :c:func:`_ch_wr_send_ts_cb`
-//
-// .. code-block:: cpp
-//
-{
-    ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    uv_mutex_lock(&ichirp->send_ts_queue_lock);
-
-    ch_message_t* cur;
-    ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
-    while(cur != NULL) {
-        ch_chirp_send(chirp, cur, cur->_send_cb);
-        ch_mq_dequeue(&ichirp->send_ts_queue, &cur);
-    }
-    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
-}
-
-// .. c:function::
 CH_EXPORT
 int
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
@@ -499,6 +432,78 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     if(chirp->_->config.ACKNOWLEDGE != 0)
         msg->type     = CH_MSG_REQ_ACK;
     return ch_wr_send(chirp, msg, send_cb);
+}
+
+// .. c:function::
+CH_EXPORT
+int
+ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_send_ts`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    uv_mutex_lock(&ichirp->send_ts_queue_lock);
+    if(msg->_flags & CH_MSG_USED) {
+        EC(
+            chirp,
+            "Message already used. ", "ch_message_t:%p",
+            (void*) msg
+        );
+        return CH_USED;
+    }
+    msg->_send_cb = send_cb;
+    ch_mq_enqueue(&ichirp->send_ts_queue, msg);
+    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
+    uv_async_send(&ichirp->send_ts);
+    return CH_SUCCESS;
+}
+
+// .. c:function::
+void
+ch_wr_free(ch_writer_t* writer)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_free`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = writer->send_timeout.data;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    uv_close((uv_handle_t*) &writer->send_timeout, ch_cn_close_cb);
+    conn->shutdown_tasks += 1;
+}
+
+// .. c:function::
+void
+ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
+//    :noindex:
+//
+//    see: :c:func:`ch_wr_init`
+//
+// .. code-block:: cpp
+//
+{
+    int tmp_err;
+
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    tmp_err = uv_timer_init(ichirp->loop, &writer->send_timeout);
+    if(tmp_err != CH_SUCCESS) {
+        E(
+            chirp,
+            "Initializing send timeout failed: %d",
+            tmp_err
+        );
+    }
+    writer->send_timeout.data = conn;
 }
 
 // .. c:function::
@@ -609,74 +614,69 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     return CH_SUCCESS;
 }
 
+
 // .. c:function::
-CH_EXPORT
-int
-ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
+void
+ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_send_ts`
+//    see: :c:func:`ch_wr_write`
 //
 // .. code-block:: cpp
 //
 {
+    ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
-    uv_mutex_lock(&ichirp->send_ts_queue_lock);
-    if(msg->_flags & CH_MSG_USED) {
+    msg->_conn = conn;
+    writer->flags = 0;
+    A(writer->msg == NULL, "Message should be null on new write");
+    writer->msg = msg;
+    int tmp_err = uv_timer_start(
+        &writer->send_timeout,
+        _ch_wr_write_timeout_cb,
+        ichirp->config.TIMEOUT * 1000,
+        0
+    );
+    if(tmp_err != CH_SUCCESS) {
         EC(
             chirp,
-            "Message already used. ", "ch_message_t:%p",
-            (void*) msg
+            "Starting send timeout failed: %d. ", "ch_connection_t:%p",
+            tmp_err,
+            (void*) conn
         );
-        return CH_USED;
     }
-    msg->_send_cb = send_cb;
-    ch_mq_enqueue(&ichirp->send_ts_queue, msg);
-    uv_mutex_unlock(&ichirp->send_ts_queue_lock);
-    uv_async_send(&ichirp->send_ts);
-    return CH_SUCCESS;
-}
 
-// .. c:function::
-void
-ch_wr_free(ch_writer_t* writer)
-//    :noindex:
-//
-//    see: :c:func:`ch_wr_free`
+// Use the writers net message structure to write the actual message over
+// the connection. The net message structure is of type
+// :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
+// The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
+// type :c:type:`ch_message_t` and ``net_msg`` of type
+// :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
+// essentially only the identity, the serial number, the message type and
+// the lengths of the header and the data.
 //
 // .. code-block:: cpp
 //
-{
-    ch_connection_t* conn = writer->send_timeout.data;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    uv_close((uv_handle_t*) &writer->send_timeout, ch_cn_close_cb);
-    conn->shutdown_tasks += 1;
-}
-
-// .. c:function::
-void
-ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
-//    :noindex:
-//
-//    see: :c:func:`ch_wr_init`
-//
-// .. code-block:: cpp
-//
-{
-    int tmp_err;
-
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    tmp_err = uv_timer_init(ichirp->loop, &writer->send_timeout);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Initializing send timeout failed: %d",
-            tmp_err
-        );
-    }
-    writer->send_timeout.data = conn;
+    ch_msg_message_t* net_msg = &writer->net_msg;
+    memcpy(
+        net_msg->serial,
+        msg->serial,
+        sizeof(net_msg->serial)
+    );
+    memcpy(
+        net_msg->identity,
+        msg->identity,
+        sizeof(net_msg->identity)
+    );
+    net_msg->type         = msg->type;
+    net_msg->header_len   = htons(msg->header_len);
+    net_msg->data_len     = htonl(msg->data_len);
+    ch_cn_write(
+        conn,
+        net_msg,
+        sizeof(ch_msg_message_t),
+        _ch_wr_write_msg_header_cb
+    );
 }
