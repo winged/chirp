@@ -147,7 +147,6 @@ _ch_rd_handshake(
 // .. code-block:: cpp
 //
 {
-    int tmp_err;
     ch_connection_t* old_conn = NULL;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
@@ -180,7 +179,7 @@ _ch_rd_handshake(
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(ch_remote_t));
         *remote = search_remote;
-        tmp_err = ch_rm_insert(&protocol->remotes, remote);
+        int tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
     }
     conn->remote = remote;
@@ -346,7 +345,7 @@ _ch_rd_handle_msg(
             chirp,
             "Read message with id: %s, serial:%s\n"
             "                          "
-            "from %s:%d type:%d data_len:%d. ", "ch_connection_t:%p",
+            "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
             id,
             serial,
             addr.data,

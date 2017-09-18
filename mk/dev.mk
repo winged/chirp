@@ -83,6 +83,11 @@ etests: all
 
 cppcheck: headers  ## Static analysis
 	cppcheck -v \
+		--enable=style,performance,portability \
+		--suppress=unusedFunction \
+		--suppress=*:*mpack_test.? \
+		--suppress=*:*sds_test.? \
+		--config-exclude="$(BASE)/src/mpack" \
 		--error-exitcode=1 \
 		--std=c99 \
 		--inline-suppr \

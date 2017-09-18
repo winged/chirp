@@ -163,7 +163,7 @@ qs_stack_bind_decl_m(
 // .. code-block:: cpp
 //
 #define ch_qc_args(type, n, max_class) \
-    ((* (type*) (data + n * sizeof(max_class))))
+    ((* (type*) ((void*) (data + n * sizeof(max_class)))))
 
 // .. c:macro:: ch_qc_for_all
 //
@@ -208,7 +208,7 @@ qs_stack_bind_decl_m(
 // .. code-block:: cpp
 //
 #define ch_qc_return(type, value) \
-    ((* (type*) data) = value)
+    ((* (type*) (void*) data) = value)
 
 // .. c:macro:: ch_qc_tgen_array
 //

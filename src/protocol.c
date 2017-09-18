@@ -74,9 +74,8 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     /* We may not change the data-structure during iteration */
-    ch_remote_t* remote;
     while(protocol->remotes != ch_rm_nil_ptr) {
-        remote = protocol->remotes;
+        ch_remote_t* remote = protocol->remotes;
         if(remote->conn != NULL)
             ch_cn_shutdown(remote->conn, CH_SHUTDOWN);
         ch_rm_delete_node(&protocol->remotes, remote);

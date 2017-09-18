@@ -267,7 +267,7 @@ __ch__silenence(void)
                 );
                 __ch_v_xbuf_ += __ch_v_ret_;
                 __ch_v_siz_ -= __ch_v_ret_;
-                __ch_v_ret_ = snprintf(
+                snprintf(
                     __ch_v_xbuf_,
                     __ch_v_siz_,
                     __VA_ARGS__

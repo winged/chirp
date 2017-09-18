@@ -146,8 +146,8 @@ ch_tst_gen_message(struct ch_chirp_s* chirp)
         data_count,
         &message->data
     );
-    int ipv6 = ch_qc_tgen_bool();
-    ipv6 = 0; // TODO remove
+    //int ipv6 = ch_qc_tgen_bool();
+    int ipv6 = 0; // TODO remove
     if(ipv6)
         ch_msg_set_address(
             message,

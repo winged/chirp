@@ -540,15 +540,15 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
     V(
         chirp,
         conf->BUFFER_SIZE >= CH_MIN_BUFFER_SIZE || conf->BUFFER_SIZE == 0,
-        "Config: buffer size must be > %d (%d)",
+        "Config: buffer size must be > %d (%u)",
         CH_MIN_BUFFER_SIZE,
         conf->BUFFER_SIZE
     );
     V(
         chirp,
         conf->BUFFER_SIZE >= sizeof(ch_message_t) || conf->BUFFER_SIZE == 0,
-        "Config: buffer size must be > %d (%d)",
-        (int) sizeof(ch_message_t),
+        "Config: buffer size must be > %lu (%u)",
+        (unsigned long) sizeof(ch_message_t),
         conf->BUFFER_SIZE
     );
     V(
@@ -556,8 +556,8 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
         conf->BUFFER_SIZE >= sizeof(
             ch_rd_handshake_t
         ) || conf->BUFFER_SIZE == 0,
-        "Config: buffer size must be > %d (%d)",
-        (int) sizeof(ch_rd_handshake_t),
+        "Config: buffer size must be > %lu (%u)",
+        (unsigned long) sizeof(ch_rd_handshake_t),
         conf->BUFFER_SIZE
     );
     return CH_SUCCESS;

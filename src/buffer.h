@@ -168,10 +168,10 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
 // .. code-block:: cpp
 //
 {
-    int free;
     *last = 0;
     ch_bf_handler_t* handler_buf;
     if(pool->used_buffers < pool->max_buffers) {
+        int free;
         pool->used_buffers += 1;
         if(pool->used_buffers == pool->max_buffers)
             *last = 1;

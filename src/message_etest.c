@@ -280,7 +280,6 @@ print_help(struct option long_options[])
 int
 main(int argc, char *argv[])
 {
-    int c;
     int option_index;
     static struct option long_options[] = {
         {"always-encrypt", no_argument,       0, CH_TST_ALWAYS_ENCRYPT },
@@ -291,7 +290,7 @@ main(int argc, char *argv[])
         {NULL,             0,                 0, 0 }
     };
     for(;;) {
-        c = getopt_long(
+        int c = getopt_long(
             argc,
             argv,
             "abc:d:012",

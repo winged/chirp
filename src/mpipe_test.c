@@ -6,9 +6,8 @@ int
 writeall(int fd, void *buf, size_t n)
 {
     char *buffer = buf;
-    ssize_t r;
     while(n) {
-        r = write(fd, buffer, n);
+        ssize_t r = write(fd, buffer, n);
         if(r < 0)
             return -1;
         buffer += (size_t)r;
@@ -22,9 +21,8 @@ readall(int fd, void *buf, size_t n)
 {
     char *buffer = buf;
     size_t ptr = 0;
-    ssize_t r;
     for(;;) {
-        r = read(fd, buffer + ptr, n - ptr);
+        ssize_t r = read(fd, buffer + ptr, n - ptr);
         if(r < 0)
             return -1;
         if(r == 0)
@@ -115,11 +113,10 @@ int
 mpp_runner(mpp_handler_cb_t func)
 {
     mpp_context_t context;
-    mpack_node_t* node;
     mpack_writer_t* writer;
     mpp_init_context(&context);
     for(;;) {
-        node = mpp_read_message(&context);
+        mpack_node_t* node = mpp_read_message(&context);
         if(node == NULL)
             return 9;
         int function = mpack_node_int(
