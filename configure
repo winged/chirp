@@ -286,6 +286,36 @@ OSX:            brew install abi-compliance-checker
 """)
         else:
             print("ok")
+        sys.stdout.write("Checking for hypothesis: ")
+        try:
+            import hypothesis  # noqa
+            print("ok")
+        except ImportError:
+            print("""hypothesis was not found.
+
+Please install hypothesis:
+
+Alpine:         apk add py3-hypothesis
+Debian-based:   apt install python3-hypothesis
+Redhat-based:   yum install python3-hypothesis
+Arch:           pacman -S python-hypothesis
+OSX:            brew install python3; pip3 install hypothesis
+""")
+        sys.stdout.write("Checking for pytest: ")
+        try:
+            import pytest  # noqa
+            print("ok")
+        except ImportError:
+            print("""pytest was not found.
+
+Please install pytest:
+
+Alpine:         apk add py3-pytest
+Debian-based:   apt install python3-pytest
+Redhat-based:   yum install python3-pytest
+Arch:           pacman -S python-pytest
+OSX:            brew install python3; pip3 install pytest
+""")
 
 
 def copy_files(args):
