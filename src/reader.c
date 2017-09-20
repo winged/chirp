@@ -403,8 +403,8 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     ch_bf_handler_t* handler;
     ch_buf* buf = buffer; /* Don't do pointer arithmetics on void* */
 
-    /* Bytes handled is used for the case when multiple data streams are
-     * coming in and the reader switches between various states as for
+    /* Bytes handled is used when multiple writes (of the remote) come in a
+     * single read and the reader switches between various states as for
      * example CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER. */
     size_t bytes_handled = 0;
 
