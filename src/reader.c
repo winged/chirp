@@ -265,15 +265,11 @@ _ch_rd_handle_msg(
         ack_msg->chirp      = chirp;
         ack_msg->port       = msg->port;
         ack_msg->_conn      = msg->_conn;
-        ch_random_ints_as_bytes(
-            ack_msg->serial,
-            sizeof(ack_msg->serial)
-        );
         ch_wr_send(chirp, ack_msg, NULL);
     } else if(msg->type & CH_MSG_ACK) {
         ch_message_t* wam = conn->remote->wait_ack_message;
         if(memcmp(
-                wam,
+                wam->identity,
                 msg->identity,
                 CH_ID_SIZE
         ) == 0) {
@@ -292,6 +288,8 @@ _ch_rd_handle_msg(
                 "ch_connection_t:%p",
                 (void*) conn
             );
+            /* shutting down because of bad ack is probably overreacted, but we
+             * keep it for the moment */
             ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
             return;
         }
