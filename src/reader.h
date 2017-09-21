@@ -112,9 +112,9 @@ typedef struct ch_rd_handshake_s {
 //       :c:member:`ch_rd_read.read` bytes to read but not enough bytes are
 //       being delivered over the connection :c:member:`ch_rd_read.conn`.
 //
-//    .. c:member:: int last
+//    .. c:member:: int last_handler
 //
-//       The last buffer was used (bool)
+//       The last handler (buffer) was used (bool)
 //
 // .. code-block:: cpp
 //
@@ -124,7 +124,7 @@ typedef struct ch_reader_s {
     ch_bf_handler_t*  handler;
     ch_message_t      ack_msg;
     size_t            bytes_read;
-    int               last;
+    int               last_handler;
 } ch_reader_t;
 
 // .. c:function::

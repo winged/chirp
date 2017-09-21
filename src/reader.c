@@ -251,8 +251,7 @@ _ch_rd_handle_msg(
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     /* Pause reading on last handler. */
-    // TODO start reader again
-    if(reader->last) {
+    if(reader->last_handler) {
         uv_read_stop((uv_stream_t*) &conn->client);
     }
     reader->state = CH_RD_WAIT;
@@ -450,7 +449,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 if(reader->handler == NULL) {
                     reader->handler = ch_bf_acquire(
                         &ichirp->pool,
-                        &reader->last
+                        &reader->last_handler
                     );
                     reader->handler->msg._conn = conn;
                 }
@@ -576,14 +575,14 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
     if(msg->_flags & CH_MSG_FREE_HEADER)
         ch_free(msg->header);
     ch_bf_release(&ichirp->pool, msg->_handler);
-    if(conn->reader.last) {
+    if(conn->reader.last_handler) {
         /* If the reader was stopped start it again */
         uv_read_start(
             (uv_stream_t*) &conn->client,
             ch_cn_read_alloc_cb,
             ch_pr_read_data_cb
         ); // TODO test this
-        conn->reader.last = 0;
+        conn->reader.last_handler = 0;
     }
 }
 
