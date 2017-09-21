@@ -25,11 +25,17 @@ doc: doc_files
 	@ln -s $(BUILD)/src $(BASE)/doc/src
 	@mkdir -p $(BASE)/doc/_build/html
 ifeq ($(VERBOSE),True)
-	make -C $(BASE)/doc html 2>&1 | tee $(DTMP)/doc.out
+	make -C $(BASE)/doc html 2>&1 \
+		| grep -v intersphinx \
+		| grep -v "ighlighting skipped" \
+		| tee $(DTMP)/doc.out
 	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
 else
 	@echo DOC
-	@make -C $(BASE)/doc html 2>&1 | grep -v intersphinx | tee $(DTMP)/doc.out > /dev/null
+	@make -C $(BASE)/doc html 2>&1 \
+		| grep -v intersphinx \
+		| grep -v "ighlighting skipped" \
+		| tee $(DTMP)/doc.out > /dev/null
 	@! grep -E "WARNING|ERROR" $(DTMP)/doc.out
 endif
 else
