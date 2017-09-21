@@ -256,6 +256,7 @@ _ch_rd_handle_msg(
         uv_read_stop((uv_stream_t*) &conn->client);
     }
     reader->state = CH_RD_WAIT;
+    reader->handler = NULL;
 
     if(msg->type & CH_MSG_REQ_ACK) {
         /* Send ack */
@@ -317,7 +318,8 @@ _ch_rd_handle_msg(
                 "No receiving callback function registered%s", ""
             );
         }
-    }
+    } else
+        ch_bf_release(&ichirp->pool, msg->_handler);
 
 #   ifndef NDEBUG
         ch_text_address_t addr;
@@ -355,10 +357,6 @@ _ch_rd_handle_msg(
             (void*) conn
         );
 #   endif
-
-    /* TODO release to done */
-    ch_bf_release(&ichirp->pool, msg->_handler);
-
 }
 
 // .. c:function::
@@ -449,11 +447,12 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 break;
             case CH_RD_WAIT:
                 /* TODO add read timeout (dos protection) */
-                if(reader->bytes_read == 0) {
+                if(reader->handler == NULL) {
                     reader->handler = ch_bf_acquire(
                         &ichirp->pool,
                         &reader->last
                     );
+                    reader->handler->msg._conn = conn;
                 }
                 handler = reader->handler;
                 msg     = &handler->msg;
@@ -558,7 +557,36 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     } while(bytes_handled < read);
 }
 
-// .. c:function::
+CH_EXPORT
+void
+ch_chirp_release_recv_handler(ch_message_t* msg)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_release_recv_handler`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = msg->_conn;
+    ch_chirp_t* chirp = conn->chirp;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    if(msg->_flags & CH_MSG_FREE_DATA)
+        ch_free(msg->data);
+    if(msg->_flags & CH_MSG_FREE_HEADER)
+        ch_free(msg->header);
+    ch_bf_release(&ichirp->pool, msg->_handler);
+    if(conn->reader.last) {
+        /* If the reader was stopped start it again */
+        uv_read_start(
+            (uv_stream_t*) &conn->client,
+            ch_cn_read_alloc_cb,
+            ch_pr_read_data_cb
+        ); // TODO test this
+        conn->reader.last = 0;
+    }
+}
+
 static
 ch_inline
 int

@@ -15,7 +15,7 @@
 //
 // .. code-block:: cpp
 //
-#include "libchirp/message.h"
+#include "message.h"
 #include "util.h"
 #include "config.h"
 
@@ -184,6 +184,7 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
         handler_buf->used = 1;
         memset(&handler_buf->msg, 0, sizeof(handler_buf->msg));
         handler_buf->msg._handler = handler_buf->id;
+        handler_buf->msg._flags = CH_MSG_IS_HANDLER;
         return handler_buf;
     }
     return NULL;
@@ -224,6 +225,18 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
             __LINE__,
             (void*) pool
         );
+        return;
+    }
+    if(!(handler_buf->msg._flags & CH_MSG_IS_HANDLER)) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Release of non handler message. "
+            "ch_buffer_pool_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) pool
+        );
+        return;
     }
     pool->used_buffers -= 1;
     /* Release the buffer. */

@@ -614,7 +614,6 @@ ch_cn_read_alloc_cb(
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    // ichirp->config.BUFFER_SIZE = 40; // TODO remove
     A(!(conn->flags & CH_CN_BUF_UV_USED), "UV buffer still used");
 #   ifndef NDEBUG
         conn->flags |= CH_CN_BUF_UV_USED;

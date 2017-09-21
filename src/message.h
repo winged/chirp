@@ -74,6 +74,11 @@ typedef enum {
 //       On failure we still want to finish the message, therefore failure is
 //       CH_MSG_ACK_RECEIVED || CH_MSG_WRITE_DONE.
 //
+//    .. c:member:: CH_MSG_IS_HANDLER
+//
+//       The message is handler. Used to check that the user only releases
+//       handler messages.
+//
 // .. code-block:: cpp
 //
 typedef enum {
@@ -83,6 +88,7 @@ typedef enum {
     CH_MSG_ACK_RECEIVED = 1 << 3,
     CH_MSG_WRITE_DONE   = 1 << 4,
     CH_MSG_FAILURE      = CH_MSG_ACK_RECEIVED | CH_MSG_WRITE_DONE,
+    CH_MSG_IS_HANDLER   = 1 << 5,
 } ch_msg_flags_t;
 
 #endif //ch_msg_message_h
