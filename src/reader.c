@@ -274,6 +274,7 @@ _ch_rd_handle_msg(
                 CH_ID_SIZE
         ) == 0) {
             wam->_flags |= CH_MSG_ACK_RECEIVED;
+            conn->remote->wait_ack_message = NULL;
             ch_chirp_try_message_finish(
                 chirp,
                 conn,

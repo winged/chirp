@@ -884,7 +884,6 @@ ch_chirp_try_message_finish(
 #   else
     (void)(chirp);
 #   endif
-        conn->remote->wait_ack_message = NULL;
         msg->_flags &= ~CH_MSG_USED;
         if(msg->_send_cb != NULL) {
             /* The user may free the message in the cb */
