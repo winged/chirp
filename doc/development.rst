@@ -45,7 +45,7 @@ Test code
 
    src/message_test.h.rst
    src/message_test.c.rst
-   src/quickcheck_test.h.rst
+   src/quickcheck_test.rg.h.rst
    src/quickcheck_test.c.rst
    src/sds_test.h.rst
    src/sds_test.c.rst

@@ -14,7 +14,7 @@
 // ================
 //
 // .. code-block:: cpp
-//
+
 #include "common.h"
 #include "qs.h"
 #include "rbtree.h"
@@ -23,7 +23,7 @@
 // ===============
 //
 // .. code-block:: cpp
-//
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -76,6 +76,7 @@ qs_stack_bind_decl_m(
 // Macros
 // ------
 //
+// .. code-block:: cpp
 
 #begindef ch_qc_tgen_array_m(item, typed, gen_function, type)
 {
