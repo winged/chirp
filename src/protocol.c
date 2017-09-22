@@ -214,6 +214,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         )) {
             conn->flags |= CH_CN_ENCRYPTED;
         }
+        conn->flags |= CH_CN_CONNECTED;
         ch_pr_conn_start(chirp, conn, client, 1);
     }
     else {

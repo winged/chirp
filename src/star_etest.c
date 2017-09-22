@@ -49,8 +49,7 @@ ch_tst_sent_cb(ch_message_t* msg, int status, float load)
                 ch_tst_sent_cb
         );
     else
-        //ch_chirp_close_ts(msg->chirp);
-        exit(0);
+        ch_chirp_close_ts(msg->chirp);
 }
 
 static

@@ -181,6 +181,7 @@ _ch_rd_handshake(
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection */
     old_conn = remote->conn;
+    remote->conn = conn;
     if(old_conn != NULL) {
         /* If we found the current connection everything is ok */
         if(conn != old_conn) {
@@ -303,11 +304,13 @@ _ch_rd_handle_msg(
                 chirp,
                 "No receiving callback function registered%s", ""
             );
+            ch_bf_release(&ichirp->pool, msg->_handler);
         }
     } else
         ch_bf_release(&ichirp->pool, msg->_handler);
 
 #   ifndef NDEBUG
+    {
         ch_text_address_t addr;
         char id[33];
         char serial[33];
@@ -331,7 +334,9 @@ _ch_rd_handle_msg(
         );
         LC(
             chirp,
-            "Read message with id: %s, serial:%s\n"
+            "Read message with id: %s\n"
+            "                          "
+            "serial:%s\n"
             "                          "
             "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
             id,
@@ -342,6 +347,7 @@ _ch_rd_handle_msg(
             msg->data_len,
             (void*) conn
         );
+    }
 #   endif
 }
 

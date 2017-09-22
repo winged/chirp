@@ -88,5 +88,5 @@ ch_rm_init_from_conn(
         &conn->address,
         CH_IP_ADDR_SIZE
     );
-    remote->conn = conn;
+    remote->conn = NULL;
 }

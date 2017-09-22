@@ -233,6 +233,7 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             msg->port,
             (void*) conn
         );
+        conn->flags |= CH_CN_CONNECTED;
         /* Here we join the code called on accept. */
         ch_pr_conn_start(chirp, conn, &conn->client, 0);
     } else {
@@ -344,9 +345,9 @@ _ch_wr_write_finish(
             ichirp->config.ACKNOWLEDGE == 0 ||
             !(msg->type & CH_MSG_REQ_ACK)
     )) {
-        uv_timer_stop(&writer->send_timeout);
         msg->_flags |= CH_MSG_ACK_RECEIVED; /* Emulate ACK */
     }
+    uv_timer_stop(&writer->send_timeout);
     msg->_flags |= CH_MSG_WRITE_DONE;
     writer->msg = NULL;
     ch_chirp_try_message_finish(
@@ -430,7 +431,9 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(chirp->_->config.ACKNOWLEDGE != 0)
-        msg->type     = CH_MSG_REQ_ACK;
+        msg->type = CH_MSG_REQ_ACK;
+    else
+        msg->type = 0;
     return ch_wr_send(chirp, msg, send_cb);
 }
 
@@ -521,6 +524,8 @@ ch_wr_process_queues(ch_remote_t* remote)
     ch_connection_t* conn = remote->conn;
     A(conn != NULL, "The connection must be set");
     ch_message_t* msg = NULL;
+    if(!(conn->flags & CH_CN_CONNECTED))
+        return CH_BUSY;
     if(conn->writer.msg != NULL)
         return CH_BUSY;
     if(remote->flags & CH_RM_RETRY_WAITING_MSG) {
@@ -569,7 +574,12 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_remote_t*     remote;
     ch_connection_t* conn;
     msg->_send_cb = send_cb;
-    msg->_flags  |= CH_MSG_USED;
+    A(!(msg->_flags & CH_MSG_USED), "Message should not be used");
+    A(!(
+        (msg->_flags & CH_MSG_ACK_RECEIVED) ||
+        (msg->_flags & CH_MSG_WRITE_DONE)
+    ), "No write state should be set");
+    msg->_flags |= CH_MSG_USED;
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
 

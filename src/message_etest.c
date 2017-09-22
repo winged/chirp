@@ -70,7 +70,6 @@ MINMAX_FUNCS(int)
 static int _ch_tst_msg_send_count = 0;
 static ch_message_t _ch_tst_msg;
 static int _msg_echo_count = 0;
-static ch_message_t _ch_tst_msg_echo;
 static char _data[] = "hello";
 static int _ch_tst_buffer_size = 0;
 static float _ch_tst_timeout = 5.0;
@@ -109,6 +108,7 @@ _ch_tst_echo_cb(ch_message_t* msg, int status, float load)
     (void)(load);
     (void)(msg);
     _msg_echo_count += 1;
+    ch_chirp_release_recv_handler(msg);
 }
 
 static
@@ -122,6 +122,11 @@ _ch_tst_sent_cb(ch_message_t* msg, int status, float load)
     ch_qc_free_mem();
     _ch_tst_msg_send_count += 1;
     if(_ch_tst_msg_send_count < _ch_tst_message_count) {
+        L(
+            chirp,
+            "Message to send: %d",
+            _ch_tst_message_count -_ch_tst_msg_send_count
+        );
         _ch_tst_send_message(chirp);
     } else {
         /* TODO: Insted of sleep, actually wait for the last echoed message to
@@ -154,15 +159,11 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
             "Echo received a message%s", ""
         );
     }
-    memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t)); // TODO remove
-    ch_chirp_release_recv_handler(msg);
-    /* TODO Send an echo message
-     * ch_chirp_send(
-     *         chirp,
-     *         &_ch_tst_msg_echo,
-     *         _ch_tst_echo_cb
-     * );
-     */
+    ch_chirp_send(
+            chirp,
+            msg,
+            _ch_tst_echo_cb
+    );
 }
 
 static

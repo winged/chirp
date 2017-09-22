@@ -867,23 +867,47 @@ ch_chirp_try_message_finish(
     char flags = msg->_flags;
     if(flags & CH_MSG_ACK_RECEIVED && flags & CH_MSG_WRITE_DONE) {
         msg->_flags &= ~(CH_MSG_ACK_RECEIVED | CH_MSG_WRITE_DONE);
-#   ifndef NDEBUG
-        char id_str[33];
-        ch_bytes_to_hex(
-            msg->serial,
-            sizeof(msg->serial),
-            id_str,
-            sizeof(id_str)
-        );
-        LC(
-            chirp,
-            "Finished message: %s. ", "ch_message_t:%p",
-            id_str,
-            (void*) msg
-        );
-#   else
-    (void)(chirp);
-#   endif
+#       ifndef NDEBUG
+        {
+            char id[33];
+            char serial[33];
+            ch_bytes_to_hex(
+                msg->identity,
+                sizeof(msg->identity),
+                id,
+                sizeof(id)
+            );
+            ch_bytes_to_hex(
+                msg->serial,
+                sizeof(msg->serial),
+                serial,
+                sizeof(serial)
+            );
+            if(msg->type & CH_MSG_ACK) {
+                LC(
+                    chirp,
+                    "Sent ACK message id: %s\n"
+                    "                          "
+                    "serial: %s. ", "ch_message_t:%p",
+                    id,
+                    serial,
+                    (void*) msg
+                );
+            } else {
+                LC(
+                    chirp,
+                    "Finished message id: %s\n"
+                    "                          "
+                    "serial: %s. ", "ch_message_t:%p",
+                    id,
+                    serial,
+                    (void*) msg
+                );
+            }
+        }
+#       else
+            (void)(chirp);
+#       endif
         msg->_flags &= ~CH_MSG_USED;
         if(msg->_send_cb != NULL) {
             /* The user may free the message in the cb */
