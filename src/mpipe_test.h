@@ -1,5 +1,5 @@
 // =========
-// mpipe 0.3
+// mpipe 0.4
 // =========
 //
 // Send message-packs over a pipe. Meant as a very simple RPC. It is compatible
@@ -44,7 +44,7 @@
 // for that.
 //
 // If you set the environment variable MPP_MC to True. mpipe.open will run
-// valgrind --tool=memcheck.
+// valgrind --tool=memcheck --leak-check=full --error-exitcode=1.
 //
 // Development
 // ===========
