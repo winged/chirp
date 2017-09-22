@@ -82,11 +82,25 @@ etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(MEMCHECK) $(BUILD)/src/quickcheck_etest
-	$(BUILD)/src/message_etest
-	$(MEMCHECK) $(BUILD)/src/message_etest
-	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt
-	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --message-count 50
-	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --buffer-size 1024
+	$(BUILD)/src/message_etest \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			--always-encrypt \
+			--message-count 50 \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			--always-encrypt \
+			--buffer-size 1024 \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
 
 pytest:
 	pytest $(BASE)/src
