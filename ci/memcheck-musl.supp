@@ -39,6 +39,30 @@
    obj:/lib/ld-musl-x86_64.so.1
 }
 {
+   musl internal calloc 03
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/ld-musl-x86_64.so.1
+   fun:__dls3
+   obj:/lib/ld-musl-x86_64.so.1
+}
+{
+   musl internal calloc 04
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/ld-musl-x86_64.so.1
+   obj:/lib/ld-musl-x86_64.so.1
+}
+{
+   musl internal malloc 01
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:pthread_atfork
+}
+{
    reachable libressl leak 01
    Memcheck:Leak
    match-leak-kinds: reachable
