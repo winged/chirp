@@ -22,8 +22,7 @@ apk upgrade
 apk add \
     sudo \
     alpine-sdk \
-    py3-sphinx \
-    py3-sphinx_rtd_theme \
+    python3 \
     graphviz \
     cppcheck \
     libuv-dev \
@@ -31,7 +30,12 @@ apk add \
     valgrind \
     clang \
     $ITLS
-pip3 install pytest hypothesis u-msgpack-python
+pip3 install \
+    pytest \
+    hypothesis \
+    u-msgpack-python \
+    sphinx \
+    sphinx_rtd_theme
 if [ "$TESTSHELL" = "True" ]; then
     apk add gdb
 fi
