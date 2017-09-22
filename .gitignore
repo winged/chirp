@@ -1,5 +1,7 @@
 /Makefile
 /build/*
+/.cache
+/src/__pycache__/
 !/build/abi_dumps
 /build/abi_dumps/chirp/*
 !/build/abi_dumps/chirp/chirp_0.0.0.abi.tar.gz

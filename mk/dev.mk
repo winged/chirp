@@ -42,7 +42,7 @@ LDFLAGS += \
 	-lcrypto
 
 ifeq ($(IGNORE_COV),True)
-test: etests cppcheck check-abi todo  ## Test everything
+test: etests pytest cppcheck check-abi todo  ## Test everything
 	@echo Note: Coverage disabled or not supported
 else
 CFLAGS += --coverage
@@ -72,14 +72,15 @@ $(BASE)/build/abi_dumps/chirp/$(VERSION)/ABI.dump: libchirp.so
 
 etests: all
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
-	$(BUILD)/src/quickcheck_etest
-	$(BUILD)/src/buffer_etest
-	$(MEMCHECK) $(BUILD)/src/buffer_etest
 	$(BUILD)/src/message_etest
 	$(MEMCHECK) $(BUILD)/src/message_etest
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --message-count 50
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt --buffer-size 1024
+
+pytest:
+	pytest $(BASE)/src
+	MPP_MC=True pytest $(BASE)/src
 
 cppcheck: headers  ## Static analysis
 	cppcheck -v \

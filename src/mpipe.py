@@ -13,22 +13,25 @@ from subprocess import Popen, PIPE, TimeoutExpired
 import sys
 import os
 import time
-import umsgpack
+try:
+    import umsgpack
+except ImportError:
+    import msgpack as umsgpack
 from contextlib import contextmanager
 
 
 @contextmanager
-def open_and_close(args : list, rpc_mode : bool=True):
+def open_and_close(args : list):
     """Open a subprocess for sending message-pack messages in a context.
 
     After the context it will send a close message: (0,).
     """
-    proc = open(args, rpc_mode)
+    proc = open(args)
     yield proc
     close(proc)
 
 
-def open(args : list, rpc_mode : bool=True) -> Popen:
+def open(args : list) -> Popen:
     """Open a subprocess for sending message-pack messages."""
     if os.environ.get("MPP_GDB") == "True":
         proc = Popen(args, stdin=PIPE, stdout=PIPE)

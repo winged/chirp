@@ -182,12 +182,6 @@ In development mode the make file has a help:
 
    make
 
-Please memcheck your code, we haven't automated memcheck, yet:
-
-.. code-block:: bash
-
-   valgrind --tool=memcheck ./src/[relevant]_etest
-
 Chirp has a mode to debug macros:
 
 .. code-block:: bash
@@ -197,6 +191,26 @@ Chirp has a mode to debug macros:
    gdb src/message_etest
 
 This requires clang-format to be installed.
+
+Running pytest manually with -s for example:
+
+.. code-block:: bash
+
+   cd build
+   make all
+   pytest -s ../src
+
+Or with gdb attached to the runner binary:
+
+.. code-block:: bash
+
+   MPP_GDB=True pytest -s ../src/
+
+If you want to stop debugging, but pytest is restarting GDB endlessly:
+
+.. code-block:: bash
+
+   killall pytest
 
 Docker
 ------
