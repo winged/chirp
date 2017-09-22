@@ -16,3 +16,83 @@
    fun:free
    obj:/lib/ld-musl-x86_64.so.1
 }
+{
+   musl internal calloc 01
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:load_library
+   fun:load_preload
+   fun:__dls3
+   fun:__dls2
+   obj:/lib/ld-musl-x86_64.so.1
+}
+{
+   musl internal calloc 02
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:load_library
+   fun:load_deps
+   fun:__dls3
+   fun:__dls2
+   obj:/lib/ld-musl-x86_64.so.1
+}
+{
+   reachable libressl leak 01
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:lh_insert
+   ...
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:OPENSSL_config
+   ...
+}
+{
+   reachable libressl leak 02
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:pthread_atfork
+   ...
+   fun:arc4random_buf
+   fun:SSL_CTX_new
+   ...
+}
+{
+   reachable libressl leak 03
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   fun:lh_new
+   ...
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:OPENSSL_config
+   ...
+}
+{
+   reachable libressl leak 04
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:lh_new
+   ...
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:OPENSSL_config
+   ...
+}
+{
+   reachable libressl leak 05
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:ERR_get_state
+   fun:ERR_clear_error
+   fun:OPENSSL_config
+   ...
+}

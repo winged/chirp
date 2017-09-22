@@ -47,6 +47,8 @@ def open(args : list) -> Popen:
                 "valgrind",
                 "--tool=memcheck",
                 "--leak-check=full",
+                "--show-leak-kinds=all",
+                "--errors-for-leak-kinds=all",
                 "--error-exitcode=1",
             ] + args,
             stdin=PIPE,

@@ -63,6 +63,7 @@ Test binaries
    src/chirp_etest.c.rst
    src/message_etest.c.rst
    src/star_etest.c.rst
+   src/quickcheck_etest.c.rst
    src/uv_error_etest.c
 
 External Libs

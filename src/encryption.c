@@ -162,6 +162,7 @@ ch_en_openssl_cleanup(void)
         CRYPTO_THREADID id;
         CRYPTO_THREADID_current(&id);
         ERR_remove_thread_state(&id);
+        ERR_remove_thread_state(NULL);
 #   endif
     ASN1_STRING_TABLE_cleanup();
 
@@ -419,6 +420,7 @@ ch_en_stop(ch_encryption_t* enc)
     ch_chirp_t* chirp = enc->chirp;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     SSL_CTX_free(enc->ssl_ctx);
+    ERR_clear_error();
 #   ifdef CH_OPENSSL_10_API
         CRYPTO_THREADID id;
         CRYPTO_THREADID_current(&id);
