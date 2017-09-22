@@ -316,6 +316,25 @@ Redhat-based:   yum install python3-pytest
 Arch:           pacman -S python-pytest
 OSX:            brew install python3; pip3 install pytest
 """)
+        sys.stdout.write("Checking for umsgpack (or msgpack): ")
+        try:
+            import umsgpack  # noqa
+            print("ok")
+        except ImportError:
+            try:
+                import msgpack  # noqa
+                print("ok")
+            except ImportError:
+                print("""umsgpack was not found.
+
+Please install umsgpack (or msgpack):
+
+Alpine:         apk add py3-msgpack
+Debian-based:   apt install python3-u-msgpack
+Redhat-based:   yum install python3-msgpack
+Arch:           pacman -S python-msgpack
+OSX:            brew install python3; pip3 install python-msgpack
+""")
 
 
 def copy_files(args):
