@@ -78,8 +78,6 @@
 //
 //    ch_qc_for_all(is_odd, 1, gs, ps, int);
 //
-// Please see :ref:`more-quickcheck-examples` for more quickcheck examples.
-//
 // .. code-block:: cpp
 
 #ifndef ch_quickcheck_test_h

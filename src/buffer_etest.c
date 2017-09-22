@@ -23,6 +23,7 @@ static ch_buffer_pool_t pool;
 // ======
 //
 // .. code-block:: cpp
+//
 static
 void
 ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)

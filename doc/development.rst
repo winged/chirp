@@ -49,6 +49,8 @@ Test code
    src/quickcheck_test.c.rst
    src/sds_test.h.rst
    src/sds_test.c.rst
+   src/test_test.h.rst
+   src/test_test.c.rst
 
 Test binaries
 =============
@@ -60,7 +62,6 @@ Test binaries
    src/buffer_etest.c.rst
    src/chirp_etest.c.rst
    src/message_etest.c.rst
-   src/quickcheck_etest.c.rst
    src/star_etest.c.rst
    src/uv_error_etest.c
 
