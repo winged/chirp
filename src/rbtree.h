@@ -2,7 +2,7 @@
 //    :target: https://travis-ci.org/ganwell/rbtree/
 //
 // ==================
-// Red-Black Tree 0.3
+// Red-Black Tree 0.4
 // ==================
 //
 // * Bonus: `qs.h`_ (Queue / Stack), mpipe_ (message-pack over pipe)
@@ -31,6 +31,16 @@
 // ============
 //
 // Copy rbtree.h into your source.
+//
+// Changes
+// =======
+//
+// 0.3 -> 0.4
+// ----------
+//
+// * Correctly enable cppcheck
+// * Fix style errors reported by cppcheck
+// * Fix bad asserts in performance tests
 //
 // Development
 // ===========
@@ -94,7 +104,7 @@
 //    };
 //
 // You can add the fields color, parent, left and right to any existing struct.
-// It is also possible to use different names than the above (see Extendend).
+// It is also possible to use different names than the above (see Extended_).
 //
 // Next we have to define the comparator function, since we want to lookup
 // books using the ISBN-number, we compare it using memcmp.
@@ -308,6 +318,8 @@
 //
 // Extended
 // --------
+//
+// .. _Extended:
 //
 // Many functions x come in two flavors
 //
@@ -527,23 +539,6 @@
 #ifdef NDEBUG
 #   define RB_NO_CHECK
 #endif
-
-// Inline for Windows
-// ------------------
-//
-// .. code-block:: cpp
-//
-
-#ifdef _WIN32
-#   if defined(_MSC_VER) && _MSC_VER < 1600
-#       define rb_inline __inline
-#   else // _MSC_VER
-#       define rb_inline inline
-#   endif // _MSC_VER
-#else
-#   define rb_inline inline
-#endif
-
 //
 // Basic traits
 // ============

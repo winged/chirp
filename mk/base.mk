@@ -30,13 +30,15 @@ LDFLAGS += \
 # Override targets
 # ================
 $(BUILD)/src/mpack_test.o: CFLAGS=$(NWCFLAGS)
-$(BUILD)/src/mpipe_test.h.rst:
-	@echo Skip doc for $@
+$(BUILD)/src/rbtree.h.rst: $(BASE)/src/rbtree.h
+	@mkdir -p "$(dir $@)"
+ifeq ($(VERBOSE),True)
+	$(BASE)/mk/c2rst $< $@
+else
+	@echo RST $<
+	@$(BASE)/mk/c2rst $< $@
+endif
 $(BUILD)/src/mpipe_test.c.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/qs.h.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/rbtree.h.rst:
 	@echo Skip doc for $@
 $(BUILD)/src/mpack_test.h.rst:
 	@echo Skip doc for $@

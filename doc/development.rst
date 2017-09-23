@@ -73,5 +73,15 @@ External Libs
    :maxdepth: 2
    :includehidden:
 
-   sds.rst
+   src/mpipe_test.h.rst
+   src/qs.h.rst
+   src/rbtree.h.rst
 
+Development only libs
+=====================
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+
+   sds.rst
