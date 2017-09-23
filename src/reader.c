@@ -24,7 +24,6 @@ ch_inline
 void
 _ch_rd_handshake(
         ch_connection_t* conn,
-        ch_reader_t* reader,
         ch_buf* buf,
         size_t read
 );
@@ -136,7 +135,6 @@ ch_inline
 void
 _ch_rd_handshake(
         ch_connection_t* conn,
-        ch_reader_t* reader,
         ch_buf* buf,
         size_t read
 )
@@ -154,7 +152,8 @@ _ch_rd_handshake(
     ch_remote_t* remote = NULL;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
-    if(read < sizeof(ch_rd_handshake_t)) {
+    ch_sr_handshake_t hs_tmp;
+    if(read < CH_SR_HANDSHAKE_SIZE) {
         EC(
             chirp,
             "Illegal handshake size -> shutdown. ", "ch_connection_t:%p",
@@ -163,17 +162,13 @@ _ch_rd_handshake(
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
-    memcpy(&reader->hs, buf, sizeof(ch_rd_handshake_t));
-    conn->port = ntohs(reader->hs.port);
-    conn->max_timeout = ntohs(
-        reader->hs.max_timeout + (
-            (ichirp->config.RETRIES + 2) * ichirp->config.TIMEOUT
-        )
-    );
+    ch_sr_buf_to_hs(buf, &hs_tmp);
+    conn->port = hs_tmp.port;
+    conn->max_timeout = hs_tmp.max_timeout;
     memcpy(
         conn->remote_identity,
-        reader->hs.identity,
-        sizeof(conn->remote_identity)
+        hs_tmp.identity,
+        CH_ID_SIZE
     );
     ch_rm_init_from_conn(chirp, &search_remote, conn);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
@@ -261,16 +256,9 @@ _ch_rd_handle_msg(
         /* Send ack */
         ch_message_t* ack_msg = &reader->ack_msg;
         memset(ack_msg, 0, sizeof(ch_message_t));
-        memcpy(
-            ack_msg,
-            msg,
-            sizeof(ch_msg_message_t)
-        );
-        memcpy(
-            ack_msg->address,
-            msg->address,
-            CH_IP_ADDR_SIZE
-        );
+        memcpy(ack_msg->identity, msg->identity, CH_ID_SIZE);
+        memcpy(ack_msg->serial, msg->serial, CH_ID_SIZE);
+        memcpy(ack_msg->address, msg->address, CH_IP_ADDR_SIZE);
         ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
         ack_msg->data_len   = 0;
@@ -417,31 +405,37 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     );
     do {
         int to_read = read - bytes_handled;
+
         switch(reader->state) {
             case CH_RD_START:
-                reader->hs.port = htons(ichirp->public_port);
-                reader->hs.max_timeout = htons(
-                    (ichirp->config.RETRIES + 2) * ichirp->config.TIMEOUT
-                );
-                memcpy(reader->hs.identity, ichirp->identity, 16);
+            {
+                ch_sr_handshake_t hs_tmp;
+                ch_buf hs_buf[CH_SR_HANDSHAKE_SIZE];
+                /* This happens seldom, no copy optimization needed */
+                hs_tmp.port = ichirp->public_port;
+                hs_tmp.max_timeout = (
+                    ichirp->config.RETRIES + 2
+                ) * ichirp->config.TIMEOUT;
+                memcpy(hs_tmp.identity, ichirp->identity, 16);
+                ch_sr_hs_to_buf(&hs_tmp, hs_buf);
                 ch_cn_write(
                     conn,
-                    &reader->hs,
-                    sizeof(ch_rd_handshake_t),
+                    hs_buf,
+                    CH_SR_HANDSHAKE_SIZE,
                     _ch_rd_handshake_cb
                 );
                 reader->state = CH_RD_HANDSHAKE;
                 break;
+            }
             case CH_RD_HANDSHAKE:
                 /* We expect that complete handshake arrives at once,
                  * check in _ch_rd_handshake */
                 _ch_rd_handshake(
                     conn,
-                    reader,
                     buf + bytes_handled,
                     to_read
                 );
-                bytes_handled += sizeof(ch_rd_handshake_t);
+                bytes_handled += sizeof(ch_sr_handshake_t);
                 reader->state = CH_RD_WAIT;
                 break;
             case CH_RD_WAIT:
@@ -455,24 +449,24 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 }
                 handler = reader->handler;
                 msg     = &handler->msg;
-                if(to_read >= (int) sizeof(ch_msg_message_t)) {
+                if(to_read >= CH_SR_WIRE_MESSAGE_SIZE) {
                     /* We can read everything */
                     memcpy(
-                        msg + reader->bytes_read,
+                        reader->net_msg + reader->bytes_read,
                         buf + bytes_handled,
-                        sizeof(ch_msg_message_t)
+                        CH_SR_WIRE_MESSAGE_SIZE - reader->bytes_read
                     );
                 } else {
                     memcpy(
-                        msg + reader->bytes_read,
+                        reader->net_msg + reader->bytes_read,
                         buf + bytes_handled,
                         to_read
                     );
                     reader->bytes_read += to_read;
                     return;
                 }
-                msg->header_len    = ntohs(msg->header_len);
-                msg->data_len      = ntohl(msg->data_len);
+                ch_sr_buf_to_msg(reader->net_msg, msg);
+                bytes_handled     += CH_SR_WIRE_MESSAGE_SIZE;
                 if((
                         msg->header_len + msg->data_len
                 ) > CH_MSG_SIZE_HARDLIMIT)
@@ -495,7 +489,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                         msg->ip_protocol == CH_IPV6
                     ) ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
                 );
-                bytes_handled     += sizeof(ch_msg_message_t);
                 reader->bytes_read = 0; /* Reset partial buffer reads */
                 /* Direct jump to next read state */
                 if(msg->header_len > 0)

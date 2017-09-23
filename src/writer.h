@@ -16,6 +16,7 @@
 // .. code-block:: cpp
 //
 #include "common.h"
+#include "serializer.h"
 #include "libchirp/callbacks.h"
 #include "libchirp/message.h"
 
@@ -65,7 +66,7 @@
 typedef struct ch_writer_s {
     uv_timer_t         send_timeout;
     ch_message_t*      msg;
-    ch_msg_message_t   net_msg;
+    ch_buf             net_msg[CH_SR_WIRE_MESSAGE_SIZE];
 } ch_writer_t;
 
 // .. c:function::

@@ -694,35 +694,11 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
         );
     }
 
-// Use the writers net message structure to write the actual message over
-// the connection. The net message structure is of type
-// :c:type:`ch_msg_message_t`, which is actually :c:macro:`CH_WIRE_MESSAGE`.
-// The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
-// type :c:type:`ch_message_t` and ``net_msg`` of type
-// :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
-// essentially only the identity, the serial number, the message type and
-// the lengths of the header and the data.
-//
-// .. code-block:: cpp
-//
-    ch_msg_message_t* net_msg = &writer->net_msg;
-    memcpy(
-        net_msg->serial,
-        msg->serial,
-        sizeof(net_msg->serial)
-    );
-    memcpy(
-        net_msg->identity,
-        msg->identity,
-        sizeof(net_msg->identity)
-    );
-    net_msg->type         = msg->type;
-    net_msg->header_len   = htons(msg->header_len);
-    net_msg->data_len     = htonl(msg->data_len);
+    ch_sr_msg_to_buf(msg, writer->net_msg);
     ch_cn_write(
         conn,
-        net_msg,
-        sizeof(ch_msg_message_t),
+        writer->net_msg,
+        CH_SR_WIRE_MESSAGE_SIZE,
         _ch_wr_write_msg_header_cb
     );
 }

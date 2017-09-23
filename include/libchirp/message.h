@@ -127,16 +127,6 @@ struct ch_message_s {
     ch_message_t*  _next;
 };
 
-// .. c:type:: ch_msg_message_t
-//
-//    Wire message (network endianness), see :c:macro:`CH_WIRE_MESSAGE`.
-//
-// .. code-block:: cpp
-//
-typedef struct ch_msg_message_s {
-    CH_WIRE_MESSAGE;
-} ch_msg_message_t;
-
 // Protocol receiver /Pseudo code/
 //
 // .. code-block:: cpp

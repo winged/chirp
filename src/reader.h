@@ -17,6 +17,7 @@
 #include "common.h"
 #include "message.h"
 #include "buffer.h"
+#include "serializer.h"
 
 // Declarations
 // ============
@@ -51,35 +52,6 @@ typedef enum {
     CH_RD_DATA      = 4,
 } ch_rd_state_t;
 
-// .. c:type:: ch_rd_handshake_t
-//
-//    Handshake data structure.
-//
-//    .. c:member:: uint16_t port
-//
-//       Public port which is passed to a connection on a successful handshake.
-//
-//    .. c:member:: uint16_t max_timeout
-//
-//       The maximum number of seconds to wait when connecting until a timeout
-//       gets triggered. This is passed to a connection upon a successful
-//       handshake. The value gets computed by the configured number of retries
-//       incremented by two times the configured timeout value.
-//
-//    .. c:member:: uint8_t[16] identity
-//
-//       The identity of the remote target which is passed to a connection upon
-//       a successful handshake. It is used by the connection for getting the
-//       remote address.
-//
-// .. code-block:: cpp
-//
-typedef struct ch_rd_handshake_s {
-    uint16_t port;
-    uint16_t max_timeout;
-    uint8_t  identity[CH_ID_SIZE];
-} ch_rd_handshake_t;
-
 // .. c:type:: ch_reader_t
 //
 //    Defines the state of a reader.
@@ -87,11 +59,6 @@ typedef struct ch_rd_handshake_s {
 //    .. c:member:: ch_rd_state_t state
 //
 //       Current state of the reader (finite-state machine).
-//
-//    .. c:member:: ch_rd_handshake_t hs
-//
-//       Handshake data structure to send over the network, which is used as
-//       data source.
 //
 //    .. c:member:: ch_message_t* msg
 //
@@ -119,12 +86,12 @@ typedef struct ch_rd_handshake_s {
 // .. code-block:: cpp
 //
 typedef struct ch_reader_s {
-    ch_rd_state_t     state;
-    ch_rd_handshake_t hs;
-    ch_bf_handler_t*  handler;
-    ch_message_t      ack_msg;
-    size_t            bytes_read;
-    int               last_handler;
+    ch_rd_state_t    state;
+    ch_bf_handler_t* handler;
+    ch_message_t     ack_msg;
+    size_t           bytes_read;
+    int              last_handler;
+    ch_buf           net_msg[CH_SR_WIRE_MESSAGE_SIZE];
 } ch_reader_t;
 
 // .. c:function::

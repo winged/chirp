@@ -553,11 +553,9 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
     );
     V(
         chirp,
-        conf->BUFFER_SIZE >= sizeof(
-            ch_rd_handshake_t
-        ) || conf->BUFFER_SIZE == 0,
+        conf->BUFFER_SIZE >= CH_SR_HANDSHAKE_SIZE || conf->BUFFER_SIZE == 0,
         "Config: buffer size must be > %lu (%u)",
-        (unsigned long) sizeof(ch_rd_handshake_t),
+        (unsigned long) CH_SR_HANDSHAKE_SIZE,
         conf->BUFFER_SIZE
     );
     return CH_SUCCESS;

@@ -30,6 +30,7 @@ Internal API
    src/reader.c.rst
    src/remote.h.rst
    src/remote.c.rst
+   src/serializer.rg.h.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst
