@@ -26,6 +26,7 @@ sudo docker run -it \
     -e "HUID=$(id -u)" \
     -e "CC=$CC" \
     -e "TLS=$TLS" \
+    -e "MODE=$MODE" \
     -e "TESTSHELL=$TESTSHELL" \
     -e "VERBOSE=$VERBOSE" \
     -v "$(pwd -P)/..":/outside \

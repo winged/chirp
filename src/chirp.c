@@ -881,6 +881,8 @@ ch_chirp_try_message_finish(
             id_str,
             (void*) msg
         );
+#   else
+    (void)(chirp);
 #   endif
         conn->remote->wait_ack_message = NULL;
         msg->_flags &= ~CH_MSG_USED;

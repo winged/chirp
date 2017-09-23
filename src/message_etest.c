@@ -145,14 +145,14 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
         L(
             chirp,
             "Echo received hello%s", ""
-        )
+        );
     } else {
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
         L(
             chirp,
             "Echo received a message%s", ""
-        )
+        );
     }
     memcpy(&_ch_tst_msg_echo, msg, sizeof(ch_message_t)); // TODO remove
     ch_chirp_release_recv_handler(msg);

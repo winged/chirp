@@ -411,7 +411,7 @@ __ch__silenence(void)
             if(chirp->_log != NULL) {
                 size_t __ch_v_siz_ = 1024;
                 size_t __ch_v_ret_;
-                char __ch_v_buf_[siz];
+                char __ch_v_buf_[__ch_v_siz_];
                 char* __ch_v_xbuf_ = __ch_v_buf_;
                 __ch_v_ret_ = snprintf(
                     __ch_v_xbuf_,
@@ -422,8 +422,13 @@ __ch__silenence(void)
                 );
                 __ch_v_xbuf_ += __ch_v_ret_;
                 __ch_v_siz_ -= __ch_v_ret_;
-                __ch_v_ret_ = snprintf(__VA_ARGS__);
+                snprintf(
+                    __ch_v_xbuf_,
+                    __ch_v_siz_,
+                    __VA_ARGS__
+                );
                 chirp->_log(__ch_v_buf_, 1);
+                return CH_VALUE_ERROR;
             } else {
                 fprintf(
                     stderr,
@@ -445,7 +450,10 @@ __ch__silenence(void)
 //    See :c:macro:`L`. Does nothing in release-mode.
 // .. code-block:: cpp
 //
-#   define L(chrip, message, ...) (void)(chirp); (void)(message)
+#   define L(chrip, message, ...) \
+        (void)(chirp); (void)(message)
+#   define LC(chrip, message, clear, ...) \
+        (void)(chirp); (void)(message); (void)(clear)
 
 //.. c:macro:: A
 //
@@ -463,7 +471,10 @@ __ch__silenence(void)
 #   error Assert macro not defined
 #endif
 #ifndef L
-#   error Log macro not defined
+#   error Log macro L not defined
+#endif
+#ifndef LC
+#   error Log macro LC not defined
 #endif
 #ifndef V
 #   error Validate macro not defined

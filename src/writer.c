@@ -170,7 +170,7 @@ _ch_wr_check_write_error(
 // .. code-block:: cpp
 //
 {
-    A(writer->msg != NULL, "ⱳriter->msg should be set on callback")
+    A(writer->msg != NULL, "ⱳriter->msg should be set on callback");
     if(status != CH_SUCCESS) {
         LC(
             chirp,
@@ -527,7 +527,7 @@ ch_wr_process_queues(ch_remote_t* remote)
         A(
             remote->wait_ack_message,
             "When retrying the wait_ack_message should be set"
-        )
+        );
         remote->flags  &= ~CH_RM_RETRY_WAITING_MSG;
         ch_wr_write(conn, remote->wait_ack_message);
         return CH_SUCCESS;
