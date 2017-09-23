@@ -4,6 +4,11 @@
 //
 // Common testing helper functions
 //
+// .. code-block:: cpp
+
+#ifndef ch_test_test_h
+#define ch_test_test_h
+
 // Project includes
 // ================
 //
@@ -31,3 +36,4 @@ ch_tst_return_float(mpack_writer_t* writer, float val);
 //    :param mpack_writer_t* writer: Mpack writer
 //    :param float val: Value to return
 //
+#endif
