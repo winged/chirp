@@ -186,9 +186,9 @@ def parse():
         help="Generate documentation. Sphinx has to be installed."
     )
     parser.add_argument(
-        '--ignore-coverage',
+        '--disable-coverage',
         action="store_true",
-        help="Ignore the coverage results."
+        help="Disable coverage checks."
     )
     parser.add_argument(
         '--prefix',
@@ -372,8 +372,12 @@ def write_makefile(args):
         prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
         f.write(
-            ".PHONY: all libraries executables objects doc_files coverage\n\n"
+            ".PHONY: all libraries executables objects doc_files"
         )
+        f.write("""
+# Get uname
+UNAME_S := $(shell uname -s)\n
+""")
         f.write("all: libraries executables  ## Build everything\n\n")
 
         f.write("BASE := %s\n" % _base)
@@ -389,12 +393,11 @@ def write_makefile(args):
             f.write("STRIP := True\n")
         if args.doc:
             f.write("DOC := True\n")
-        if args.ignore_coverage:
-            f.write("IGNORE_COV := True\n")
+        if args.disable_coverage:
+            f.write("DISABLE_COV := True\n")
         if args.dev:
             f.write("DEV := True\n")
         f.write("\n")
-        f.write("include $(BASE)/mk/base.mk\n\n")
         depends, files, h_files, c_files = read_depends()
         depends = list(depends.items())
         fmt_str = (
@@ -421,15 +424,6 @@ def write_makefile(args):
             for file_, _ in depends[:-1]:
                 f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
             f.write("\t\t%s.gcov \n" % replace_base_build(depends[-1][0]))
-            f.write("""
-coverage: clean all etests $(COV_FILES)  ## Analyze coverage
-ifeq ($(IGNORE_COV),True)
-\t!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:"); true
-else
-\t!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:")
-endif
-\trm -f *.gcov\n\n
-""")
 
         f.write("HEADERS := \\\n")
         h_list = [
@@ -497,9 +491,11 @@ endif
                     f.write("\t\t$(BUILD)/libchirp_test.a \\\n")
                 f.write("\t\t$(BUILD)/Makefile\n\n")
         if args.dev:
-            f.write("\ninclude $(BASE)/mk/dev.mk")
+            f.write("include $(BASE)/mk/dev.mk\n")
         else:
-            f.write("\ninclude $(BASE)/mk/rel.mk")
+            f.write("include $(BASE)/mk/rel.mk\n")
+        f.write("include $(BASE)/mk/base.mk\n")
+        f.write("include $(BASE)/mk/rules.mk\n")
     try:
         os.unlink(path.join(_base, "config.h"))
     except Exception:

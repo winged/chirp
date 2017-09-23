@@ -15,7 +15,7 @@ cd ../build && \
 ../configure \
     --dev \
     --doc \
-    --ignore-coverage && \
+    --disable-coverage && \
 make test && \
 make doc
 

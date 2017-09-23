@@ -1,76 +1,21 @@
 .PHONY += doc
-UNAME_S := $(shell uname -s)
 
-libchirp.a: $(BUILD)/libchirp.a
-libchirp_test.a: $(BUILD)/libchirp_test.a
-libchirp.so: $(BUILD)/libchirp.so
-
-$(BUILD)/libchirp.a: $(LIB_OBJECTS)
-
-$(BUILD)/libchirp_test.a: $(TEST_OBJECTS)
-
-$(BUILD)/libchirp.so: $(LIB_OBJECTS)
-
-check: all
-	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
-	$(BUILD)/src/quickcheck_etest
-	$(BUILD)/src/buffer_etest
-	$runtimepathruntimepathruntimepath(BUILD)/src/message_etest
-
-ifeq ($(DOC),True)
-doc: doc_files
-	@rm -f $(BASE)/doc/inc
-	@rm -f $(BASE)/doc/src
-	@ln -s $(BUILD)/include $(BASE)/doc/inc
-	@ln -s $(BUILD)/src $(BASE)/doc/src
-	@mkdir -p $(BASE)/doc/_build/html
-ifeq ($(VERBOSE),True)
-	make -C $(BASE)/doc html 2>&1 \
-		| grep -v intersphinx \
-		| grep -v "ighlighting skipped" \
-		| tee $(DTMP)/doc.out
-	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
-else
-	@echo DOC
-	@make -C $(BASE)/doc html 2>&1 \
-		| grep -v intersphinx \
-		| grep -v "ighlighting skipped" \
-		| tee $(DTMP)/doc.out > /dev/null
-	@! grep -E "WARNING|ERROR" $(DTMP)/doc.out
-endif
-else
-doc:
-	@echo Please reconfigure with ./configure --doc.; false
-endif
-
-ifeq ($(UNAME_S),Darwin)
-STRPCMD := strip -S
-else
-STRPCMD:= strip --strip-debug
-endif
-
-ifeq ($(UNAME_S),Darwin)
-CFLAGS += -I/usr/local/opt/openssl/include
-LDFLAGS += -Wl,-dead_strip
-LDFLAGS += -L/usr/local/opt/openssl/lib
-else
-CFLAGS += -pthread
-LDFLAGS += -Wl,--gc-sections
-LDFLAGS += -lrt
-endif
-
-NWCFLAGS:=$(filter-out -Werror,$(CFLAGS))
-
+# Make .o form .c files
+# =====================
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(MACRO_DEBUG),True)
 ifeq ($(VERBOSE),True)
 	$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	$(CC) -c -o $@ $@.c $(NWCFLAGS)
+	$(CC) -c -o $@ $@.c $(NWCFLAGS) \
+			2> $@.log || \
+		(cat $@.log; false)
 else
 	@echo MDCC $<
 	@$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	@$(CC) -c -o $@ $@.c $(NWCFLAGS)
+	@$(CC) -c -o $@ $@.c $(NWCFLAGS) \
+			2> $@.log || \
+		(cat $@.log; false)
 endif
 else
 ifeq ($(VERBOSE),True)
@@ -81,6 +26,8 @@ else
 endif
 endif
 
+# Make .h from .rg.h files
+# =========================
 $(BUILD)/%.h: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -90,6 +37,8 @@ else
 	@$(BASE)/mk/rgc $(CC) $< $@
 endif
 
+# Make doc (c.rst) from .c files
+# ==============================
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -102,6 +51,8 @@ else
 	@$(BASE)/mk/c2rst $< $@
 endif
 
+# Make doc (h.rst) from .h files
+# ==============================
 $(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -114,6 +65,8 @@ else
 	@$(BASE)/mk/c2rst $< $@
 endif
 
+# Make doc (h.rg.rst) from .rg.h files
+# ====================================
 $(BUILD)/%.rg.h.rst: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
 ifeq ($(VERBOSE),True)
@@ -126,6 +79,8 @@ else
 	@$(BASE)/mk/c2rst $< $@
 endif
 
+# Make lib (.a) files
+# ===================
 $(BUILD)/%.a:
 ifeq ($(VERBOSE),True)
 	ar $(ARFLAGS) $@ $+
@@ -141,6 +96,8 @@ ifeq ($(STRIP),True)
 endif
 endif
 
+# Make shared objects (.so) files
+# ===============================
 $(BUILD)/%.so:
 ifeq ($(VERBOSE),True)
 	$(CC) -shared -o $@ $+ $(LDFLAGS)
@@ -156,6 +113,8 @@ ifeq ($(STRIP),True)
 endif
 endif
 
+# Make test binares (*_etest)
+# ===========================
 $(BUILD)/%_etest: $(BUILD)/%_etest.o libchirp_test.a libchirp.a
 ifeq ($(VERBOSE),True)
 	@if [ "$@" = "$(BUILD)/src/chirp_etest" ]; then \
@@ -185,47 +144,15 @@ ifeq ($(DEV),True)
 	@command -v setfattr > /dev/null && setfattr -n user.pax.flags -v "emr" $@ || true
 endif
 
-ifeq ($(DOC),True)
-install: all doc
+# Make coverage files
+# ===================
+$(BUILD)/%.c.gcov: $(BUILD)/%.o
+ifeq ($(CC),clang)
+ifeq ($(UNAME_S),Darwin)
+	xcrun llvm-cov gcov $<
 else
-install: all  ## Install chirp
+	llvm-cov gcov $<
 endif
-	mkdir -p $(DEST)$(PREFIX)/lib
-	cp -f $(BUILD)/libchirp.a $(DEST)$(PREFIX)/lib
-	cp -f $(BUILD)/libchirp.so $(DEST)$(PREFIX)/lib/libchirp.so.$(VERSION)
-	mkdir -p $(DEST)$(PREFIX)/include
-	cp -f $(BASE)/include/libchirp.h $(DEST)$(PREFIX)/include/libchirp.h
-	rm -rf $(DEST)$(PREFIX)/include/libchirp/
-	cp -rf $(BASE)/include/libchirp/ $(DEST)$(PREFIX)/include/libchirp/
-	cd $(DEST)$(PREFIX)/lib && ln -sf libchirp.so.$(VERSION) libchirp.so
-	cd $(DEST)$(PREFIX)/lib && ln -sf libchirp.so.$(VERSION) libchirp.so.$(MAJOR)
-ifeq ($(DOC),True)
-	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
-	mkdir -p $(DEST)$(PREFIX)/share/doc/chirp
-	cp -R $(BASE)/doc/_build/html/* $(DEST)$(PREFIX)/share/doc/chirp/
+else
+	gcov $<
 endif
-
-$(BUILD)/src/mpack_test.o: CFLAGS=$(NWCFLAGS)
-$(BUILD)/src/mpipe_test.h.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/mpipe_test.c.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/qs.h.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/rbtree.h.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/mpack_test.h.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/mpack_test.c.rst:
-	@echo Skip doc for $@
-$(BUILD)/src/mpack-config.h.rst:
-	@echo Skip doc for $@
-
-uninstall:  ## Uninstall chirp
-	rm -f $(DEST)$(PREFIX)/lib/libchirp.a
-	rm -f $(DEST)$(PREFIX)/lib/libchirp.so.$(VERSION)
-	rm -f $(DEST)$(PREFIX)/lib/libchirp.so
-	rm -f $(DEST)$(PREFIX)/lib/libchirp.so.$(MAJOR)
-	rm -f $(DEST)$(PREFIX)/include/libchirp.h
-	rm -rf $(DEST)$(PREFIX)/include/libchirp/
-	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
