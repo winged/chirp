@@ -106,17 +106,19 @@ testlibuv:
 	@$(CC) -c -o "testlibuv.o" \
 		$(CFLAGS) "$(BASE)/mk/testlibuv.c" \
 		>> config.log 2>> config.log
+	@rm testlibuv.o
 
 testopenssl:
 	@$(CC) -c -o "testopenssl.o" \
 		$(CFLAGS) "$(BASE)/mk/testopenssl.c"\
 		>> config.log 2>> config.log
+	@rm testopenssl.o
 
 # Library files targets
 # =====================
-libchirp.a: $(BUILD)/libchirp.a
-libchirp_test.a: $(BUILD)/libchirp_test.a
-libchirp.so: $(BUILD)/libchirp.so
+libchirp.a: $(BUILD)/libchirp.a  ## Make libchirp.a
+libchirp_test.a: $(BUILD)/libchirp_test.a  ## Make libchirp_test.a
+libchirp.so: $(BUILD)/libchirp.so  ## Make libchirp.so
 
 $(BUILD)/libchirp.a: $(LIB_OBJECTS)
 
@@ -126,14 +128,14 @@ $(BUILD)/libchirp.so: $(LIB_OBJECTS)
 
 # Check target
 # ============
-check: all
+check: all  ## Check basic functionality
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 
 # Doc target
 # ==========
 ifeq ($(DOC),True)
-doc: doc_files
+doc: doc_files  ## Generate documentation
 	@rm -f $(BASE)/doc/inc
 	@rm -f $(BASE)/doc/src
 	@ln -s $(BUILD)/include $(BASE)/doc/inc
@@ -191,13 +193,28 @@ uninstall:  ## Uninstall chirp
 	rm -rf $(DEST)$(PREFIX)/include/libchirp/
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 
-clean:
-	rm -rf "$(BUILD)/src"
-	rm -rf "$(BUILD)/include"
-	rm -rf "$(BASE)/doc/_build/"*
+clean:  # Clean chirp
 ifeq ($(VERBOSE),True)
-	cd "$(BUILD)" && rm -f $(LIBRARIES)
+	cd "$(BUILD)" && find . \
+		! -name 'Makefile' \
+		! -name '.keep' \
+		! -name 'abi-*.xml' \
+		! -name 'pfix' \
+		! -name '*.pem' \
+		! -name 'config.h' \
+		! -name 'config.log' \
+		-type f -exec rm -f {} +
+	cd "$(BUILD)" && rm -rf */
 else
-	@echo RM libraries
-	@cd "$(BUILD)" && rm -f $(LIBRARIES)
+	@echo Clean
+	@cd "$(BUILD)" && find . \
+		! -name 'Makefile' \
+		! -name '.keep' \
+		! -name 'abi-*.xml' \
+		! -name 'pfix' \
+		! -name '*.pem' \
+		! -name 'config.h' \
+		! -name 'config.log' \
+		-type f -exec rm -f {} +
+	@cd "$(BUILD)" && rm -rf */
 endif

@@ -11,7 +11,7 @@ LDFLAGS += -L"$(BUILD)" \
 
 # Binary tests to run
 # ===================
-etests: all
+etests: all  ## Run binary tests
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(MEMCHECK) $(BUILD)/src/quickcheck_etest
@@ -138,6 +138,6 @@ todo:  ## Show todos
 	@grep -Inrs TODO $(BASE)/src; true
 
 help:  ## Display this help
-	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@cat $(MAKEFILE_LIST) | grep -E '^[0-9a-zA-Z_.-]+:.*?## .*$$' | sort -k1,1 | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	@echo
 	@echo 'Known variables: VERBOSE=True, MACRO_DEBUG=True'

@@ -404,7 +404,7 @@ def write_makefile(args):
         f.write("# File lists\n")
         f.write("# ==========\n")
         f.write(fmt_str.format(_project))
-        f.write("libraries: $(LIBRARIES)\n\n")
+        f.write("libraries: $(LIBRARIES)  ## Make all libraries\n\n")
         f.write("EXECUTABLES := \\\n")
         executables = [
             (
@@ -417,7 +417,7 @@ def write_makefile(args):
         f.write(
             "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
         )
-        f.write("executables: $(EXECUTABLES)\n\n")
+        f.write("executables: $(EXECUTABLES)  ## Make all executables\n\n")
         if args.dev:
             if not args.disable_coverage:
                 f.write("COV_FILES := \\\n")
@@ -433,7 +433,7 @@ def write_makefile(args):
         for file_ in h_list[:-1]:
             f.write("\t\t%s \\\n" % file_)
         f.write("\t\t%s \n\n" % h_list[-1])
-        f.write("headers: $(HEADERS) \n\n")
+        f.write("headers: $(HEADERS)  ## Make all headers\n\n")
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
             f.write("\t\t%s.o \\\n" % replace_base_build(
@@ -442,7 +442,7 @@ def write_makefile(args):
         f.write("\t\t%s.o \n\n" % replace_base_build(
             path.splitext(depends[-1][0])[0]
         ))
-        f.write("objects: $(OBJECTS) \n\n")
+        f.write("objects: $(OBJECTS)  ## Make all objects\n\n")
         f.write("LIB_OBJECTS := \\\n")
         lib_objs = [
             file_ for file_, _ in depends
@@ -474,7 +474,7 @@ def write_makefile(args):
             for file_ in files[:-1]:
                 f.write("\t\t%s.rst \\\n" % replace_base_build(file_))
             f.write("\t\t%s.rst \n\n" % replace_base_build(files[-1]))
-            f.write("doc_files: $(DOC_FILES) \n\n")
+            f.write("doc_files: $(DOC_FILES)  ## Make all rst-files\n\n")
 
         f.write("# Dependencies\n")
         f.write("# ============\n")
