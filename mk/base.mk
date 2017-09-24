@@ -141,13 +141,14 @@ doc: doc_files  ## Generate documentation
 	@ln -s $(BUILD)/include $(BASE)/doc/inc
 	@ln -s $(BUILD)/src $(BASE)/doc/src
 	@mkdir -p $(BASE)/doc/_build/html
+ifeq ($(DEV),True)
 ifeq ($(VERBOSE),True)
 	make -C $(BASE)/doc html 2>&1 \
 		| grep -v intersphinx \
 		| grep -v "ighlighting skipped" \
 		| tee doc-gen.log
 	@! grep -q -E "WARNING|ERROR" doc-gen.log
-else
+else # VERBOSE
 	@echo DOC
 	@make -C $(BASE)/doc html 2>&1 \
 		| grep -v intersphinx \
@@ -155,7 +156,19 @@ else
 		| tee doc-gen.log > /dev/null
 	@! grep -E "WARNING|ERROR" doc-gen.log
 endif
-else
+else # DEV
+ifeq ($(VERBOSE),True)
+	mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
+	make -C $(BASE)/doc html; \
+	mv $(BASE)/doc/development.dis $(BASE)/doc/development.rst
+else  # VERBOSE
+	@echo DOC
+	@mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
+	make -C $(BASE)/doc html; \
+	mv $(BASE)/doc/development.dis $(BASE)/doc/development.rst
+endif
+endif
+else # DOC
 doc:
 	@echo Please reconfigure with ./configure --doc.; false
 endif

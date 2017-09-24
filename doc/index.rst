@@ -27,16 +27,14 @@ API Reference
    inc/libchirp/wrappers.h.rst
    inc/libchirp/common.h.rst
 
-Development and internals
-==========================
+Additional information
+======================
 
 .. toctree::
    :maxdepth: 3
 
    development.rst
 
-Indices and tables
-==================
 
 * :ref:`genindex`
 * :ref:`search`
