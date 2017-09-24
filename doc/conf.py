@@ -313,6 +313,6 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'https://docs.python.org/': None,
+#    'https://docs.python.org/': None, # TODO reenable
     'http://docs.libuv.org/en/v1.x/': None,
 }
