@@ -6697,6 +6697,7 @@ $VAR1 = {
                                             'ch_chirp_get_loop' => 1,
                                             'ch_chirp_init' => 1,
                                             'ch_chirp_register_recv_handler' => 1,
+                                            'ch_chirp_release_recv_handler' => 1,
                                             'ch_chirp_run' => 1,
                                             'ch_chirp_send' => 1,
                                             'ch_chirp_send_ts' => 1,

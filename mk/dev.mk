@@ -77,7 +77,7 @@ ifeq ($(DISABLE_COV),True)
 coverage:
 	@echo Coverage disabled
 else
-coverage: clean all etests $(COV_FILES)  ## Analyze coverage
+coverage: clean all etests pytest $(COV_FILES)  ## Analyze coverage
 	!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:")
 	rm -f *.gcov\n\n
 endif
@@ -85,24 +85,26 @@ endif
 # Update abi target
 # =================
 update-abi: all  ## Update the ABI file
-	cd "$(BASE)/build" && abi-compliance-checker -lib chirp \
+	cd "$(BUILD)" && abi-compliance-checker -lib chirp \
 		-dump "$(BUILD)/abi-base.xml"
+	cp $(BUILD)/abi_dumps/chirp/X/ABI.dump \
+		$(BASE)/ci/abi_dumps/chirp/X/ABI.dump
 
 # Check abi target
 # ================
 ifeq ($(CI_DISTRO),arch)
 check-abi:
 else
-check-abi: $(BASE)/build/abi_dumps/chirp/$(VERSION)/ABI.dump  ## Check the ABI
-	cd "$(BASE)/build" && abi-compliance-checker -lib chirp  \
-		-old abi_dumps/chirp/X/ABI.dump \
-		-new abi_dumps/chirp/$(VERSION)/ABI.dump
+check-abi: $(BUILD)/abi_dumps/chirp/$(VERSION)/ABI.dump  ## Check the ABI
+	cd "$(BUILD)" && abi-compliance-checker -lib chirp  \
+		-old $(BASE)/ci/abi_dumps/chirp/X/ABI.dump \
+		-new $(BUILD)/abi_dumps/chirp/$(VERSION)/ABI.dump
 endif
 
 # Rule to make abi dump
 # =====================
-$(BASE)/build/abi_dumps/chirp/$(VERSION)/ABI.dump: libchirp.so
-	cd "$(BASE)/build" && abi-compliance-checker -lib chirp \
+$(BUILD)/abi_dumps/chirp/$(VERSION)/ABI.dump: libchirp.so
+	cd "$(BUILD)" && abi-compliance-checker -lib chirp \
 		-dump "$(BUILD)/abi-cur.xml"
 
 # Pytest target
