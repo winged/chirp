@@ -1,6 +1,4 @@
 .PHONY += install uninstall testlibuv testopenssl clean
-# Create temp dir
-DEVNULL := $(shell mkdir -p "$(DTMP)")
 
 # Standard flags
 # ==============
@@ -84,14 +82,6 @@ LDFLAGS += -lrt
 LDFLAGS += -Wl,--gc-sections
 endif
 
-# Non Werror flags for external modules
-# =====================================
-# We do not enforce Wall and pedantic for external modules
-NWCFLAGS:=$(filter-out -Werror,$(CFLAGS))
-NWCFLAGS:=$(filter-out -Wall,$(NWCFLAGS))
-NWCFLAGS:=$(filter-out -Wextra,$(NWCFLAGS))
-NWCFLAGS:=$(filter-out -pedantic,$(NWCFLAGS))
-
 # Strip command
 # =============
 ifeq ($(UNAME_S),Darwin)
@@ -100,13 +90,27 @@ else
 STRPCMD:= strip --strip-debug
 endif
 
+# Non Werror flags for external modules
+# =====================================
+# We do not enforce Werror, Wall and pedantic for external modules
+# NOTE: DO NOT CHANGE CFLAGS AFTER THIS OR IN rules.mk, because
+# this is not a lazy assignment
+NWCFLAGS:=$(filter-out -Werror,$(CFLAGS))
+NWCFLAGS:=$(filter-out -Wall,$(NWCFLAGS))
+NWCFLAGS:=$(filter-out -Wextra,$(NWCFLAGS))
+NWCFLAGS:=$(filter-out -pedantic,$(NWCFLAGS))
+
 # Configure check targets
 # =======================
 testlibuv:
-	@$(CC) -c -o "$(DTMP)/uv.o" $(CFLAGS) "$(BASE)/mk/testlibuv.c" >> config.log 2>> config.log
+	@$(CC) -c -o "testlibuv.o" \
+		$(CFLAGS) "$(BASE)/mk/testlibuv.c" \
+		>> config.log 2>> config.log
 
 testopenssl:
-	@$(CC) -c -o "$(DTMP)/openssl.o" $(CFLAGS) "$(BASE)/mk/testopenssl.c" >> config.log 2>> config.log
+	@$(CC) -c -o "testopenssl.o" \
+		$(CFLAGS) "$(BASE)/mk/testopenssl.c"\
+		>> config.log 2>> config.log
 
 # Library files targets
 # =====================
@@ -139,15 +143,15 @@ ifeq ($(VERBOSE),True)
 	make -C $(BASE)/doc html 2>&1 \
 		| grep -v intersphinx \
 		| grep -v "ighlighting skipped" \
-		| tee $(DTMP)/doc.out
-	@! grep -q -E "WARNING|ERROR" $(DTMP)/doc.out
+		| tee doc-gen.log
+	@! grep -q -E "WARNING|ERROR" doc-gen.log
 else
 	@echo DOC
 	@make -C $(BASE)/doc html 2>&1 \
 		| grep -v intersphinx \
 		| grep -v "ighlighting skipped" \
-		| tee $(DTMP)/doc.out > /dev/null
-	@! grep -E "WARNING|ERROR" $(DTMP)/doc.out
+		| tee doc-gen.log > /dev/null
+	@! grep -E "WARNING|ERROR" doc-gen.log
 endif
 else
 doc:
@@ -188,7 +192,6 @@ uninstall:  ## Uninstall chirp
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 
 clean:
-	rm -rf "$(DTMP)"/*
 	rm -rf "$(BUILD)/src"
 	rm -rf "$(BUILD)/include"
 	rm -rf "$(BASE)/doc/_build/"*

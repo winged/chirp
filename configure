@@ -15,7 +15,6 @@ import itertools
 from os import path
 import re
 import sys
-from tempfile import mkdtemp
 import shutil
 import stat
 
@@ -372,18 +371,16 @@ def write_makefile(args):
         prefix = args.prefix
     with codecs.open("Makefile", "w", "UTF-8") as f:
         f.write(
-            ".PHONY: all libraries executables objects doc_files"
+            ".PHONY: all libraries executables objects doc_files\n"
         )
-        f.write("""
-# Get uname
-UNAME_S := $(shell uname -s)\n
-""")
+        f.write("UNAME_S := $(shell uname -s)\n\n")
         f.write("all: libraries executables  ## Build everything\n\n")
 
+        f.write("# Configuration\n")
+        f.write("# =============\n")
         f.write("BASE := %s\n" % _base)
         f.write("BUILD := %s\n" % _build)
         f.write("PREFIX := %s\n" % prefix)
-        f.write("DTMP := %s\n\n" % mkdtemp())
         f.write("PROJECT := %s\n" % _project)
         f.write("VERSION := %s\n" % _version)
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
@@ -404,6 +401,8 @@ UNAME_S := $(shell uname -s)\n
             "LIBRARIES := $(BUILD)/{0}_test.a $(BUILD)/{0}.a "
             "$(BUILD)/{0}.so\n\n"
         )
+        f.write("# File lists\n")
+        f.write("# ==========\n")
         f.write(fmt_str.format(_project))
         f.write("libraries: $(LIBRARIES)\n\n")
         f.write("EXECUTABLES := \\\n")
@@ -420,10 +419,11 @@ UNAME_S := $(shell uname -s)\n
         )
         f.write("executables: $(EXECUTABLES)\n\n")
         if args.dev:
-            f.write("COV_FILES := \\\n")
-            for file_, _ in depends[:-1]:
-                f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
-            f.write("\t\t%s.gcov \n" % replace_base_build(depends[-1][0]))
+            if not args.disable_coverage:
+                f.write("COV_FILES := \\\n")
+                for file_, _ in depends[:-1]:
+                    f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
+                f.write("\t\t%s.gcov \n" % replace_base_build(depends[-1][0]))
 
         f.write("HEADERS := \\\n")
         h_list = [
@@ -476,6 +476,8 @@ UNAME_S := $(shell uname -s)\n
             f.write("\t\t%s.rst \n\n" % replace_base_build(files[-1]))
             f.write("doc_files: $(DOC_FILES) \n\n")
 
+        f.write("# Dependencies\n")
+        f.write("# ============\n")
         for file_, dep in depends:
             if dep:
                 dep = list(dep)
@@ -490,6 +492,8 @@ UNAME_S := $(shell uname -s)\n
                     f.write("\t\t$(BUILD)/libchirp.so \\\n")
                     f.write("\t\t$(BUILD)/libchirp_test.a \\\n")
                 f.write("\t\t$(BUILD)/Makefile\n\n")
+        f.write("# Includes\n")
+        f.write("# ========\n")
         if args.dev:
             f.write("include $(BASE)/mk/dev.mk\n")
         else:
