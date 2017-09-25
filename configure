@@ -500,6 +500,7 @@ def write_makefile(args):
             f.write("include $(BASE)/mk/rel.mk\n")
         f.write("include $(BASE)/mk/base.mk\n")
         f.write("include $(BASE)/mk/rules.mk\n")
+        f.write("# cf65e84fdbb7644a0c7725ebe6259490\n")
     try:
         os.unlink(path.join(_base, "config.h"))
     except Exception:

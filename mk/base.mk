@@ -209,6 +209,7 @@ uninstall:  ## Uninstall chirp
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 
 clean:  # Clean chirp
+	cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
 ifeq ($(VERBOSE),True)
 	cd "$(BUILD)" && find . \
 		! -name 'Makefile' \
