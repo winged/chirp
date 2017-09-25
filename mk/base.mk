@@ -209,7 +209,8 @@ uninstall:  ## Uninstall chirp
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 
 clean:  # Clean chirp
-	cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
+	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
+	@cd "$(BASE)/doc" && grep -q e9dad2911266756a260d736773a80095 conf.py
 ifeq ($(VERBOSE),True)
 	cd "$(BUILD)" && find . \
 		! -name 'Makefile' \
@@ -221,6 +222,7 @@ ifeq ($(VERBOSE),True)
 		! -name 'config.log' \
 		-type f -exec rm -f {} +
 	cd "$(BUILD)" && rm -rf */
+	cd "$(BASE)/doc" && rm -rf _build/*
 else
 	@echo Clean
 	@cd "$(BUILD)" && find . \
@@ -233,4 +235,5 @@ else
 		! -name 'config.log' \
 		-type f -exec rm -f {} +
 	@cd "$(BUILD)" && rm -rf */
+	@cd "$(BASE)/doc" && rm -rf _build/*
 endif
