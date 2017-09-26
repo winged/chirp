@@ -45,13 +45,13 @@ $(BUILD)/src/rbtree.h.rst: $(BASE)/src/rbtree.h
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
 $(BUILD)/src/mpipe_test.c.rst:
-	@echo Skip doc for $@
+	@true
 $(BUILD)/src/mpack_test.h.rst:
-	@echo Skip doc for $@
+	@true
 $(BUILD)/src/mpack_test.c.rst:
-	@echo Skip doc for $@
+	@true
 $(BUILD)/src/mpack-config.h.rst:
-	@echo Skip doc for $@
+	@true
 
 # Export API symbols only
 # =======================
@@ -144,23 +144,24 @@ check: all  ## Check basic functionality
 # ==========
 ifeq ($(DOC),True)
 doc: doc_files  ## Generate documentation
-	@rm -f $(BASE)/doc/inc
-	@rm -f $(BASE)/doc/src
-	@ln -s $(BUILD)/include $(BASE)/doc/inc
-	@ln -s $(BUILD)/src $(BASE)/doc/src
-	@mkdir -p $(BASE)/doc/_build/html
-ifeq ($(DEV),True)
 	$(V_E) DOC
-	$(V_M)make -C $(BASE)/doc html 2>&1 \
+	$(V_M)mkdir -p $(BUILD)/doc
+	$(V_M)mkdir -p $(BUILD)/doc/html
+	$(V_M)rm -f $(BUILD)/doc/include
+	$(V_M)rm -f $(BUILD)/doc/src
+	$(V_M)ln -s $(BUILD)/include $(BUILD)/doc/include
+	$(V_M)ln -s $(BUILD)/src $(BUILD)/doc/src
+	$(V_M)cp $(BASE)/doc/*.py $(BUILD)/doc
+	$(V_M)cp $(BASE)/doc/*.rst $(BUILD)/doc
+ifeq ($(DEV),True)
+	$(V_M)BASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html 2>&1 \
 		| grep -v intersphinx \
 		| grep -v "ighlighting skipped" \
 		| tee doc-gen.log > /dev/null
 	@! grep -E "WARNING|ERROR" doc-gen.log
 else # DEV
-	$(V_E) DOC
-	$(V_M)mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
-	make -C $(BASE)/doc html; \
-	mv $(BASE)/doc/development.dis $(BASE)/doc/development.rst
+	$(V_M) rm -f $(BUILD)/doc/development.rst
+	B$(V_M) ASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html
 endif
 else # DOC
 doc:
@@ -186,7 +187,7 @@ endif
 ifeq ($(DOC),True)
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 	mkdir -p $(DEST)$(PREFIX)/share/doc/chirp
-	cp -R $(BASE)/doc/_build/html/* $(DEST)$(PREFIX)/share/doc/chirp/
+	cp -R $(BUILD)/doc/html/* $(DEST)$(PREFIX)/share/doc/chirp/
 endif
 
 # Utility targets
@@ -203,20 +204,18 @@ uninstall:  ## Uninstall chirp
 
 # To check if the $(BUILD) variable is correct we added a token to Makefile in
 # the build dir.
-#
-# To check if the $(BASE) variable is correct we added a token to doc/conf.py.
-#
 # If you need to change this, you probably are doing something wrong.
 # Everything should be built in $(BUILD), except sphinx that couldn't be
 # persuaded to build out of root.
 clean:  # Clean chirp
 	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
-	@cd "$(BASE)/doc" && grep -q e9dad2911266756a260d736773a80095 conf.py
 	$(V_E) Clean
 	$(V_M)cd "$(BUILD)" && rm -rf abi_dumps/
 	$(V_M)cd "$(BUILD)" && rm -rf compat_reports/
 	$(V_M)cd "$(BUILD)" && rm -rf .hypothesis/
 	$(V_M)cd "$(BUILD)" && rm -rf src/
+	$(V_M)cd "$(BUILD)" && rm -rf include/
+	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
 	$(V_M)cd "$(BUILD)" && find . \
 		! -name 'Makefile' \

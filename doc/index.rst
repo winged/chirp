@@ -17,15 +17,15 @@ API Reference
 .. toctree::
    :maxdepth: 3
 
-   inc/libchirp/chirp.h.rst
-   inc/libchirp/message.h.rst
-   inc/libchirp/callbacks.h.rst
-   inc/libchirp/const.h.rst
-   inc/libchirp.h.rst
-   inc/libchirp/encryption.h.rst
-   inc/libchirp/error.h.rst
-   inc/libchirp/wrappers.h.rst
-   inc/libchirp/common.h.rst
+   include/libchirp/chirp.h.rst
+   include/libchirp/message.h.rst
+   include/libchirp/callbacks.h.rst
+   include/libchirp/const.h.rst
+   include/libchirp.h.rst
+   include/libchirp/encryption.h.rst
+   include/libchirp/error.h.rst
+   include/libchirp/wrappers.h.rst
+   include/libchirp/common.h.rst
 
 Additional information
 ======================

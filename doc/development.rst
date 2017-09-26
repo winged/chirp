@@ -6,7 +6,6 @@ Developement and internals
    :maxdepth: 3
 
    RULES.rst
-   rfcs.rst
 
 Internal API
 ============
