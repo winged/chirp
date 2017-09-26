@@ -96,16 +96,3 @@ ifeq ($(STRIP),True)
 	@$(STRPCMD) $@
 endif
 endif
-
-# Make coverage files
-# ===================
-$(BUILD)/%.c.gcov: $(BUILD)/%.o
-ifeq ($(CC),clang)
-ifeq ($(UNAME_S),Darwin)
-	xcrun llvm-cov gcov $<
-else
-	llvm-cov gcov $<
-endif
-else
-	gcov $<
-endif

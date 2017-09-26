@@ -51,7 +51,7 @@ ch_msg_get_address(
     if(uv_inet_ntop(
             af, message->address, address->data, sizeof(ch_text_address_t)
     )) {
-        return CH_PROTOCOL_ERROR; // NOCOV there is no bad binary IP-addr
+        return CH_PROTOCOL_ERROR;
     }
     return CH_SUCCESS;
 }

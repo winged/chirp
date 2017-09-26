@@ -586,7 +586,7 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
             __LINE__,
             (void*) chirp
         );
-        return CH_UNINIT; // NOCOV  TODO can be tested
+        return CH_UNINIT;
     }
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(chirp->_ != NULL) {
@@ -620,7 +620,7 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
             chirp,
             "Could not call close callback%s", ""
         );
-        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
+        return CH_UV_ERROR;
     }
     return CH_SUCCESS;
 }
@@ -745,7 +745,7 @@ ch_chirp_init(
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
-        return CH_UV_ERROR; // NOCOV
+        return CH_UV_ERROR;
     }
     if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
         E(
@@ -755,7 +755,7 @@ ch_chirp_init(
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
-        return CH_UV_ERROR; // NOCOV
+        return CH_UV_ERROR;
     }
     chirp->_done.data = chirp;
     if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
@@ -766,7 +766,7 @@ ch_chirp_init(
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
-        return CH_UV_ERROR; // NOCOV
+        return CH_UV_ERROR;
     }
     ichirp->start.data = chirp;
     if(uv_async_init(loop, &ichirp->send_ts, _ch_wr_send_ts_cb) < 0) {
@@ -777,7 +777,7 @@ ch_chirp_init(
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
-        return CH_UV_ERROR; // NOCOV
+        return CH_UV_ERROR;
     }
     ichirp->send_ts.data = chirp;
     uv_mutex_init(&ichirp->send_ts_queue_lock);
@@ -916,7 +916,7 @@ ch_chirp_run(
     uv_loop_t  loop;
     ch_error_t tmp_err;
     if(chirp_out == NULL) {
-        return CH_UNINIT; // NOCOV  TODO can be tested
+        return CH_UNINIT;
     }
     *chirp_out = NULL;
 
@@ -930,7 +930,7 @@ ch_chirp_run(
             tmp_err,
             (void*) &loop
         );
-        return tmp_err;  // NOCOV this can only fail with access error
+        return tmp_err;
     }
     tmp_err = ch_chirp_init(&chirp, config, &loop, start, NULL, log);
     if(tmp_err != CH_SUCCESS) {
@@ -940,7 +940,7 @@ ch_chirp_run(
             tmp_err,
             (void*) &chirp
         );
-        return tmp_err;  // NOCOV covered in ch_chirp_init tests
+        return tmp_err;
     }
     chirp._->flags |= CH_CHIRP_AUTO_STOP;
     LC(
@@ -960,10 +960,10 @@ ch_chirp_run(
             tmp_err,
             (void*) &loop
         );
-        return tmp_err; // NOCOV only breaking things will trigger this
+        return tmp_err;
     }
     if(ch_loop_close(&loop)) {
-        return CH_UV_ERROR; // NOCOV only breaking things will trigger this
+        return CH_UV_ERROR;
     }
     return CH_SUCCESS;
 }

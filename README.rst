@@ -10,21 +10,18 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 
 .. _pychirp: https://github.com/concretecloud/pychirp
 
-|travis| [1]_ |rtd| |coverage| [2]_
+|travis| [1]_ |rtd|
 
 .. |travis|  image:: https://travis-ci.org/concretecloud/chirp.svg?branch=master
    :target: https://travis-ci.org/concretecloud/chirp
 .. |rtd| image:: https://1042.ch/ganwell/docs-master.svg
    :target: https://1042.ch/chirp/
-.. |coverage| image:: https://1042.ch/ganwell/coverage-100.svg
 
 `Read the Docs`_
 
 .. _`Read the Docs`: http://1042.ch/chirp/
 
 .. [1] Python/hypothesis based test-suite in external project seecc_.
-
-.. [2] Coverage enforced by tests (on travis, after 1.0 release)
 
 .. _seecc: https://github.com/concretecloud
 

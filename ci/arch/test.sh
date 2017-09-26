@@ -4,8 +4,7 @@ set -e
 
 mkdir -p /tmp/build
 cd /tmp/build
-/outside/configure \
-    --dev --doc --disable-coverage
+/outside/configure --dev --doc
 if [ "$TESTSHELL" = "True" ]; then
     exec /bin/sh
 else

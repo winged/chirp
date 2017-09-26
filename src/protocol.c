@@ -144,13 +144,13 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_chirp_t* chirp = server->data;
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp  = chirp->_;
-    if (status < 0) { // NOCOV TODO
+    if (status < 0) {
         L(
             chirp,
             "New connection error %s",
             uv_strerror(status)
-        ); // NOCOV TODO
-        return; // NOCOV TODO
+        );
+        return;
     }
 
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(
@@ -437,10 +437,10 @@ ch_pr_start(ch_protocol_t* protocol)
     if(uv_inet_ntop(
             AF_INET, config->BIND_V4, tmp_addr.data, sizeof(ch_text_address_t)
     ) < 0) {
-        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
+        return CH_VALUE_ERROR;
     }
     if(uv_ip4_addr(tmp_addr.data, config->PORT, &protocol->addrv4) < 0) {
-        return CH_VALUE_ERROR; // NOCOV uv will just wrap bad port
+        return CH_VALUE_ERROR;
     }
     tmp_err = ch_uv_error_map(uv_tcp_bind(
             &protocol->serverv4,
@@ -455,11 +455,10 @@ ch_pr_start(ch_protocol_t* protocol)
             __LINE__,
             config->PORT
         );
-        return tmp_err;  // NOCOV UV_EADDRINUSE can't happen in tcp_bind or
-                         // listen on my systems it happends in listen
+        return tmp_err;
     }
     if(uv_tcp_nodelay(&protocol->serverv4, 1) < 0) {
-        return CH_UV_ERROR;  // NOCOV don't know how to produce
+        return CH_UV_ERROR;
     }
     if(uv_listen(
             (uv_stream_t*) &protocol->serverv4,
@@ -482,10 +481,10 @@ ch_pr_start(ch_protocol_t* protocol)
     if(uv_inet_ntop(
             AF_INET6, config->BIND_V6, tmp_addr.data, sizeof(ch_text_address_t)
     ) < 0) {
-        return CH_VALUE_ERROR; // NOCOV there is no bad binary IP-addr
+        return CH_VALUE_ERROR;
     }
     if(uv_ip6_addr(tmp_addr.data, config->PORT, &protocol->addrv6) < 0) {
-        return CH_VALUE_ERROR; // NOCOV errors happend for IPV4
+        return CH_VALUE_ERROR;
     }
     tmp_err = ch_uv_error_map(uv_tcp_bind(
             &protocol->serverv6,
@@ -500,10 +499,10 @@ ch_pr_start(ch_protocol_t* protocol)
             __LINE__,
             config->PORT
         );
-        return tmp_err; // NOCOV errors happend for IPV4
+        return tmp_err;
     }
     if(uv_tcp_nodelay(&protocol->serverv6, 1) < 0) {
-        return CH_UV_ERROR; // NOCOV errors happend for IPV4
+        return CH_UV_ERROR;
     }
     if(uv_listen(
             (uv_stream_t*) &protocol->serverv6,
@@ -517,7 +516,7 @@ ch_pr_start(ch_protocol_t* protocol)
             __LINE__,
             config->PORT
         );
-        return CH_EADDRINUSE; // NOCOV errors happend for IPV4
+        return CH_EADDRINUSE;
     }
     ch_rm_tree_init(&protocol->remotes);
     protocol->old_connections = NULL;

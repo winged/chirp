@@ -1,4 +1,4 @@
-.PHONY += test cppcheck etests todo help coverage
+.PHONY += test cppcheck etests pytest todo help
 .DEFAULT_GOAL := help
 
 # Development flags (see base.mk for standard flags)
@@ -8,6 +8,22 @@ CFLAGS += \
 	-ggdb3 \
 
 LDFLAGS += -L"$(BUILD)" \
+
+# Memcheck settings
+# =================
+ifneq ($(TLS),openssl)
+	MEMCHECK := valgrind \
+		--tool=memcheck \
+		--leak-check=full \
+		--errors-for-leak-kinds=all \
+		--show-leak-kinds=all \
+		--error-exitcode=1 \
+		--suppressions=$(BASE)/ci/memcheck-musl.supp
+else
+	MEMCHECK := valgrind \
+		--tool=memcheck \
+		--suppressions=$(BASE)/ci/memcheck-musl.supp
+endif
 
 # Binary tests to run
 # ===================
@@ -35,52 +51,9 @@ etests: all  ## Run binary tests
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 
-# Disable coverage with clang on alpine
-# =====================================
-# Coverage didn't work at the time of writing this code
-ALPINE_AND_CLANG := $(shell \
-	[ -f /etc/apk/world ] && [ "$(CC)" == "clang" ] \
-		&& echo True \
-)
-ifeq ($(ALPINE_AND_CLANG),True)
-	DISABLE_COV := True
-endif
-
-ifneq ($(TLS),openssl)
-	MEMCHECK := valgrind \
-		--tool=memcheck \
-		--leak-check=full \
-		--errors-for-leak-kinds=all \
-		--show-leak-kinds=all \
-		--error-exitcode=1 \
-		--suppressions=$(BASE)/ci/memcheck-musl.supp
-else
-	MEMCHECK := valgrind \
-		--tool=memcheck \
-		--suppressions=$(BASE)/ci/memcheck-musl.supp
-endif
-
 # Test target
 # ===========
-ifeq ($(DISABLE_COV),True)
 test: etests pytest cppcheck check-abi todo  ## Test everything
-	@echo Note: Coverage disabled or not supported
-else
-CFLAGS += --coverage
-LDFLAGS += --coverage
-test: coverage cppcheck check-abi todo
-endif
-
-# Coverage target
-# ===============
-ifeq ($(DISABLE_COV),True)
-coverage:
-	@echo Coverage disabled
-else
-coverage: clean all etests pytest $(COV_FILES)  ## Analyze coverage
-	!(grep -v "// NOCOV" *.gcov | grep -E "\s+#####:")
-	rm -f *.gcov\n\n
-endif
 
 # Update abi target
 # =================

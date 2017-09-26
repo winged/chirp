@@ -200,16 +200,18 @@ uninstall:  ## Uninstall chirp
 	rm -rf $(DEST)$(PREFIX)/include/libchirp/
 	rm -rf $(DEST)$(PREFIX)/share/doc/chirp
 
+
+# To check if the $(BUILD) variable is correct we added a token to Makefile in
+# the build dir.
+#
+# To check if the $(BASE) variable is correct we added a token to doc/conf.py.
+#
+# If you need to change this, you probably are doing something wrong.
+# Everything should be built in $(BUILD), except sphinx that couldn't be
+# persuaded to build out of root.
 clean:  # Clean chirp
-	# To check if the $(BUILD) variable is correct we added a token to Makefile
-	# in the build dir.
 	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
-	# To check if the $(BASE) variable is correct we added a token to
-	# doc/conf.py.
 	@cd "$(BASE)/doc" && grep -q e9dad2911266756a260d736773a80095 conf.py
-	# If you need to change this, you probably are doing something wrong.
-	# Everything should be built in $(BUILD), except sphinx that couldn't be
-	# persuaded to build out of root.
 	$(V_E) Clean
 	$(V_M)cd "$(BUILD)" && rm -rf abi_dumps/
 	$(V_M)cd "$(BUILD)" && rm -rf compat_reports/

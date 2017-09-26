@@ -163,7 +163,7 @@ def parse():
         '--dev',
         action="store_true",
         help=(
-            "Build for development. Enables debug build flags and coverage. "
+            "Build for development. Enables debug build flags. "
             "Includes all development make targets."
         )
     )
@@ -183,11 +183,6 @@ def parse():
         '--doc',
         action="store_true",
         help="Generate documentation. Sphinx has to be installed."
-    )
-    parser.add_argument(
-        '--disable-coverage',
-        action="store_true",
-        help="Disable coverage checks."
     )
     parser.add_argument(
         '--prefix',
@@ -390,8 +385,6 @@ def write_makefile(args):
             f.write("STRIP := True\n")
         if args.doc:
             f.write("DOC := True\n")
-        if args.disable_coverage:
-            f.write("DISABLE_COV := True\n")
         if args.dev:
             f.write("DEV := True\n")
         f.write("\n")
@@ -418,13 +411,6 @@ def write_makefile(args):
             "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
         )
         f.write("executables: $(EXECUTABLES)  ## Make all executables\n\n")
-        if args.dev:
-            if not args.disable_coverage:
-                f.write("COV_FILES := \\\n")
-                for file_, _ in depends[:-1]:
-                    f.write("\t\t%s.gcov \\\n" % replace_base_build(file_))
-                f.write("\t\t%s.gcov \n" % replace_base_build(depends[-1][0]))
-
         f.write("HEADERS := \\\n")
         h_list = [
             "%s.h" % replace_base_build(h)[:-5]
