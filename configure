@@ -566,6 +566,9 @@ for line in sys.stdin.readlines():
 
 
 if __name__ == "__main__":
+    if os.path.dirname(__file__) == os.curdir:
+        print("Please configure in empty build dir.")
+        os.exit(1)
     args = parse()
     rg_list = write_makefile(args)
     write_config()

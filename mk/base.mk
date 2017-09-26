@@ -161,7 +161,7 @@ ifeq ($(DEV),True)
 	@! grep -E "WARNING|ERROR" doc-gen.log
 else # DEV
 	$(V_M) rm -f $(BUILD)/doc/development.rst
-	B$(V_M) ASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html
+	$(V_M) BASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html
 endif
 else # DOC
 doc:
@@ -205,8 +205,7 @@ uninstall:  ## Uninstall chirp
 # To check if the $(BUILD) variable is correct we added a token to Makefile in
 # the build dir.
 # If you need to change this, you probably are doing something wrong.
-# Everything should be built in $(BUILD), except sphinx that couldn't be
-# persuaded to build out of root.
+# Everything should be built in $(BUILD).
 clean:  # Clean chirp
 	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
 	$(V_E) Clean
@@ -217,14 +216,4 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf include/
 	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
-	$(V_M)cd "$(BUILD)" && find . \
-		! -name 'Makefile' \
-		! -name '.keep' \
-		! -name 'abi-*.xml' \
-		! -name 'pfix' \
-		! -name '*.pem' \
-		! -name 'config.h' \
-		! -name 'config.log' \
-		-maxdepth 1 \
-		-type f -exec rm -f {} +
-	$(V_M)cd "$(BASE)/doc" && rm -rf _build/*
+	$(V_M)cd "$(BUILD)" && rm *.a *.so
