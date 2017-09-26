@@ -1,5 +1,15 @@
 .PHONY += install uninstall testlibuv testopenssl clean
 
+# Verbose mode
+# ============
+ifeq ($(VERBOSE),True)
+	V_M:=
+	V_E:=@true
+else
+	V_M:=@
+	V_E:=@echo
+endif
+
 # Standard flags
 # ==============
 # Will be extended depending on build-mode, system and compiler
@@ -32,12 +42,8 @@ LDFLAGS += \
 $(BUILD)/src/mpack_test.o: CFLAGS=$(NWCFLAGS)
 $(BUILD)/src/rbtree.h.rst: $(BASE)/src/rbtree.h
 	@mkdir -p "$(dir $@)"
-ifeq ($(VERBOSE),True)
-	$(BASE)/mk/c2rst $< $@
-else
-	@echo RST $<
-	@$(BASE)/mk/c2rst $< $@
-endif
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
 $(BUILD)/src/mpipe_test.c.rst:
 	@echo Skip doc for $@
 $(BUILD)/src/mpack_test.h.rst:
@@ -144,31 +150,17 @@ doc: doc_files  ## Generate documentation
 	@ln -s $(BUILD)/src $(BASE)/doc/src
 	@mkdir -p $(BASE)/doc/_build/html
 ifeq ($(DEV),True)
-ifeq ($(VERBOSE),True)
-	make -C $(BASE)/doc html 2>&1 \
-		| grep -v intersphinx \
-		| grep -v "ighlighting skipped" \
-		| tee doc-gen.log
-	@! grep -q -E "WARNING|ERROR" doc-gen.log
-else # VERBOSE
-	@echo DOC
-	@make -C $(BASE)/doc html 2>&1 \
+	$(V_E) DOC
+	$(V_M)make -C $(BASE)/doc html 2>&1 \
 		| grep -v intersphinx \
 		| grep -v "ighlighting skipped" \
 		| tee doc-gen.log > /dev/null
 	@! grep -E "WARNING|ERROR" doc-gen.log
-endif
 else # DEV
-ifeq ($(VERBOSE),True)
-	mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
+	$(V_E) DOC
+	$(V_M)mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
 	make -C $(BASE)/doc html; \
 	mv $(BASE)/doc/development.dis $(BASE)/doc/development.rst
-else  # VERBOSE
-	@echo DOC
-	@mv $(BASE)/doc/development.rst $(BASE)/doc/development.dis;  \
-	make -C $(BASE)/doc html; \
-	mv $(BASE)/doc/development.dis $(BASE)/doc/development.rst
-endif
 endif
 else # DOC
 doc:
@@ -211,13 +203,13 @@ uninstall:  ## Uninstall chirp
 clean:  # Clean chirp
 	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
 	@cd "$(BASE)/doc" && grep -q e9dad2911266756a260d736773a80095 conf.py
-ifeq ($(VERBOSE),True)
-	cd "$(BUILD)" && rm -rf abi_dumps/
-	cd "$(BUILD)" && rm -rf compat_reports/
-	cd "$(BUILD)" && rm -rf .hypothesis/
-	cd "$(BUILD)" && rm -rf src/
-	cd "$(BUILD)" && rm -rf logs/
-	cd "$(BUILD)" && find . \
+	$(V_E) Clean
+	$(V_M)cd "$(BUILD)" && rm -rf abi_dumps/
+	$(V_M)cd "$(BUILD)" && rm -rf compat_reports/
+	$(V_M)cd "$(BUILD)" && rm -rf .hypothesis/
+	$(V_M)cd "$(BUILD)" && rm -rf src/
+	$(V_M)cd "$(BUILD)" && rm -rf logs/
+	$(V_M)cd "$(BUILD)" && find . \
 		! -name 'Makefile' \
 		! -name '.keep' \
 		! -name 'abi-*.xml' \
@@ -227,23 +219,4 @@ ifeq ($(VERBOSE),True)
 		! -name 'config.log' \
 		-maxdepth 1 \
 		-type f -exec rm -f {} +
-	cd "$(BASE)/doc" && rm -rf _build/*
-else
-	@echo Clean
-	@cd "$(BUILD)" && rm -rf abi_dumps/
-	@cd "$(BUILD)" && rm -rf compat_reports/
-	@cd "$(BUILD)" && rm -rf .hypothesis/
-	@cd "$(BUILD)" && rm -rf src/
-	@cd "$(BUILD)" && rm -rf logs/
-	@cd "$(BUILD)" && find . \
-		! -name 'Makefile' \
-		! -name '.keep' \
-		! -name 'abi-*.xml' \
-		! -name 'pfix' \
-		! -name '*.pem' \
-		! -name 'config.h' \
-		! -name 'config.log' \
-		-maxdepth 1 \
-		-type f -exec rm -f {} +
-	@cd "$(BASE)/doc" && rm -rf _build/*
-endif
+	$(V_M)cd "$(BASE)/doc" && rm -rf _build/*

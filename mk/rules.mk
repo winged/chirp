@@ -5,112 +5,68 @@
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(MACRO_DEBUG),True)
-ifeq ($(VERBOSE),True)
-	$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	$(CC) -c -o $@ $@.c $(NWCFLAGS) \
+	$(V_E) MDCC $<
+	$(V_M)$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
+	$(V_M)$(CC) -c -o $@ $@.c $(NWCFLAGS) \
 			2> $@.log || \
 		(cat $@.log; false)
 else
-	@echo MDCC $<
-	@$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
-	@$(CC) -c -o $@ $@.c $(NWCFLAGS) \
-			2> $@.log || \
-		(cat $@.log; false)
-endif
-else
-ifeq ($(VERBOSE),True)
-	$(CC) -c -o $@ $< $(CFLAGS)
-else
-	@echo CC $<
-	@$(CC) -c -o $@ $< $(CFLAGS)
-endif
+	$(V_E) CC $<
+	$(V_M)$(CC) -c -o $@ $< $(CFLAGS)
 endif
 
 # Make .h from .rg.h files
 # =========================
 $(BUILD)/%.h: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
-ifeq ($(VERBOSE),True)
-	$(BASE)/mk/rgc $(CC) $< $@
-else
-	@echo RGC $<
-	@$(BASE)/mk/rgc $(CC) $< $@
-endif
+	$(V_E) RGC $<
+	$(V_M)$(BASE)/mk/rgc $(CC) $< $@
 
 # Make doc (c.rst) from .c files
 # ==============================
 $(BUILD)/%.c.rst: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
-ifeq ($(VERBOSE),True)
-	$(BASE)/mk/twsp $<
-	$(BASE)/mk/c2rst $< $@
-else
-	@echo TWSP $<
-	@$(BASE)/mk/twsp $<
-	@echo RST $<
-	@$(BASE)/mk/c2rst $< $@
-endif
+	$(V_E) TWSP $<
+	$(V_M)$(BASE)/mk/twsp $<
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
 
 # Make doc (h.rst) from .h files
 # ==============================
 $(BUILD)/%.h.rst: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
-ifeq ($(VERBOSE),True)
-	$(BASE)/mk/twsp $<
-	$(BASE)/mk/c2rst $< $@
-else
-	@echo TWSP $<
-	@$(BASE)/mk/twsp $<
-	@echo RST $<
-	@$(BASE)/mk/c2rst $< $@
-endif
+	$(V_E) TWSP $<
+	$(V_M)$(BASE)/mk/twsp $<
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
 
 # Make doc (h.rg.rst) from .rg.h files
 # ====================================
 $(BUILD)/%.rg.h.rst: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
-ifeq ($(VERBOSE),True)
-	$(BASE)/mk/twsp $<
-	$(BASE)/mk/c2rst $< $@
-else
-	@echo TWSP $<
-	@$(BASE)/mk/twsp $<
-	@echo RST $<
-	@$(BASE)/mk/c2rst $< $@
-endif
+	$(V_E) TWSP $<
+	$(V_M)$(BASE)/mk/twsp $<
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
 
 # Make lib (.a) files
 # ===================
 $(BUILD)/%.a:
-ifeq ($(VERBOSE),True)
-	ar $(ARFLAGS) $@ $+
+	$(V_E) AR $@
+	$(V_M)ar $(ARFLAGS) $@ $+ > /dev/null 2> /dev/null
 ifeq ($(STRIP),True)
-	$(STRPCMD) $@
-endif
-else
-	@echo AR $@
-	@ar $(ARFLAGS) $@ $+ > /dev/null 2> /dev/null
-ifeq ($(STRIP),True)
-	@echo STRIP $@
-	@$(STRPCMD) $@
-endif
+	$(V_E) STRIP $@
+	$(V_M)$(STRPCMD) $@
 endif
 
 # Make shared objects (.so) files
 # ===============================
 $(BUILD)/%.so:
-ifeq ($(VERBOSE),True)
-	$(CC) -shared -o $@ $+ $(LDFLAGS)
+	$(V_E) LD $@
+	$(V_M)$(CC) -shared -o $@ $+ $(LDFLAGS)
 ifeq ($(STRIP),True)
-	$(STRPCMD) $@
-endif
-else
-	@echo LD $@
-	@$(CC) -shared -o $@ $+ $(LDFLAGS)
-ifeq ($(STRIP),True)
-	@echo STRIP $@
-	@$(STRPCMD) $@
-endif
+	$(V_E) STRIP $@
+	$(V_M)$(STRPCMD) $@
 endif
 
 # Make test binares (*_etest)
