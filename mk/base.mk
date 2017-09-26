@@ -160,8 +160,8 @@ ifeq ($(DEV),True)
 		| tee doc-gen.log > /dev/null
 	@! grep -E "WARNING|ERROR" doc-gen.log
 else # DEV
-	$(V_M) rm -f $(BUILD)/doc/development.rst
-	$(V_M) BASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html
+	$(V_M)rm -f $(BUILD)/doc/development.rst
+	$(V_M)BASE=$(BASE) sphinx-build -b html $(BUILD)/doc $(BUILD)/doc/html
 endif
 else # DOC
 doc:
