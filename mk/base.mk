@@ -212,6 +212,11 @@ clean:  # Clean chirp
 	@cd "$(BUILD)" && grep -q cf65e84fdbb7644a0c7725ebe6259490 Makefile
 	@cd "$(BASE)/doc" && grep -q e9dad2911266756a260d736773a80095 conf.py
 ifeq ($(VERBOSE),True)
+	cd "$(BUILD)" && rm -rf abi_dumps/
+	cd "$(BUILD)" && rm -rf compat_reports/
+	cd "$(BUILD)" && rm -rf .hypothesis/
+	cd "$(BUILD)" && rm -rf src/
+	cd "$(BUILD)" && rm -rf logs/
 	cd "$(BUILD)" && find . \
 		! -name 'Makefile' \
 		! -name '.keep' \
@@ -220,11 +225,16 @@ ifeq ($(VERBOSE),True)
 		! -name '*.pem' \
 		! -name 'config.h' \
 		! -name 'config.log' \
+		-maxdepth 1 \
 		-type f -exec rm -f {} +
-	cd "$(BUILD)" && rm -rf */
 	cd "$(BASE)/doc" && rm -rf _build/*
 else
 	@echo Clean
+	@cd "$(BUILD)" && rm -rf abi_dumps/
+	@cd "$(BUILD)" && rm -rf compat_reports/
+	@cd "$(BUILD)" && rm -rf .hypothesis/
+	@cd "$(BUILD)" && rm -rf src/
+	@cd "$(BUILD)" && rm -rf logs/
 	@cd "$(BUILD)" && find . \
 		! -name 'Makefile' \
 		! -name '.keep' \
@@ -233,7 +243,7 @@ else
 		! -name '*.pem' \
 		! -name 'config.h' \
 		! -name 'config.log' \
+		-maxdepth 1 \
 		-type f -exec rm -f {} +
-	@cd "$(BUILD)" && rm -rf */
 	@cd "$(BASE)/doc" && rm -rf _build/*
 endif
