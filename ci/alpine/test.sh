@@ -16,4 +16,6 @@ else
     make uninstall DEST=out
     [ ! -f out/usr/local/lib/libchirp.so ]
     make clean
+    /outside/configure --doc
+    make check
 fi
