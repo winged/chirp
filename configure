@@ -22,7 +22,6 @@ _project = "libchirp"
 _version = "0.1.0"
 
 _base = path.dirname(path.realpath(__file__))
-_build = path.realpath(os.curdir)
 _baselen = len(_base)
 _include = re.compile('^\s*#\s*include\s*"\s*([^"]+\s*).*$')
 
@@ -566,9 +565,14 @@ for line in sys.stdin.readlines():
 
 
 if __name__ == "__main__":
-    if os.path.dirname(__file__) == os.curdir:
-        print("Please configure in empty build dir.")
-        os.exit(1)
+    in_source_attempt = os.path.dirname(__file__) == os.curdir
+    if in_source_attempt:
+        try:
+            os.mkdir("build")
+        except FileExistsError:
+            pass
+        os.chdir("build")
+    _build = path.realpath(os.curdir)
     args = parse()
     rg_list = write_makefile(args)
     write_config()
@@ -577,3 +581,7 @@ if __name__ == "__main__":
     write_ide_files(args)
     write_pfix(rg_list)
     test_depends(args)
+    print("\nTo build chirp call:\n")
+    if in_source_attempt:
+        print("cd build")
+    print("make all")
