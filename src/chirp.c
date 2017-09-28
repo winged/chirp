@@ -676,8 +676,9 @@ ch_chirp_init(
         ch_chirp_t* chirp,
         const ch_config_t* config,
         uv_loop_t* loop,
-        ch_start_cb_t start,
-        ch_done_cb_t done,
+        ch_recv_cb_t recv_cb,
+        ch_start_cb_t start_cb,
+        ch_done_cb_t done_cb,
         ch_log_cb_t log_cb
 )
 //    :noindex:
@@ -691,7 +692,7 @@ ch_chirp_init(
     uv_mutex_lock(&_ch_chirp_init_lock);
     memset(chirp, 0, sizeof(ch_chirp_t));
     chirp->_log_lock = &_ch_chirp_log_lock;
-    chirp->_done_cb = done;
+    chirp->_done_cb = done_cb;
     chirp->_init            = CH_CHIRP_MAGIC;
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
     if(!ichirp) {
@@ -709,13 +710,14 @@ ch_chirp_init(
     ichirp->config          = *config;
     ichirp->public_port     = config->PORT;
     ichirp->loop            = loop;
-    ichirp->start_cb        = start;
+    ichirp->start_cb        = start_cb;
+    ichirp->recv_cb         = recv_cb;
     ch_config_t* tmp_conf   = &ichirp->config;
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_encryption_t* enc    = &ichirp->encryption;
     chirp->_                = ichirp;
     if(log_cb != NULL)
-        ch_chirp_register_log_handler(chirp, log_cb);
+        ch_chirp_set_log_callback(chirp, log_cb);
     tmp_err = _ch_chirp_verify_cfg(chirp);
     if(tmp_err != CH_SUCCESS) {
         chirp->_init = 0;
@@ -900,8 +902,10 @@ ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
         ch_chirp_t** chirp_out,
-        ch_start_cb_t start,
-        ch_log_cb_t log
+        ch_recv_cb_t recv_cb,
+        ch_start_cb_t start_cb,
+        ch_done_cb_t done_cb,
+        ch_log_cb_t log_cb
 )
 //    :noindex:
 //
@@ -930,7 +934,15 @@ ch_chirp_run(
         );
         return tmp_err;
     }
-    tmp_err = ch_chirp_init(&chirp, config, &loop, start, NULL, log);
+    tmp_err = ch_chirp_init(
+        &chirp,
+        config,
+        &loop,
+        recv_cb,
+        start_cb,
+        done_cb,
+        log_cb
+    );
     if(tmp_err != CH_SUCCESS) {
         EC(
             (&chirp),
@@ -985,20 +997,33 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
 
 // .. c:function::
 CH_EXPORT
-int
-ch_loop_init(uv_loop_t* loop)
+void
+ch_chirp_set_log_callback(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 //    :noindex:
 //
-//    see: :c:func:`ch_loop_init`
+//    see: :c:func:`ch_chirp_set_log_callback`
 //
 // .. code-block:: cpp
 //
 {
-    int tmp_err;
-    uv_mutex_lock(&_ch_chirp_init_lock);
-    tmp_err = uv_loop_init(loop);
-    uv_mutex_unlock(&_ch_chirp_init_lock);
-    return tmp_err;
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    chirp->_log = log_cb;
+}
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_set_recv_callback(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_set_recv_callback`
+//
+// .. code-block:: cpp
+//
+{
+    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_int_t* ichirp = chirp->_;
+    ichirp->recv_cb = recv_cb;
 }
 
 // .. c:function::
@@ -1035,16 +1060,18 @@ ch_libchirp_init(void)
 
 // .. c:function::
 CH_EXPORT
-void
-ch_chirp_register_recv_handler(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
+int
+ch_loop_init(uv_loop_t* loop)
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_register_recv_handler`
+//    see: :c:func:`ch_loop_init`
 //
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_int_t* ichirp = chirp->_;
-    ichirp->recv_cb = recv_cb;
+    int tmp_err;
+    uv_mutex_lock(&_ch_chirp_init_lock);
+    tmp_err = uv_loop_init(loop);
+    uv_mutex_unlock(&_ch_chirp_init_lock);
+    return tmp_err;
 }

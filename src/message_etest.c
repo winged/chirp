@@ -214,7 +214,7 @@ void
 _ch_tst_echo_init_handler(ch_chirp_t* chirp)
 {
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-    ch_chirp_register_recv_handler(chirp, _ch_tst_recv_echo_message_cb);
+    ch_chirp_set_recv_callback(chirp, _ch_tst_recv_echo_message_cb);
 }
 
 static
@@ -237,6 +237,7 @@ _ch_tst_run_chirp(void* arg)
             &chirp,
             &config,
             &loop,
+            NULL,
             args->init,
             NULL,
             NULL

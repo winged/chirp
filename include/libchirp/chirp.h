@@ -224,8 +224,9 @@ ch_chirp_init(
         ch_chirp_t* chirp,
         const ch_config_t* config,
         uv_loop_t* loop,
-        ch_start_cb_t start,
-        ch_done_cb_t done,
+        ch_recv_cb_t recv_cb,
+        ch_start_cb_t start_cb,
+        ch_done_cb_t done_cb,
         ch_log_cb_t log_cb
 );
 //
@@ -242,40 +243,14 @@ ch_chirp_init(
 //    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
 //    :param ch_config_t* config: Pointer to a chirp configration.
 //    :param uv_loop_t* loop: Reference to a libuv loop.
-//    :param ch_start_cb_t start: Called when chirp is started, can be NULL.
-//    :param ch_done_cb_t done: Called when chirp is finished, can be NULL.
+//    :param ch_recv_cb_t recv_cb: Called when chirp receives a message,
+//                                 can be NULL.
+//    :param ch_start_cb_t start_cb: Called when chirp is started, can be NULL.
+//    :param ch_done_cb_t done_cb: Called when chirp is finished, can be NULL.
 //    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
 //    :rtype: ch_error_t
-//
-
-// .. c:function::
-static
-ch_inline
-void
-ch_chirp_register_log_handler(ch_chirp_t* chirp, ch_log_cb_t log_cb)
-//
-//    Register a callback for sending log messages.
-//
-//    :param ch_chirp_t* chirp: Pointer to a chirp object.
-//    :param ch_log_cb_t   log: Callback to be called when logging messages.
-//
-// .. code-block:: cpp
-//
-{
-    chirp->_log = log_cb;
-}
-
-// .. c:function::
-CH_EXPORT
-void
-ch_chirp_register_recv_handler(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
-//
-//    Register a callback for receiving a message.
-//
-//    :param ch_chirp_t* chirp: Pointer to a chirp object.
-//    :param ch_message_t* msg: The message which was received.
 //
 
 // .. c:function::
@@ -296,8 +271,10 @@ ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
         ch_chirp_t** chirp,
-        ch_start_cb_t start,
-        ch_log_cb_t log
+        ch_recv_cb_t recv_cb,
+        ch_start_cb_t start_cb,
+        ch_done_cb_t done_cb,
+        ch_log_cb_t log_cb
 );
 //
 //    Initializes, runs and cleans everything. Everything being:
@@ -315,8 +292,12 @@ ch_chirp_run(
 //    :param ch_chirp_t** chirp: Out: Pointer to a chirp object pointer. Can be
 //                               NULL.
 //
+//    :param ch_recv_cb_t recv_cb: Called when chirp receives a message,
+//                                 can be NULL.
+//    :param ch_start_cb_t start_cb: Called when chirp is started, can be NULL.
+//    :param ch_done_cb_t done_cb: Called when chirp is finished, can be NULL.
+//    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.
 //    :return: A chirp error. See: :c:type:`ch_error_t`.
-//    :param ch_log_cb_t log: Callback to be called when logging messages.
 //    :rtype: ch_error_t
 
 // .. c:function::
@@ -385,6 +366,28 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp);
 //    This function is thread-safe.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_set_log_callback(ch_chirp_t* chirp, ch_log_cb_t log_cb);
+//
+//    Set a callback for sending log messages.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_log_cb_t   log: Callback to be called when logging messages.
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_set_recv_callback(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
+//
+//    Set a callback for receiving a message.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param ch_recv_cb_t recv_cb: Called when chirp receives a message,
+//                                 can be NULL.
+//
 //
 //    .. code-block:: cpp
 

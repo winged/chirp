@@ -96,6 +96,7 @@ ch_tst_send(
             &chirp,
             &config,
             &loop,
+            NULL,
             ch_tst_start,
             NULL,
             NULL
@@ -165,6 +166,7 @@ ch_tst_listen(
             &chirp,
             &config,
             &loop,
+            NULL,
             NULL,
             NULL,
             NULL

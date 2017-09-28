@@ -42,6 +42,7 @@ main()
             &chirp,
             &config,
             &loop,
+            NULL,
             ch_tst_start,
             NULL,
             NULL
