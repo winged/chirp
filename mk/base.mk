@@ -216,4 +216,4 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf include/
 	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
-	$(V_M)cd "$(BUILD)" && rm *.a *.so
+	$(V_M)cd "$(BUILD)" && rm -f *.a *.so
