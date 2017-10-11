@@ -219,3 +219,7 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
 	$(V_M)cd "$(BUILD)" && rm -f *.a *.so
+	$(V_M)cd "$(BASE)" && rm -rf .cache
+	$(V_M)cd "$(BASE)" && rm -rf __pycache__
+	$(V_M)cd "$(BASE)" && rm -rf src/.cache
+	$(V_M)cd "$(BASE)" && rm -rf src/__pycache__
