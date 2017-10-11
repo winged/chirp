@@ -1,0 +1,16 @@
+#!/bin/sh
+
+apt update
+apt install \
+    python3-u-msgpack \
+    python3-pytest \
+    python3-hypothesis \
+    python3-sphinx \
+    python3-sphinx-rtd-theme graphviz \
+    libuv1-dev \
+    libssl-dev \
+    abi-compliance-checker \
+    cppcheck \
+    rr \
+    gdb \
+    valgrind
