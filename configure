@@ -251,6 +251,20 @@ Arch:           pacman -S python-sphinx python-sphinx_rtd_theme graphviz
 OSX:            brew install sphinx-doc graphviz
 """)
     if args.dev:
+        sys.stdout.write("Checking for valgrind: ")
+        if os.system("command -v valgrind > /dev/null"):
+            print("""valgrind was not found.
+
+Please install valgrind:
+
+Alpine:         apk add valgrind
+Debian-based:   apt install valgrind
+Redhat-based:   yum install valgrind
+Arch:           pacman -S valgrind
+OSX:            brew install valgrind
+""")
+        else:
+            print("ok")
         sys.stdout.write("Checking for cppcheck: ")
         if os.system("command -v cppcheck > /dev/null"):
             print("""cppcheck was not found.
