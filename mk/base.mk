@@ -20,8 +20,6 @@ CFLAGS += \
 	-Wextra \
 	-Werror \
 	-pedantic \
-	-ffunction-sections \
-	-fdata-sections \
 	-Wno-unused-function \
 	$(VISIBLITYFLAG) \
 	-I"$(BASE)/include" \
@@ -80,14 +78,10 @@ ifeq ($(UNAME_S),Darwin)
 # Homebrew include path
 CFLAGS += -I/usr/local/opt/openssl/include
 LDFLAGS += -L/usr/local/opt/openssl/lib
-# Dead code
-LDFLAGS += -Wl,-dead_strip
 else
 # Linux specific
 CFLAGS += -pthread
 LDFLAGS += -lrt
-# Dead code
-LDFLAGS += -Wl,--gc-sections
 endif
 
 # Strip command

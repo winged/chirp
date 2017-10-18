@@ -7,6 +7,16 @@ CFLAGS += \
 	-DNDEBUG \
 	$(OPTFLAG) \
 	$(GGDBFLAG) \
+	-ffunction-sections \
+	-fdata-sections
+
+# Dead code elimination
+# =====================
+ifeq ($(UNAME_S),Darwin)
+LDFLAGS += -Wl,-dead_strip
+else
+LDFLAGS += -Wl,--gc-sections
+endif
 
 ifneq ($(STRIP),True)
 	GGDBFLAG := -ggdb3
