@@ -378,7 +378,7 @@ _ch_wr_write_msg_header_cb(uv_write_t* req, int status)
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->header_len > 0) // TODO: && !(msg->_flags & CH_MSG_SENT_HEADER))
+    if(msg->header_len > 0)
         ch_cn_write(
             conn,
             msg->header,

@@ -244,12 +244,47 @@ _ch_rd_handle_msg(
 {
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_int_t* ichirp = chirp->_;
+#   ifndef NDEBUG
+    {
+        ch_text_address_t addr;
+        char id[33];
+        uv_inet_ntop(
+            conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
+            conn->address,
+            addr.data,
+            sizeof(addr)
+        );
+        ch_bytes_to_hex(
+            msg->identity,
+            sizeof(msg->identity),
+            id,
+            sizeof(id)
+        );
+        LC(
+            chirp,
+            "Read message with id: %s\n"
+            "                          "
+            "serial:%u\n"
+            "                          "
+            "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
+            id,
+            msg->serial,
+            addr.data,
+            conn->port,
+            msg->type,
+            msg->data_len,
+            (void*) conn
+        );
+    }
+#   endif
+
     /* Pause reading on last handler. */
     if(reader->last_handler) {
         uv_read_stop((uv_stream_t*) &conn->client);
     }
     reader->state = CH_RD_WAIT;
     reader->handler = NULL;
+
 
     if(msg->type & CH_MSG_REQ_ACK) {
         /* Send ack */
@@ -301,44 +336,11 @@ _ch_rd_handle_msg(
                 chirp,
                 "No receiving callback function registered%s", ""
             );
-            ch_bf_release(&ichirp->pool, msg->_handler);
+            ch_chirp_release_recv_handler(msg);
         }
     } else
         ch_bf_release(&ichirp->pool, msg->_handler);
 
-#   ifndef NDEBUG
-    {
-        ch_text_address_t addr;
-        char id[33];
-        uv_inet_ntop(
-            conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
-            conn->address,
-            addr.data,
-            sizeof(addr)
-        );
-        ch_bytes_to_hex(
-            msg->identity,
-            sizeof(msg->identity),
-            id,
-            sizeof(id)
-        );
-        LC(
-            chirp,
-            "Read message with id: %s\n"
-            "                          "
-            "serial:%u\n"
-            "                          "
-            "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
-            id,
-            msg->serial,
-            addr.data,
-            conn->port,
-            msg->type,
-            msg->data_len,
-            (void*) conn
-        );
-    }
-#   endif
 }
 
 // .. c:function::
@@ -371,7 +373,7 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
 
 // .. c:function::
 void
-ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
+ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_read`
@@ -399,7 +401,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
         (void*) conn
     );
     do {
-        int to_read = read - bytes_handled;
+        int to_read = bytes_read - bytes_handled;
 
         switch(reader->state) {
             case CH_RD_START:
@@ -541,7 +543,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
                 A(0, "Unknown reader state");
                 break;
         }
-    } while(bytes_handled < read);
+    } while(bytes_handled < bytes_read);
 }
 
 CH_EXPORT
@@ -623,6 +625,9 @@ _ch_rd_read_buffer(
             src_buf,
             expected - reader->bytes_read
         );
+        *bytes_handled += expected - reader->bytes_read;
+        reader->bytes_read = 0; /* Reset partial buffer reads */
+        return CH_SUCCESS;
     } else {
         /* Only partial read possible */
         memcpy(
@@ -630,10 +635,8 @@ _ch_rd_read_buffer(
             src_buf,
             to_read
         );
+        *bytes_handled += to_read;
         reader->bytes_read += to_read;
         return CH_MORE;
     }
-    *bytes_handled += expected;
-    reader->bytes_read = 0; /* Reset partial buffer reads */
-    return CH_SUCCESS;
 }

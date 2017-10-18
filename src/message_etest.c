@@ -133,8 +133,9 @@ _ch_tst_sent_cb(ch_message_t* msg, int status, float load)
          * arrive.
          */;
         sleep(1);
-        ch_chirp_close_ts(ch_tr_other_chirp(chirp));
         ch_chirp_close_ts(chirp);
+        sleep(1);
+        ch_chirp_close_ts(ch_tr_other_chirp(chirp));
     }
 }
 
