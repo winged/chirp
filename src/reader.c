@@ -256,7 +256,6 @@ _ch_rd_handle_msg(
         ch_message_t* ack_msg = &reader->ack_msg;
         memset(ack_msg, 0, sizeof(ch_message_t));
         memcpy(ack_msg->identity, msg->identity, CH_ID_SIZE);
-        memcpy(ack_msg->serial, msg->serial, CH_ID_SIZE);
         memcpy(ack_msg->address, msg->address, CH_IP_ADDR_SIZE);
         ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
@@ -311,7 +310,6 @@ _ch_rd_handle_msg(
     {
         ch_text_address_t addr;
         char id[33];
-        char serial[33];
         uv_inet_ntop(
             conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
             conn->address,
@@ -324,21 +322,15 @@ _ch_rd_handle_msg(
             id,
             sizeof(id)
         );
-        ch_bytes_to_hex(
-            msg->serial,
-            sizeof(msg->serial),
-            serial,
-            sizeof(serial)
-        );
         LC(
             chirp,
             "Read message with id: %s\n"
             "                          "
-            "serial:%s\n"
+            "serial:%u\n"
             "                          "
             "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
             id,
-            serial,
+            msg->serial,
             addr.data,
             conn->port,
             msg->type,

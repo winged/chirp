@@ -870,27 +870,20 @@ ch_chirp_try_message_finish(
 #       ifndef NDEBUG
         {
             char id[33];
-            char serial[33];
             ch_bytes_to_hex(
                 msg->identity,
                 sizeof(msg->identity),
                 id,
                 sizeof(id)
             );
-            ch_bytes_to_hex(
-                msg->serial,
-                sizeof(msg->serial),
-                serial,
-                sizeof(serial)
-            );
             if(msg->type & CH_MSG_ACK) {
                 LC(
                     chirp,
                     "Sent ACK message id: %s\n"
                     "                          "
-                    "serial: %s. ", "ch_message_t:%p",
+                    "serial: %u. ", "ch_message_t:%p",
                     id,
-                    serial,
+                    msg->serial,
                     (void*) msg
                 );
             } else {
@@ -898,9 +891,9 @@ ch_chirp_try_message_finish(
                     chirp,
                     "Finished message id: %s\n"
                     "                          "
-                    "serial: %s. ", "ch_message_t:%p",
+                    "serial: %u. ", "ch_message_t:%p",
                     id,
-                    serial,
+                    msg->serial,
                     (void*) msg
                 );
             }

@@ -579,7 +579,6 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ), "No write state should be set");
     msg->_flags |= CH_MSG_USED;
     ch_protocol_t* protocol = &ichirp->protocol;
-    ch_random_ints_as_bytes(msg->serial, sizeof(msg->serial));
 
     ch_rm_init_from_msg(chirp, &search_remote, msg);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
@@ -588,6 +587,8 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
     }
+    remote->serial += 1;
+    msg->serial = remote->serial;
 
     if(msg->type & CH_MSG_REQ_ACK)
         ch_msg_enqueue(&remote->rack_msg_queue, msg);

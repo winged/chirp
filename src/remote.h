@@ -39,7 +39,7 @@
 //
 //       The port that shall be used for connections.
 //
-//    .. c:member:: uint8_t receipt[CH_ID_SIZE]
+//    .. c:member:: uint8_t receipt[CH_ID_SIZE + 4]
 //
 //       The last receipt for this remote. Used to detect duplicate messages.
 //
@@ -61,6 +61,10 @@
 //    .. c:member:: ch_chirp_t* chirp
 //
 //       Pointer to the chirp object. See: :c:type:`ch_chirp_t`.
+//
+//    .. c:member:: uint32_t serial
+//
+//       The current serial number for this remote
 //
 //    .. c:member:: float load
 //
@@ -88,12 +92,13 @@ struct ch_remote_s {
     uint8_t          ip_protocol;
     uint8_t          address[CH_IP_ADDR_SIZE];
     int32_t          port;
-    uint8_t          receipt[CH_ID_SIZE];
+    uint8_t          receipt[CH_ID_SIZE + 4]; /* Identity + serial */
     ch_connection_t* conn;
     ch_message_t*    no_rack_msg_queue;
     ch_message_t*    rack_msg_queue;
     ch_message_t*    wait_ack_message;
     ch_chirp_t*      chirp;
+    uint32_t         serial;
     float            load;
     uint8_t          flags;
     char             color;

@@ -59,7 +59,7 @@ typedef struct ch_sr_handshake_s {
 //
 // .. code-block:: cpp
 
-#define CH_SR_WIRE_MESSAGE_SIZE 39
+#define CH_SR_WIRE_MESSAGE_SIZE 27
 
 #ifndef NDEBUG
 #   begindef CH_SR_WIRE_MESSAGE_CHECK
@@ -80,7 +80,7 @@ typedef struct ch_sr_handshake_s {
     pos += CH_ID_SIZE;
 
     uint8_t* serial      = (void*) &buf[pos];
-    pos += CH_ID_SIZE;
+    pos += 4;
 
     uint8_t* type        = (void*) &buf[pos];
     pos += 1;
@@ -112,11 +112,11 @@ ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg)
     CH_SR_WIRE_MESSAGE_LAYOUT;
 
     memcpy(msg->identity, identity, CH_ID_SIZE);
-    memcpy(msg->serial, serial, CH_ID_SIZE);
 
-    msg->type = *type;
+    msg->type       = *type;
     msg->header_len = ntohs(*header_len);
-    msg->data_len = ntohl(*data_len);
+    msg->data_len   = ntohl(*data_len);
+    msg->serial     = ntohl(*serial);
     return CH_SR_WIRE_MESSAGE_SIZE;
 }
 
@@ -139,11 +139,11 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
     CH_SR_WIRE_MESSAGE_LAYOUT;
 
     memcpy(identity, msg->identity, CH_ID_SIZE);
-    memcpy(serial, msg->serial, CH_ID_SIZE);
 
-    *type = msg->type;
+    *type       = msg->type;
     *header_len = htons(msg->header_len);
-    *data_len = htonl(msg->data_len);
+    *data_len   = htonl(msg->data_len);
+    *serial     = htonl(msg->serial);
     return CH_SR_WIRE_MESSAGE_SIZE;
 }
 

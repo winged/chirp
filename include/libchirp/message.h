@@ -40,7 +40,7 @@
 //
 //       The identity of the message.
 //
-//    .. c:member:: uint8_t[16] serial
+//    .. c:member:: uint32_t serial
 //
 //       The serial number of the message.
 //
@@ -60,7 +60,7 @@
 //
 #define CH_WIRE_MESSAGE \
     uint8_t  identity[CH_ID_SIZE]; \
-    uint8_t  serial[CH_ID_SIZE]; \
+    uint32_t serial; \
     uint8_t  type; \
     uint16_t header_len; \
     uint32_t data_len \

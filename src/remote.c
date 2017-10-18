@@ -39,6 +39,7 @@ _ch_rm_init(
     ch_rm_node_init(remote);
     remote->load  = -1;
     remote->chirp = chirp;
+    ch_random_ints_as_bytes((uint8_t*) &remote->serial, sizeof(uint32_t));
 }
 
 // .. c:function::
