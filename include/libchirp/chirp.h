@@ -147,6 +147,7 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 struct ch_chirp_s {
     void*        user_data;
     ch_chirp_int_t* _;
+    uv_thread_t  _thread;
     ch_log_cb_t  _log;
     int          _init;
     uv_async_t   _done;
@@ -198,7 +199,8 @@ CH_EXPORT
 ch_identity_t
 ch_chirp_get_identity(ch_chirp_t* chirp);
 //
-//    Get the identity of the given chirp instance.
+//    Get the identity of the given chirp instance. Is thread-safe after chirp
+//    has been initialized.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //
@@ -210,7 +212,8 @@ CH_EXPORT
 uv_loop_t*
 ch_chirp_get_loop(ch_chirp_t* chirp);
 //
-//    Get the loop of the given chirp object.
+//    Get the loop of the given chirp object. Is thread-safe after chirp has
+//    been initialized.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //

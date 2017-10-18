@@ -142,7 +142,7 @@ static
 void
 _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     A(msg != NULL, "Not a ch_message_t*");
     A(!(msg->type & CH_MSG_ACK), "ACK should not call callback");
     A(!(msg->_flags & CH_MSG_USED), "The message should not be used");
@@ -170,7 +170,7 @@ static
 void
 _ch_tst_send_message(ch_chirp_t* chirp)
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
 
     int simple = ch_qc_tgen_bool();
     int use_ts = ch_qc_tgen_bool();
@@ -206,7 +206,7 @@ static
 void
 _ch_tst_sender_init_handler(ch_chirp_t* chirp)
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     _ch_tst_send_message(chirp);
 }
 
@@ -214,7 +214,7 @@ static
 void
 _ch_tst_echo_init_handler(ch_chirp_t* chirp)
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_set_recv_callback(chirp, _ch_tst_recv_echo_message_cb);
 }
 

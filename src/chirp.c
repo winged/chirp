@@ -184,7 +184,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     A(ichirp->closing_tasks > -1, "Closing semaphore dropped below zero");
     L(
@@ -225,7 +225,7 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
 {
     int tmp_err;
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     if(chirp->_ == NULL) {
         E(
             chirp,
@@ -286,7 +286,7 @@ ch_chirp_close_cb(uv_handle_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     chirp->_->closing_tasks -= 1;
     LC(
         chirp,
@@ -308,7 +308,7 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     uv_async_send(&chirp->_done);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
@@ -338,7 +338,7 @@ _ch_chirp_done(uv_async_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     uv_close((uv_handle_t*) handle, NULL);
     if(chirp->_done_cb != NULL)
         chirp->_done_cb(chirp);
@@ -407,7 +407,7 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
 
     if(signo != SIGINT && signo != SIGTERM)
         return;
@@ -428,7 +428,7 @@ _ch_chirp_start(uv_async_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     uv_close((uv_handle_t*) handle, NULL);
     if(ichirp->start_cb != NULL)
@@ -446,7 +446,6 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_config_t* conf = &chirp->_->config;
     V(
         chirp,
@@ -694,6 +693,7 @@ ch_chirp_init(
     chirp->_log_lock = &_ch_chirp_log_lock;
     chirp->_done_cb = done_cb;
     chirp->_init            = CH_CHIRP_MAGIC;
+    chirp->_thread          = uv_thread_self();
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
     if(!ichirp) {
         fprintf(
@@ -1014,7 +1014,7 @@ ch_chirp_set_auto_stop_loop(ch_chirp_t* chirp)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     chirp->_->flags |= CH_CHIRP_AUTO_STOP;
 }
 
@@ -1029,7 +1029,7 @@ ch_chirp_set_log_callback(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     chirp->_log = log_cb;
 }
 
@@ -1044,7 +1044,7 @@ ch_chirp_set_recv_callback(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     ichirp->recv_cb = recv_cb;
 }
@@ -1062,7 +1062,7 @@ ch_libchirp_cleanup(void)
 {
     uv_mutex_destroy(&_ch_chirp_init_lock);
     uv_mutex_destroy(&_ch_chirp_log_lock);
-    return ch_en_openssl_cleanup();
+    return ch_en_tls_cleanup();
 }
 
 // .. c:function::
@@ -1078,7 +1078,7 @@ ch_libchirp_init(void)
 {
     uv_mutex_init(&_ch_chirp_init_lock);
     uv_mutex_init(&_ch_chirp_log_lock);
-    return ch_en_openssl_init();
+    return ch_en_tls_init();
 }
 
 // .. c:function::

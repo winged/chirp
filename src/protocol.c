@@ -102,7 +102,6 @@ _ch_pr_do_handshake(ch_connection_t* conn)
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     conn->tls_handshake_state = SSL_do_handshake(conn->ssl);
     if(SSL_is_init_finished(conn->ssl)) {
         conn->flags &= ~CH_CN_TLS_HANDSHAKE;
@@ -142,7 +141,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
 //
 {
     ch_chirp_t* chirp = server->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp  = chirp->_;
     if (status < 0) {
         L(
@@ -300,7 +299,6 @@ ch_pr_read(ch_connection_t* conn)
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     int tmp_err;
     // Handshake done, normal operation
     while((tmp_err = SSL_read(
@@ -354,7 +352,7 @@ ch_pr_read_data_cb(
 {
     ch_connection_t* conn = stream->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
 #   ifndef NDEBUG
         conn->flags &= ~CH_CN_BUF_UV_USED;
 #   endif
@@ -429,7 +427,6 @@ ch_pr_start(ch_protocol_t* protocol)
     int tmp_err;
     ch_text_address_t tmp_addr;
     ch_chirp_t* chirp = protocol->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     ch_config_t* config = &ichirp->config;
     // IPv4
@@ -535,7 +532,6 @@ ch_pr_stop(ch_protocol_t* protocol)
 //
 {
     ch_chirp_t* chirp = protocol->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     L(chirp, "Closing protocol%s", "");
     _ch_pr_close_free_connections(chirp);
     uv_close((uv_handle_t*) &protocol->serverv4, ch_chirp_close_cb);

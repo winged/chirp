@@ -197,8 +197,9 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
 {
     ch_message_t* msg = handle->data;
     ch_chirp_t* chirp = msg->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_connection_t* conn = msg->_conn;
+    A(chirp == conn->chirp, "Chirp on connection should match");
     ch_free(conn);
     msg->_flags &= ~CH_MSG_USED;
     if(msg->_send_cb != NULL) {
@@ -222,8 +223,9 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
     ch_text_address_t taddr;
     ch_message_t* msg = req->data;
     ch_chirp_t* chirp = msg->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_connection_t* conn = msg->_conn;
+    A(chirp == conn->chirp, "Chirp on connection should match");
     ch_msg_get_address(msg, &taddr);
     if(status == CH_SUCCESS) {
         LC(
@@ -262,7 +264,7 @@ _ch_wr_send_ts_cb(uv_async_t* handle)
 //
 {
     ch_chirp_t* chirp = handle->data;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
 
@@ -288,7 +290,7 @@ _ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
@@ -316,7 +318,7 @@ _ch_wr_write_data_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
     _ch_wr_write_finish(chirp, writer, conn);
@@ -372,7 +374,7 @@ _ch_wr_write_msg_header_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
@@ -408,7 +410,7 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle)
     ch_connection_t* conn = handle->data;
     ch_writer_t* writer = &conn->writer;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     LC(
         chirp,
         "Write timed out. ", "ch_connection_t:%p",
@@ -429,7 +431,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     if(chirp->_->config.ACKNOWLEDGE != 0)
         msg->type = CH_MSG_REQ_ACK;
     else
@@ -477,8 +479,6 @@ ch_wr_free(ch_writer_t* writer)
 //
 {
     ch_connection_t* conn = writer->send_timeout.data;
-    ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     uv_close((uv_handle_t*) &writer->send_timeout, ch_cn_close_cb);
     conn->shutdown_tasks += 1;
 }
@@ -496,7 +496,6 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
     int tmp_err;
 
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     tmp_err = uv_timer_init(ichirp->loop, &writer->send_timeout);
     if(tmp_err != CH_SUCCESS) {
@@ -520,7 +519,7 @@ ch_wr_process_queues(ch_remote_t* remote)
 //
 {
     ch_chirp_t* chirp = remote->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_connection_t* conn = remote->conn;
     A(conn != NULL, "The connection must be set");
     ch_message_t* msg = NULL;
@@ -562,7 +561,6 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp  = chirp->_;
     if(ichirp->flags & CH_CHIRP_CLOSING || ichirp->flags & CH_CHIRP_CLOSED) {
         if(send_cb != NULL)
@@ -612,6 +610,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         }
         memset(conn, 0, sizeof(ch_connection_t));
         msg->_conn         = conn;
+        conn->chirp        = chirp;
         conn->port         = msg->port;
         conn->ip_protocol  = msg->ip_protocol;
         conn->connect.data = msg;
@@ -683,7 +682,6 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
     msg->_conn = conn;

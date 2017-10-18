@@ -147,7 +147,6 @@ _ch_rd_handshake(
 {
     ch_connection_t* old_conn = NULL;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_remote_t  search_remote;
     ch_remote_t* remote = NULL;
     ch_chirp_int_t* ichirp = chirp->_;
@@ -244,7 +243,6 @@ _ch_rd_handle_msg(
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     /* Pause reading on last handler. */
     if(reader->last_handler) {
@@ -364,7 +362,7 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     if(status < 0) {
         LC(
             chirp,
@@ -399,7 +397,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t read)
     size_t bytes_handled = 0;
 
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     ch_reader_t* reader = &conn->reader;
     LC(
@@ -566,7 +564,7 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
 {
     ch_connection_t* conn = msg->_conn;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     if(msg->_flags & CH_MSG_FREE_DATA)
         ch_free(msg->data);

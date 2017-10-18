@@ -383,6 +383,22 @@ __ch__silenence(void)
     }
 #   enddef
 
+// .. c:macro:: ch_chirp_check_m()
+//
+//    Validates that we have a valid chirp object and we are on the right
+//    thread.
+
+#   begindef ch_chirp_check_m(chirp)
+    {
+        A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+        uv_thread_t __ch_chirp_check_self_ = uv_thread_self();
+        A(
+            uv_thread_equal(&__ch_chirp_check_self_, &chirp->_thread) != 0,
+            "Call on the wrong thread"
+        );
+    }
+#   enddef
+
 #else //NDEBUG
 
 // .. c:macro:: V
@@ -464,11 +480,15 @@ __ch__silenence(void)
 // .. code-block:: cpp
 //
 #   define A(condition, ...) (void)(condition)
+#   define ch_chirp_check_m(chirp) (void)(chirp)
 
 #endif
 
 #ifndef A
 #   error Assert macro not defined
+#endif
+#ifndef ch_chirp_check_m
+#   error ch_chirp_check_m macro not defined
 #endif
 #ifndef L
 #   error Log macro L not defined

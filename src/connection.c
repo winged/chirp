@@ -117,7 +117,7 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     size_t size = ichirp->config.BUFFER_SIZE;
     if(size == 0)
@@ -174,7 +174,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
     size_t bytes_encrypted = 0;
     size_t bytes_read      = 0;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     A(!(conn->flags & CH_CN_BUF_WTLS_USED), "The wtls buffer is still used");
     A(!(conn->flags & CH_CN_WRITE_PENDING), "Another uv write is pending");
 #   ifndef NDEBUG
@@ -261,7 +261,7 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
 #   ifndef NDEBUG
         conn->flags &= ~CH_CN_WRITE_PENDING;
         conn->flags &= ~CH_CN_BUF_WTLS_USED;
@@ -311,7 +311,7 @@ _ch_cn_shutdown_cb(
     int tmp_err;
     ch_connection_t* conn = req->handle->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     LC(
         chirp,
         "Shutdown callback called. ", "ch_connection_t:%p",
@@ -363,7 +363,7 @@ _ch_cn_shutdown_timeout_cb( uv_timer_t* handle)
     ch_connection_t* conn = handle->data;
     int tmp_err;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     _ch_cn_shutdown_cb(&conn->shutdown_req, 1);
     tmp_err = uv_cancel((uv_req_t*) &conn->shutdown_req);
     if(tmp_err != CH_SUCCESS) {
@@ -394,7 +394,7 @@ _ch_cn_write_cb(uv_write_t* req, int status)
 {
     ch_connection_t* conn = req->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
 #   ifndef NDEBUG
         conn->flags &= ~CH_CN_WRITE_PENDING;
         conn->flags &= ~CH_CN_BUF_WTLS_USED;
@@ -455,7 +455,7 @@ ch_cn_close_cb(uv_handle_t* handle)
 {
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     conn->shutdown_tasks -= 1;
     A(conn->shutdown_tasks > -1, "Shutdown semaphore dropped below zero");
@@ -511,7 +511,6 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
 {
     int tmp_err;
 
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp  = chirp->_;
     conn->load            = -1;
     conn->chirp           = chirp;
@@ -547,7 +546,6 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
 // .. code-block:: cpp
 //
 {
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
     conn->ssl = SSL_new(ichirp->encryption.ssl_ctx);
     if(conn->ssl == NULL) {
@@ -613,7 +611,7 @@ ch_cn_read_alloc_cb(
     (void)(suggested_size);
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     A(!(conn->flags & CH_CN_BUF_UV_USED), "UV buffer still used");
 #   ifndef NDEBUG
         conn->flags |= CH_CN_BUF_UV_USED;
@@ -634,7 +632,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
 {
     A(!(conn->flags & CH_CN_WRITE_PENDING), "Another write is still pending");
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
+    ch_chirp_check_m(chirp);
     int pending = BIO_pending(conn->bio_app);
     if(pending < 1) {
         if(!(
@@ -693,7 +691,6 @@ ch_cn_shutdown(
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(conn->flags & CH_CN_SHUTTING_DOWN) {
         EC(
             chirp,
@@ -809,7 +806,6 @@ ch_cn_write(
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     A(conn->write_size == 0, "Another connection write is pending");
     if(conn->flags & CH_CN_ENCRYPTED) {
         conn->write_callback  = callback;

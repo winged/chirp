@@ -24,14 +24,14 @@
 // Declarations
 // ============
 
-// .. c:var:: _ch_en_manual_openssl
+// .. c:var:: _ch_en_manual_tls
 //
-//    The user will call ch_en_openssl_init() and ch_en_openssl_cleanup().
+//    The user will call ch_en_tls_init() and ch_en_tls_cleanup().
 //    Defaults to 0.
 //
 // .. code-block:: cpp
 //
-static char _ch_en_manual_openssl = 0;
+static char _ch_en_manual_tls = 0;
 
 #ifdef CH_OPENSSL_10_API
 // .. c:var:: _ch_en_lock_count
@@ -111,10 +111,10 @@ static char _ch_en_manual_openssl = 0;
 // .. c:function::
     CH_EXPORT
     ch_error_t
-    ch_en_openssl_init(void)
+    ch_en_tls_init(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_openssl_init`
+//    see: :c:func:`ch_en_tls_init`
 //
 // .. code-block:: cpp
 //
@@ -125,7 +125,7 @@ static char _ch_en_manual_openssl = 0;
         SSL_load_error_strings();
         OPENSSL_config("chirp");
 
-        return ch_en_openssl_threading_setup();
+        return cn_en_tls_threading_setup();
 #   else
         if(OPENSSL_init_ssl(0, NULL) == 0) {
             return CH_TLS_ERROR;
@@ -137,15 +137,15 @@ static char _ch_en_manual_openssl = 0;
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_en_openssl_cleanup(void)
+ch_en_tls_cleanup(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_openssl_cleanup`
+//    see: :c:func:`ch_en_tls_cleanup`
 //
 // .. code-block:: cpp
 //
 {
-    if(_ch_en_manual_openssl) {
+    if(_ch_en_manual_tls) {
         return CH_SUCCESS;
     }
 
@@ -166,16 +166,16 @@ ch_en_openssl_cleanup(void)
 #   endif
     ASN1_STRING_TABLE_cleanup();
 
-    return ch_en_openssl_threading_cleanup();
+    return ch_en_tls_threading_cleanup();
 }
 
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_en_openssl_threading_cleanup(void)
+ch_en_tls_threading_cleanup(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_openssl_threading_cleanup`
+//    see: :c:func:`ch_en_tls_threading_cleanup`
 //
 // .. code-block:: cpp
 //
@@ -206,10 +206,10 @@ ch_en_openssl_threading_cleanup(void)
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_en_openssl_threading_setup(void)
+cn_en_tls_threading_setup(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_openssl_threading_setup`
+//    see: :c:func:`cn_en_tls_threading_setup`
 //
 // .. code-block:: cpp
 //
@@ -240,15 +240,15 @@ ch_en_openssl_threading_setup(void)
 // .. c:function::
 CH_EXPORT
 void
-ch_en_set_manual_openssl_init(void)
+ch_en_set_manual_tls_init(void)
 //    :noindex:
 //
-//    see: :c:func:`ch_en_set_manual_openssl_init`
+//    see: :c:func:`ch_en_set_manual_tls_init`
 //
 // .. code-block:: cpp
 //
 {
-    _ch_en_manual_openssl = 1;
+    _ch_en_manual_tls = 1;
 }
 
 // .. c:function::
@@ -262,7 +262,6 @@ ch_en_start(ch_encryption_t* enc)
 //
 {
     ch_chirp_t* chirp = enc->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     ch_chirp_int_t* ichirp = chirp->_;
 #   ifdef CH_OPENSSL_10_API
         const SSL_METHOD* method = TLSv1_2_method();
@@ -417,8 +416,6 @@ ch_en_stop(ch_encryption_t* enc)
 // .. code-block:: cpp
 //
 {
-    ch_chirp_t* chirp = enc->chirp;
-    A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     SSL_CTX_free(enc->ssl_ctx);
     ERR_clear_error();
 #   ifdef CH_OPENSSL_10_API
