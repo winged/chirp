@@ -164,6 +164,18 @@ ch_msg_get_address(
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
+//
+// .. c:function::
+CH_EXPORT
+int
+ch_msg_has_recv_handler(ch_message_t* message);
+//
+//    Returns 1 if the message has a recv handler and therefore you have to
+//    call ch_chirp_release_recv_handler.
+//
+//    :param ch_message_t* message: Pointer to the message
+//
+//    :rtype:  bool
 
 // .. c:function::
 CH_EXPORT

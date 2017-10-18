@@ -58,6 +58,20 @@ ch_msg_get_address(
 
 // .. c:function::
 CH_EXPORT
+int
+ch_msg_has_recv_handler(ch_message_t* message)
+//    :noindex:
+//
+//    see: :c:func:`ch_msg_has_recv_handler`
+//
+// .. code-block:: cpp
+//
+{
+    return message->_flags & CH_MSG_IS_HANDLER;
+}
+
+// .. c:function::
+CH_EXPORT
 ch_error_t
 ch_msg_init(ch_message_t* message)
 //    :noindex:
