@@ -37,7 +37,7 @@ ch_tst_check_pattern(
 
 // .. c:function::
 ch_message_t*
-ch_tst_gen_message(ch_chirp_t* chirp);
+ch_tst_gen_message(void);
 //
 //    Generate a message (ch_message_t*). The memoy allocated, tracked and
 //    freed by quickcheck.

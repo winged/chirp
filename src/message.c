@@ -59,7 +59,7 @@ ch_msg_get_address(
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_msg_init(ch_chirp_t* chirp, ch_message_t* message)
+ch_msg_init(ch_message_t* message)
 //    :noindex:
 //
 //    see: :c:func:`ch_msg_init`
@@ -72,7 +72,6 @@ ch_msg_init(ch_chirp_t* chirp, ch_message_t* message)
         message->identity,
         sizeof(message->identity)
     );
-    message->chirp = chirp;
     return CH_SUCCESS;
 }
 

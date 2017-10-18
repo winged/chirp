@@ -99,7 +99,7 @@
 //
 //    .. c:member:: ch_chirp_t* chirp
 //
-//       Pointer to chirp instance.
+//       Pointer to chirp instance of the message pool.
 //
 //    .. c:member:: void* user_data
 //
@@ -118,12 +118,11 @@ struct ch_message_s {
     uint8_t        ip_protocol;
     uint8_t        address[CH_IP_ADDR_SIZE];  // 16
     int32_t        port;
-    ch_chirp_t*    chirp;
     void*          user_data;
     uint8_t        _flags;
     ch_send_cb_t   _send_cb;
-    void*          _conn;
     int            _handler;
+    void*          _pool;
     ch_message_t*  _next;
 };
 
@@ -169,11 +168,10 @@ ch_msg_get_address(
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_msg_init(ch_chirp_t* chirp, ch_message_t* message);
+ch_msg_init(ch_message_t* message);
 //
 //    Initialize a message. Memory provided by caller (for performance).
 //
-//    :param ch_chirp_t* chirp: Pointer to chirp
 //    :param ch_message_t* message: Pointer to the message
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`

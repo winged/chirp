@@ -228,6 +228,15 @@ typedef enum {
 //       The TCP handle (TCP stream) of the client, which is used to get the
 //       address of the peer connected to the handle.
 //
+//    .. c:member:: uv_connect_t connect
+//
+//       Libuv connect handler.
+//
+//    .. c:member:: ch_message_t* connect_msg
+//
+//       The message that caused connecting, used to send a error to that
+//       message.
+//
 //    .. c:member:: uv_buf* buffer_uv
 //
 //       Pointer to the libuv (data-) buffer data type.
@@ -353,20 +362,10 @@ typedef enum {
 //
 //       Handle to a chirp writer, handles sending and writing on a connection.
 //
-//    .. c:member:: char color_field
+//    .. c:member:: ch_connection_t* next
 //
-//       The color of the current (connection-) node. This may either be red or
-//       black, as connections are built as a red-black tree.
+//       Pointer to the next connection in a data-structure.
 //
-//    .. c:member:: ch_connection_t* left
-//
-//       (Struct-) Pointer to the left child of the current connection (node)
-//       in the red-black tree.
-//
-//    .. c:member:: ch_connection_t* right
-//
-//       (Struct-) Pointer to the right child of the current connection (node)
-//       in the red-black tree.
 //
 // .. code-block:: cpp
 //
@@ -378,6 +377,7 @@ struct ch_connection_s {
     float            max_timeout;
     uv_tcp_t         client;
     uv_connect_t     connect;
+    ch_message_t*    connect_msg;
     ch_buf*          buffer_uv;
     ch_buf*          buffer_wtls;
     ch_buf*          buffer_rtls;

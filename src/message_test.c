@@ -112,7 +112,7 @@ _ch_tst_gen_data_field(
 
 // .. c:function::
 ch_message_t*
-ch_tst_gen_message(struct ch_chirp_s* chirp)
+ch_tst_gen_message(void)
 //    :noindex:
 //
 //    see: :c:func:`ch_ms_gen_message`
@@ -133,7 +133,7 @@ ch_tst_gen_message(struct ch_chirp_s* chirp)
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(ch_message_t));
     message = (ch_message_t*) track->data;
-    ch_msg_init(chirp, message);
+    ch_msg_init(message);
     message->header_len = _ch_tst_gen_data_field(
         0.1,
         0.1,

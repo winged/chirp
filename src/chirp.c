@@ -906,7 +906,7 @@ ch_chirp_try_message_finish(
             /* The user may free the message in the cb */
             ch_send_cb_t cb = msg->_send_cb;
             msg->_send_cb = NULL;
-            cb(msg, status, load);
+            cb(chirp, msg, status, load);
         }
     }
     ch_wr_process_queues(conn->remote);

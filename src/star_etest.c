@@ -36,7 +36,7 @@ char _data[] = "hello";
 //
 static
 void
-ch_tst_sent_cb(ch_message_t* msg, int status, float load)
+ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
@@ -44,12 +44,12 @@ ch_tst_sent_cb(ch_message_t* msg, int status, float load)
     _sent += 1;
     if(_sent < _msg_count)
         ch_chirp_send(
-                msg->chirp,
+                chirp,
                 msg,
                 ch_tst_sent_cb
         );
     else
-        ch_chirp_close_ts(msg->chirp);
+        ch_chirp_close_ts(chirp);
 }
 
 static
@@ -107,7 +107,7 @@ ch_tst_send(
     for(int i = 0; i < count; i++) {
         int port;
         ch_message_t* msg = &msgs[i];
-        ch_msg_init(&chirp, msg);
+        ch_msg_init(msg);
         sds s = sdsnew(argv[i + 2]);
         sds* spl = sdssplitlen(s, sdslen(s), ":", 1, &cspl);
         if(cspl != 2) {

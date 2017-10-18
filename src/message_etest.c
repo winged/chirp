@@ -87,9 +87,9 @@ struct ch_tst_chirp_thread_s {
 
 static
 void
-_ch_tst_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
+_ch_tst_simple_msg(ch_message_t* msg)
 {
-    ch_msg_init(chirp, msg);
+    ch_msg_init(msg);
     ch_msg_set_address(
         msg,
         CH_IPV4,
@@ -102,8 +102,9 @@ _ch_tst_simple_msg(ch_chirp_t* chirp, ch_message_t* msg)
 
 static
 void
-_ch_tst_echo_cb(ch_message_t* msg, int status, float load)
+_ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 {
+    (void)(chirp);
     (void)(status);
     (void)(load);
     (void)(msg);
@@ -113,12 +114,11 @@ _ch_tst_echo_cb(ch_message_t* msg, int status, float load)
 
 static
 void
-_ch_tst_sent_cb(ch_message_t* msg, int status, float load)
+_ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 {
     (void)(status);
     (void)(load);
     (void)(msg);
-    ch_chirp_t* chirp = msg->chirp;
     ch_qc_free_mem();
     _ch_tst_msg_send_count += 1;
     if(_ch_tst_msg_send_count < _ch_tst_message_count) {
@@ -132,10 +132,10 @@ _ch_tst_sent_cb(ch_message_t* msg, int status, float load)
         /* TODO: Insted of sleep, actually wait for the last echoed message to
          * arrive.
          */;
-        sleep(1);
-        ch_chirp_close_ts(chirp);
-        sleep(1);
+        sleep(2);
         ch_chirp_close_ts(ch_tr_other_chirp(chirp));
+        sleep(2);
+        ch_chirp_close_ts(chirp);
     }
 }
 
@@ -183,7 +183,7 @@ _ch_tst_send_message(ch_chirp_t* chirp)
         send_func = ch_chirp_send;
 
     if(simple) {
-        _ch_tst_simple_msg(chirp, &_ch_tst_msg);
+        _ch_tst_simple_msg(&_ch_tst_msg);
         _ch_tst_msg.port = PORT_ECHO;
         send_func(
                 chirp,
@@ -191,7 +191,7 @@ _ch_tst_send_message(ch_chirp_t* chirp)
                 _ch_tst_sent_cb
         );
     } else {
-        ch_message_t* msg = ch_tst_gen_message(chirp);
+        ch_message_t* msg = ch_tst_gen_message();
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
         msg->port = PORT_ECHO;

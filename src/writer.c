@@ -195,18 +195,18 @@ void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
 // .. code-block:: cpp
 //
 {
-    ch_message_t* msg = handle->data;
-    ch_chirp_t* chirp = msg->chirp;
+    ch_connection_t* conn = handle->data;
+    ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    ch_connection_t* conn = msg->_conn;
     A(chirp == conn->chirp, "Chirp on connection should match");
+    ch_message_t* msg = conn->connect_msg;
     ch_free(conn);
     msg->_flags &= ~CH_MSG_USED;
     if(msg->_send_cb != NULL) {
         /* The user may free the message in the cb */
         ch_send_cb_t cb = msg->_send_cb;
         msg->_send_cb = NULL;
-        cb(msg, CH_CANNOT_CONNECT, -1);
+        cb(chirp, msg, CH_CANNOT_CONNECT, -1);
     }
 }
 
@@ -221,10 +221,10 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
 //
 {
     ch_text_address_t taddr;
-    ch_message_t* msg = req->data;
-    ch_chirp_t* chirp = msg->chirp;
+    ch_connection_t* conn = req->data;
+    ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    ch_connection_t* conn = msg->_conn;
+    ch_message_t* msg = conn->connect_msg;
     A(chirp == conn->chirp, "Chirp on connection should match");
     ch_msg_get_address(msg, &taddr);
     if(status == CH_SUCCESS) {
@@ -248,7 +248,7 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             status,
             (void*) conn
         );
-        conn->client.data = msg;
+        conn->client.data = conn;
         uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
     }
 }
@@ -564,7 +564,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_chirp_int_t* ichirp  = chirp->_;
     if(ichirp->flags & CH_CHIRP_CLOSING || ichirp->flags & CH_CHIRP_CLOSED) {
         if(send_cb != NULL)
-            send_cb(msg, CH_SHUTDOWN, -1);
+            send_cb(chirp, msg, CH_SHUTDOWN, -1);
         return CH_SHUTDOWN;
     }
     int tmp_err;
@@ -606,16 +606,16 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
             msg->_flags &= ~CH_MSG_USED;
             if(send_cb != NULL)
-                send_cb(msg, CH_ENOMEM, -1);
+                send_cb(chirp, msg, CH_ENOMEM, -1);
             return CH_ENOMEM;
         }
         memset(conn, 0, sizeof(ch_connection_t));
-        msg->_conn         = conn;
         conn->chirp        = chirp;
         conn->port         = msg->port;
         conn->ip_protocol  = msg->ip_protocol;
-        conn->connect.data = msg;
+        conn->connect.data = conn;
         conn->remote       = remote;
+        conn->connect_msg  = msg;
         ch_text_address_t taddr;
         ch_msg_get_address(msg, &taddr);
         if(!(
@@ -685,7 +685,6 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg)
     ch_chirp_t* chirp = conn->chirp;
     ch_writer_t* writer = &conn->writer;
     ch_chirp_int_t* ichirp = chirp->_;
-    msg->_conn = conn;
     A(writer->msg == NULL, "Message should be null on new write");
     writer->msg = msg;
     int tmp_err = uv_timer_start(

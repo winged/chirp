@@ -278,13 +278,8 @@ _ch_rd_handle_msg(
     }
 #   endif
 
-    /* Pause reading on last handler. */
-    if(reader->last_handler) {
-        uv_read_stop((uv_stream_t*) &conn->client);
-    }
     reader->state = CH_RD_WAIT;
     reader->handler = NULL;
-
 
     if(msg->type & CH_MSG_REQ_ACK) {
         /* Send ack */
@@ -295,9 +290,7 @@ _ch_rd_handle_msg(
         ack_msg->type       = CH_MSG_ACK;
         ack_msg->header_len = 0;
         ack_msg->data_len   = 0;
-        ack_msg->chirp      = chirp;
         ack_msg->port       = msg->port;
-        ack_msg->_conn      = msg->_conn;
         ch_wr_send(chirp, ack_msg, NULL);
     } else if(msg->type & CH_MSG_ACK) {
         ch_message_t* wam = conn->remote->wait_ack_message;
@@ -442,7 +435,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         &ichirp->pool,
                         &reader->last_handler
                     );
-                    reader->handler->msg._conn = conn;
                 }
                 handler = reader->handler;
                 msg     = &handler->msg;
@@ -556,24 +548,23 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
 // .. code-block:: cpp
 //
 {
-    ch_connection_t* conn = msg->_conn;
-    ch_chirp_t* chirp = conn->chirp;
-    ch_chirp_check_m(chirp);
-    ch_chirp_int_t* ichirp = chirp->_;
+    ch_buffer_pool_t* pool = msg->_pool;
+    if(!(msg->_flags & CH_MSG_IS_HANDLER)) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: Release of non handler message. "
+            "ch_buffer_pool_t:%p\n",
+            __FILE__,
+            __LINE__,
+            (void*) pool
+        );
+        return;
+    }
     if(msg->_flags & CH_MSG_FREE_DATA)
         ch_free(msg->data);
     if(msg->_flags & CH_MSG_FREE_HEADER)
         ch_free(msg->header);
-    ch_bf_release(&ichirp->pool, msg->_handler);
-    if(conn->reader.last_handler) {
-        /* If the reader was stopped start it again */
-        uv_read_start(
-            (uv_stream_t*) &conn->client,
-            ch_cn_read_alloc_cb,
-            ch_pr_read_data_cb
-        ); // TODO test this
-        conn->reader.last_handler = 0;
-    }
+    ch_bf_release(pool, msg->_handler);
 }
 
 static

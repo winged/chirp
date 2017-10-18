@@ -184,7 +184,8 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
         handler_buf->used = 1;
         memset(&handler_buf->msg, 0, sizeof(handler_buf->msg));
         handler_buf->msg._handler = handler_buf->id;
-        handler_buf->msg._flags = CH_MSG_IS_HANDLER;
+        handler_buf->msg._pool    = pool;
+        handler_buf->msg._flags   = CH_MSG_IS_HANDLER;
         return handler_buf;
     }
     return NULL;
@@ -220,17 +221,6 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
         fprintf(
             stderr,
             "%s:%d Fatal: Double release of handler buffer. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
-        return;
-    }
-    if(!(handler_buf->msg._flags & CH_MSG_IS_HANDLER)) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Release of non handler message. "
             "ch_buffer_pool_t:%p\n",
             __FILE__,
             __LINE__,

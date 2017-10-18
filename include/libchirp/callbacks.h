@@ -78,6 +78,10 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 //    Called by chirp when message is sent and can be freed.
 //
+//    .. c:member:: ch_chirp_t* chirp
+//
+//       Chirp object sending
+//
 //    .. c:member:: int status
 //
 //       Error code: CH_SUCCESS, CH_TIMEOUT, CH_CANNOT_CONNECT
@@ -92,7 +96,12 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 // .. code-block:: cpp
 //
-typedef void (*ch_send_cb_t)(ch_message_t* msg, int status, float load);
+typedef void (*ch_send_cb_t)(
+        ch_chirp_t* chirp,
+        ch_message_t* msg,
+        int status,
+        float load
+);
 
 // .. c:type:: ch_recv_cb_t
 //
