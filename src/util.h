@@ -17,6 +17,26 @@
 #include "common.h"
 #include "libchirp/callbacks.h"
 
+// Debug alloc tracking
+// ====================
+//
+// .. code-block:: cpp
+
+#ifndef NDEBUG
+// .. c:function::
+    void
+    ch_at_init(void);
+//
+//    Initialize alloc tracking for memory leak debugging.
+//
+// .. c:function::
+    void
+    ch_at_cleanup(void);
+//
+//    Cleanup and print memory leak summary.
+//
+#endif
+
 // Declarations
 // ============
 

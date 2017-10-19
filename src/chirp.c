@@ -1055,6 +1055,9 @@ ch_libchirp_cleanup(void)
 {
     uv_mutex_destroy(&_ch_chirp_init_lock);
     uv_mutex_destroy(&_ch_chirp_log_lock);
+#   ifndef NDEBUG
+        ch_at_cleanup();
+#   endif
     return ch_en_tls_cleanup();
 }
 
@@ -1071,6 +1074,9 @@ ch_libchirp_init(void)
 {
     uv_mutex_init(&_ch_chirp_init_lock);
     uv_mutex_init(&_ch_chirp_log_lock);
+#   ifndef NDEBUG
+        ch_at_init();
+#   endif
     return ch_en_tls_init();
 }
 
