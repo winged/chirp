@@ -440,11 +440,16 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                 msg     = &handler->msg;
                 if(to_read >= CH_SR_WIRE_MESSAGE_SIZE) {
                     /* We can read everything */
+                    size_t reading = (
+                        CH_SR_WIRE_MESSAGE_SIZE - reader->bytes_read
+                    );
                     memcpy(
                         reader->net_msg + reader->bytes_read,
                         buf + bytes_handled,
-                        CH_SR_WIRE_MESSAGE_SIZE - reader->bytes_read
+                        reading
                     );
+                    reader->bytes_read = 0; /* Reset partial buffer reads */
+                    bytes_handled += reading;
                 } else {
                     memcpy(
                         reader->net_msg + reader->bytes_read,
@@ -452,10 +457,10 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         to_read
                     );
                     reader->bytes_read += to_read;
+                    bytes_handled += to_read;
                     return;
                 }
                 ch_sr_buf_to_msg(reader->net_msg, msg);
-                bytes_handled     += CH_SR_WIRE_MESSAGE_SIZE;
                 if((
                         msg->header_len + msg->data_len
                 ) > CH_MSG_SIZE_HARDLIMIT)
@@ -478,7 +483,6 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         msg->ip_protocol == CH_IPV6
                     ) ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
                 );
-                reader->bytes_read = 0; /* Reset partial buffer reads */
                 /* Direct jump to next read state */
                 if(msg->header_len > 0)
                     reader->state = CH_RD_HEADER;
@@ -611,12 +615,13 @@ _ch_rd_read_buffer(
     }
     if((to_read + reader->bytes_read) >= expected) {
         /* We can read everything */
+        size_t reading =  expected - reader->bytes_read;
         memcpy(
             *assign_buf + reader->bytes_read,
             src_buf,
-            expected - reader->bytes_read
+            reading
         );
-        *bytes_handled += expected - reader->bytes_read;
+        *bytes_handled += reading;
         reader->bytes_read = 0; /* Reset partial buffer reads */
         return CH_SUCCESS;
     } else {
