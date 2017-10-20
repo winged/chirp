@@ -9,6 +9,7 @@
 //
 // .. code-block:: cpp
 //
+#include "libchirp.h"
 #include "quickcheck_test.h"
 #include "util.h"
 
@@ -32,6 +33,7 @@ ch_is_ascii_string(ch_qc_mem_track_t* item, char* string)
 int
 main()
 {
+    ch_libchirp_init();
     int i;
     int ret = 0;
     ch_qc_init();
@@ -47,5 +49,6 @@ main()
     if(ret == 0)
         printf("Test sucessful\n");
     ch_qc_free_mem();
+    ch_libchirp_cleanup();
     return ret;
 }

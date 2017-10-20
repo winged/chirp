@@ -349,6 +349,6 @@ main(int argc, char *argv[])
     uv_thread_create(&sender, _ch_tst_run_chirp, &sender_thread);
     uv_thread_join(&echo);
     uv_thread_join(&sender);
-    ch_libchirp_cleanup();
     ch_qc_free_mem();
+    ch_libchirp_cleanup();
 }

@@ -9,6 +9,7 @@
 //
 // .. code-block:: cpp
 //
+#include "libchirp.h"
 #include "serializer.h"
 #include "util.h"
 #include "quickcheck_test.h"
@@ -29,6 +30,7 @@
 int
 main(void)
 {
+    ch_libchirp_init();
     for(int i = 0; i < 1000; ++i) {
         ch_buf buf[CH_SR_WIRE_MESSAGE_SIZE];
         ch_message_t in;
@@ -63,8 +65,10 @@ main(void)
                 in.header_len,
                 in.data_len
             );
-            exit(1);
+            return 1;
         }
     }
     printf("Test successful\n");
+    ch_libchirp_cleanup();
+    return 0;
 }
