@@ -20,6 +20,7 @@
 //
 // .. code-block:: cpp
 
+#include "common.h"
 #include "libchirp/message.h"
 
 // Declarations

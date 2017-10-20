@@ -229,16 +229,91 @@ ch_qc_tgen_double(void)
 // .. c:function::
 static
 ch_inline
-uint8_t
+int
 ch_qc_tgen_int(void)
 //
 //    Generate int.
 //
-//    :rtype: dobule
+//    :rtype: int
 //
 // .. code-block:: cpp
 //
 {
+    return rand();
+}
+
+// .. c:function::
+static
+ch_inline
+uint8_t
+ch_qc_pgen_uint8_t(void)
+//
+//    Generate uint8_t using a property template.
+//
+//    1/10: 0
+//    1/10: MAX
+//    8/10: Random
+//
+//    :rtype: uint8_t
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFF;
+    return rand();
+}
+
+// .. c:function::
+static
+ch_inline
+uint16_t
+ch_qc_pgen_uint16_t(void)
+//
+//    Generate uint16_t using a property template.
+//
+//    1/10: 0
+//    1/10: MAX
+//    8/10: Random
+//
+//    :rtype: uint16_t
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFFFF;
+    return rand();
+}
+
+// .. c:function::
+static
+ch_inline
+uint32_t
+ch_qc_pgen_uint32_t(void)
+//
+//    Generate uint32_t using a property template.
+//
+//    1/10: 0
+//    1/10: MAX
+//    8/10: Random
+//
+//    :rtype: uint32_t
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFFFFFFFF;
     return rand();
 }
 

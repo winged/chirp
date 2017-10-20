@@ -387,6 +387,8 @@ __ch__silenence(void)
 //
 //    Validates that we have a valid chirp object and we are on the right
 //    thread.
+//
+// .. code-block:: cpp
 
 #   begindef ch_chirp_check_m(chirp)
     {

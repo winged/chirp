@@ -828,7 +828,7 @@ ch_chirp_init(
         }
     }
 #   ifndef NDEBUG
-    char id_str[33];
+    char id_str[CH_ID_SIZE * 2 + 1];
     ch_bytes_to_hex(
         ichirp->identity,
         sizeof(ichirp->identity),
@@ -869,7 +869,7 @@ ch_chirp_try_message_finish(
         msg->_flags &= ~(CH_MSG_ACK_RECEIVED | CH_MSG_WRITE_DONE);
 #       ifndef NDEBUG
         {
-            char id[33];
+            char id[CH_ID_SIZE * 2 + 1];
             ch_bytes_to_hex(
                 msg->identity,
                 sizeof(msg->identity),

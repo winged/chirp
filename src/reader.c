@@ -199,7 +199,7 @@ _ch_rd_handshake(
 #   ifndef NDEBUG
     {
         ch_text_address_t addr;
-        char identity[33];
+        char identity[CH_ID_SIZE * 2 + 1];
         uv_inet_ntop(
             conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
             conn->address,
@@ -247,7 +247,7 @@ _ch_rd_handle_msg(
 #   ifndef NDEBUG
     {
         ch_text_address_t addr;
-        char id[33];
+        char id[CH_ID_SIZE * 2 + 1];
         uv_inet_ntop(
             conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
             conn->address,
