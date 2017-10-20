@@ -49,7 +49,7 @@ ch_en_tls_threading_cleanup(void);
 // .. c:function::
 CH_EXPORT
 ch_error_t
-cn_en_tls_threading_setup(void);
+ch_en_tls_threading_setup(void);
 //
 //    DO NOT USE, unless you really really know what you are doing. Provided
 //    for the rare case where your host application initializes openssl without

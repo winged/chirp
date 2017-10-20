@@ -125,7 +125,7 @@ static char _ch_en_manual_tls = 0;
         SSL_load_error_strings();
         OPENSSL_config("chirp");
 
-        return cn_en_tls_threading_setup();
+        return ch_en_tls_threading_setup();
 #   else
         if(OPENSSL_init_ssl(0, NULL) == 0) {
             return CH_TLS_ERROR;
@@ -206,10 +206,10 @@ ch_en_tls_threading_cleanup(void)
 // .. c:function::
 CH_EXPORT
 ch_error_t
-cn_en_tls_threading_setup(void)
+ch_en_tls_threading_setup(void)
 //    :noindex:
 //
-//    see: :c:func:`cn_en_tls_threading_setup`
+//    see: :c:func:`ch_en_tls_threading_setup`
 //
 // .. code-block:: cpp
 //

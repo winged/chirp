@@ -133,6 +133,7 @@ $(BUILD)/libchirp.so: $(LIB_OBJECTS)
 check: all  ## Check basic functionality
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
+	$(BUILD)/src/serializer_etest
 	$(BUILD)/src/message_etest --always-encrypt --message-count 3
 	$(BUILD)/src/message_etest --message-count 3
 

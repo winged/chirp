@@ -1055,10 +1055,11 @@ ch_libchirp_cleanup(void)
 {
     uv_mutex_destroy(&_ch_chirp_init_lock);
     uv_mutex_destroy(&_ch_chirp_log_lock);
+    ch_error_t ret = ch_en_tls_cleanup();
 #   ifndef NDEBUG
         ch_at_cleanup();
 #   endif
-    return ch_en_tls_cleanup();
+    return ret;
 }
 
 // .. c:function::

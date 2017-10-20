@@ -31,6 +31,8 @@ etests: all  ## Run binary tests
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(MEMCHECK) $(BUILD)/src/quickcheck_etest
+	$(BUILD)/src/serializer_etest
+	$(MEMCHECK) $(BUILD)/src/serializer_etest
 	$(BUILD)/src/message_etest \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
