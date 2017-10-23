@@ -100,9 +100,9 @@ _ch_realloc_cb = realloc;
 // .. code-block:: cpp
 //
     {
-        ch_alloc_track_t* item;
         fprintf(stderr, "Leaked allocations: \n");
         while(_ch_alloc_tree != _ch_at_nil_ptr) {
+            ch_alloc_track_t* item;
             item = _ch_alloc_tree;
             fprintf(stderr, "%p ", item->buf);
             _ch_at_delete_node(&_ch_alloc_tree, item);
