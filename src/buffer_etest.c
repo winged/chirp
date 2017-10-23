@@ -10,6 +10,7 @@
 //
 // .. code-block:: cpp
 //
+#include "libchirp.h"
 #include "buffer.h"
 #include "test_test.h"
 
@@ -67,5 +68,8 @@ ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)
 int
 main(void)
 {
-    return mpp_runner(ch_tst_test_handler);
+    ch_libchirp_init();
+    int ret = mpp_runner(ch_tst_test_handler);
+    ch_libchirp_cleanup();
+    return ret;
 }
