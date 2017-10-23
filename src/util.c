@@ -224,7 +224,9 @@ ch_free(void* buf)
 // .. code-block:: cpp
 //
 {
-    _ch_at_free(buf);
+#   ifndef NDEBUG
+        _ch_at_free(buf);
+#   endif
     _ch_free_cb(buf);
 }
 
