@@ -74,6 +74,7 @@ static char _data[] = "hello";
 static int _ch_tst_buffer_size = 0;
 static float _ch_tst_timeout = 5.0;
 static int _ch_tst_message_count = 20;
+static uv_timer_t stop_timer;
 
 struct ch_tst_chirp_thread_s;
 typedef struct ch_tst_chirp_thread_s ch_tst_chirp_thread_t;
@@ -114,6 +115,17 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 
 static
 void
+_ch_tst_send_stop(uv_timer_t* handle)
+{
+    ch_chirp_t* chirp = handle->data;
+    uv_timer_stop(handle);
+    uv_close((uv_handle_t*) handle, NULL);
+    ch_chirp_close_ts(ch_tr_other_chirp(chirp));
+    ch_chirp_close_ts(chirp);
+}
+
+static
+void
 _ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 {
     (void)(status);
@@ -132,10 +144,9 @@ _ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
         /* TODO: Insted of sleep, actually wait for the last echoed message to
          * arrive.
          */;
-        sleep(2);
-        ch_chirp_close_ts(ch_tr_other_chirp(chirp));
-        sleep(2);
-        ch_chirp_close_ts(chirp);
+        uv_timer_init(ch_chirp_get_loop(chirp), &stop_timer);
+        stop_timer.data = chirp;
+        uv_timer_start(&stop_timer, _ch_tst_send_stop, 2000, 0);
     }
 }
 
