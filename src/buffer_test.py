@@ -28,8 +28,9 @@ class GenBuffer(GenericStateMachine):
         self.initialized = False
 
     def teardown(self):
-        mpipe.write(self.proc, (fnc.func_cleanup_e, 0))
-        assert mpipe.read(self.proc) == [0]
+        if self.initialized:
+            mpipe.write(self.proc, (fnc.func_cleanup_e, 0))
+            assert mpipe.read(self.proc) == [0]
         mpipe.close(self.proc)
         del self.proc  # Hypothesis seems to keep GSM objects
 
