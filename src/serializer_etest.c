@@ -44,7 +44,7 @@ main(void)
         in.data_len = ch_qc_pgen_uint32_t();
         ch_sr_msg_to_buf(&in, buf);
         ch_sr_buf_to_msg(buf, &out);
-        if(memcmp(&in, &out, sizeof(ch_message_t) != 0)) {
+        if(memcmp(&in, &out, sizeof(ch_message_t)) != 0) {
             char id_str[CH_ID_SIZE * 2 + 1];
             ch_bytes_to_hex(
                 in.identity,
@@ -53,17 +53,36 @@ main(void)
                 sizeof(id_str)
             );
             printf(
-                "Message serializarion failed\n"
+                "Serializarion failed\nIn message\n"
                 "     identity: %s\n"
                 "       serial: %u\n"
                 "         type: %u\n"
                 "   header_len: %u\n"
                 "     data_len: %u\n",
-                in.identity,
+                id_str,
                 in.serial,
                 in.type,
                 in.header_len,
                 in.data_len
+            );
+            ch_bytes_to_hex(
+                out.identity,
+                CH_ID_SIZE,
+                id_str,
+                sizeof(id_str)
+            );
+            printf(
+                "Out message\n"
+                "     identity: %s\n"
+                "       serial: %u\n"
+                "         type: %u\n"
+                "   header_len: %u\n"
+                "     data_len: %u\n",
+                id_str,
+                out.serial,
+                out.type,
+                out.header_len,
+                out.data_len
             );
             return 1;
         }

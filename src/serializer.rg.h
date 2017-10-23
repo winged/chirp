@@ -80,7 +80,7 @@ typedef struct ch_sr_handshake_s {
     uint8_t* identity    = (void*) &buf[pos];
     pos += CH_ID_SIZE;
 
-    uint8_t* serial      = (void*) &buf[pos];
+    uint32_t* serial      = (void*) &buf[pos];
     pos += 4;
 
     uint8_t* type        = (void*) &buf[pos];
