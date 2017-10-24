@@ -217,6 +217,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         ch_pr_conn_start(chirp, conn, client, 1);
     }
     else {
+        // TODO free??
         uv_close((uv_handle_t*) client, NULL);
     }
 }
