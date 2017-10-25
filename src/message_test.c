@@ -146,8 +146,7 @@ ch_tst_gen_message(void)
         data_count,
         &message->data
     );
-    // TODO enable this
-    /* int ipv6 = ch_qc_tgen_bool();
+    int ipv6 = ch_qc_tgen_bool();
     if(ipv6)
         ch_msg_set_address(
             message,
@@ -155,7 +154,7 @@ ch_tst_gen_message(void)
             "::1",
             59732
         );
-    else */
+    else
         ch_msg_set_address(
             message,
             CH_IPV4,

@@ -287,10 +287,11 @@ _ch_rd_handle_msg(
         memset(ack_msg, 0, sizeof(ch_message_t));
         memcpy(ack_msg->identity, msg->identity, CH_ID_SIZE);
         memcpy(ack_msg->address, msg->address, CH_IP_ADDR_SIZE);
-        ack_msg->type       = CH_MSG_ACK;
-        ack_msg->header_len = 0;
-        ack_msg->data_len   = 0;
-        ack_msg->port       = msg->port;
+        ack_msg->ip_protocol = msg->ip_protocol;
+        ack_msg->type        = CH_MSG_ACK;
+        ack_msg->header_len  = 0;
+        ack_msg->data_len    = 0;
+        ack_msg->port        = msg->port;
         ch_wr_send(chirp, ack_msg, NULL);
     } else if(msg->type & CH_MSG_ACK) {
         ch_message_t* wam = conn->remote->wait_ack_message;
