@@ -7,7 +7,6 @@ import sys
 import re
 
 _state = 0
-_macro  = []
 _i = 0
 _begindef = re.compile("(^#\s*)(begindef)(.*$)")
 _enddef = re.compile("^#\s*enddef.*$")
@@ -32,11 +31,9 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                 bd = _begindef.match(line)
                 if bd:
                     _state = State.DEF
-                    _macro = [line]
                     line = "%sdefine%s" % (bd.group(1), bd.group(3))
                     line = "%s \\" % line
             elif _state == State.DEF:
-                _macro.append(line)
                 stripline = line.strip()
                 if _begindef.match(stripline):
                     print("%s:%d:%d: error: nested #begindef" % (
