@@ -128,13 +128,13 @@ Mocking
 
 I tried to do the mocking with the least fuss and the least chance of screw-ups.
 
-1. We only compile the mock function is we are going to mock
+1. We only compile the mock function is we are going to mock:
    mock_$(function_name) enables the mock function.
 
 2. The mock function is called $(function_name)_mock.
 
-3. We enabled the mock for a particular code block, the define used to activate
-   a mock is $(code_block)_mock_$(function_name)
+3. We enable the mock for a particular code block, the define used to activate a
+   mock is $(code_block)_mock_$(function_name)
 
 
 .. code-block:: cpp
