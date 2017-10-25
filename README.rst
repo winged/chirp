@@ -230,6 +230,13 @@ You can also run a shell.
 
    ./ci/arch.sh shell
 
+Note: Docker must have IPv6 enabled. Since we only need loopback, you can
+configure a link-only subnet.
+
+.. code-block:: bash
+
+   DOCKER_OPTS="--ipv6 --fixed-cidr-v6 fe80::/64"
+
 Windows
 -------
 

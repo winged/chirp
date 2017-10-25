@@ -170,6 +170,21 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     memset(conn, 0, sizeof(ch_connection_t));
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
+
+#   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version)
+    {
+        struct sockaddr_##inet_version* saddr =
+            (struct sockaddr_##inet_version*) &addr;
+        conn->ip_protocol = CH_IPV##ip_version;
+        memcpy(
+            &conn->address,
+            &saddr->s##inet_version##_addr,
+            sizeof(saddr->s##inet_version##_addr)
+        );
+        uv_ip##ip_version##_name(saddr, taddr.data, sizeof(ch_text_address_t));
+    }
+#   enddef
+
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
         struct sockaddr_storage addr;
         int addr_len = sizeof(struct sockaddr_storage);
@@ -188,25 +203,10 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             uv_close((uv_handle_t*) client, NULL);
             return;
         };
-        if(addr.ss_family == AF_INET6) {
-            struct sockaddr_in6* saddr = (struct sockaddr_in6*) &addr;
-            conn->ip_protocol = CH_IPV6;
-            memcpy(
-                &conn->address,
-                &saddr->sin6_addr,
-                sizeof(saddr->sin6_addr)
-            );
-            uv_ip6_name(saddr, taddr.data, sizeof(ch_text_address_t));
-        } else {
-            struct sockaddr_in* saddr = (struct sockaddr_in*) &addr;
-            conn->ip_protocol = CH_IPV4;
-            memcpy(
-                &conn->address,
-                &saddr->sin_addr,
-                sizeof(saddr->sin_addr)
-            );
-            uv_ip4_name(saddr, taddr.data, sizeof(ch_text_address_t));
-        }
+        if(addr.ss_family == AF_INET6)
+            ch_pr_parse_ip_addr_m(6, in6)
+        else
+            ch_pr_parse_ip_addr_m(4, in)
         if(!(
                 ichirp->config.DISABLE_ENCRYPTION  ||
                 ch_is_local_addr(&taddr)
@@ -236,42 +236,32 @@ ch_pr_conn_start(
 // .. code-block:: cpp
 //
 {
+#   begindef ch_pr_conn_start_handle_error_m(msg)
+        if(tmp_err != CH_SUCCESS)
+        {
+            E(
+                chirp,
+                msg " connection (%d)",
+                tmp_err
+            );
+            /* TODO this is so wrong */
+            ch_free(conn);
+            uv_close((uv_handle_t*) client, NULL);
+            return tmp_err;
+        }
+#   enddef
+
     conn->flags  |= CH_CN_CONNECTED;
     client->data  = conn;
-    int tmp_err   = ch_cn_init(chirp, conn, conn->flags);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could not initialize connection (%d)",
-            tmp_err
-        );
-        ch_free(conn);
-        uv_close((uv_handle_t*) client, NULL);
-        return tmp_err;
-    }
-    client->data = conn;
+    int tmp_err = ch_cn_init(chirp, conn, conn->flags);
+    ch_pr_conn_start_handle_error_m("Could not initialize")
+
     tmp_err = uv_tcp_nodelay(client, 1);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could not set tcp nodelay on connection (%d)",
-            tmp_err
-        );
-        ch_free(conn);
-        uv_close((uv_handle_t*) client, NULL);
-        return tmp_err;
-    }
+    ch_pr_conn_start_handle_error_m("Could not set tcp nodelay on");
+
     tmp_err = uv_tcp_keepalive(client, 1, CH_TCP_KEEPALIVE);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could not set tcp keepalive on connection (%d)",
-            tmp_err
-        );
-        ch_free(conn);
-        uv_close((uv_handle_t*) client, NULL);
-        return tmp_err;
-    }
+    ch_pr_conn_start_handle_error_m("Could not set tcp keepalive on ");
+
     uv_read_start(
         (uv_stream_t*) client,
         ch_cn_read_alloc_cb,
@@ -362,30 +352,26 @@ ch_pr_read_data_cb(
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
-    if(nread == 0) {
+
+#   begindef ch_pr_log_nread_m(msg)
         LC(
             chirp,
-            "Emtpy read from libuv. Why?? ", "ch_connection_t:%p",
-            (void*) conn
-        );
-        return;
-    }
-    if(nread < 0) {
-        LC(
-            chirp,
-            "Reader got error %d -> shutdown. ", "ch_connection_t:%p",
+            msg " ", "ch_connection_t:%p",
             (int) nread,
             (void*) conn
         );
+#   enddef
+
+    if(nread == 0) {
+        ch_pr_log_nread_m("Unexpected emtpy read (%d) from libuv.");
+        return;
+    }
+    if(nread < 0) {
+        ch_pr_log_nread_m("Reader got error %d -> shutdown.");
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
-    LC(
-        chirp,
-        "%d available bytes. ", "ch_connection_t:%p",
-        (int) nread,
-        (void*) conn
-    );
+    ch_pr_log_nread_m("%d available bytes.");
     if(conn->flags & CH_CN_ENCRYPTED) {
         size_t bytes_decrypted = 0;
         size_t snread = (size_t) nread;
@@ -431,93 +417,67 @@ ch_pr_start(ch_protocol_t* protocol)
     ch_chirp_t* chirp = protocol->chirp;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_config_t* config = &ichirp->config;
-    // IPv4
-    uv_tcp_init(ichirp->loop, &protocol->serverv4);
-    protocol->serverv4.data = chirp;
-    if(uv_inet_ntop(
-            AF_INET, config->BIND_V4, tmp_addr.data, sizeof(ch_text_address_t)
-    ) < 0) {
-        return CH_VALUE_ERROR;
-    }
-    if(uv_ip4_addr(tmp_addr.data, config->PORT, &protocol->addrv4) < 0) {
-        return CH_VALUE_ERROR;
-    }
-    tmp_err = ch_uv_error_map(uv_tcp_bind(
-            &protocol->serverv4,
-            (const struct sockaddr*)&protocol->addrv4,
-            0
-    ));
-    if(tmp_err != CH_SUCCESS) {
+#   begindef ch_pr_log_listen_error_m(ip_version)
         fprintf(
             stderr,
-            "%s:%d Fatal: cannot bind port (ipv4:%d)\n",
+            "%s:%d Fatal: cannot bind port (ipv%d:%d)\n",
             __FILE__,
             __LINE__,
+            ip_version,
             config->PORT
         );
-        return tmp_err;
-    }
-    if(uv_tcp_nodelay(&protocol->serverv4, 1) < 0) {
-        return CH_UV_ERROR;
-    }
-    if(uv_listen(
-            (uv_stream_t*) &protocol->serverv4,
-            config->BACKLOG,
-            _ch_pr_new_connection_cb
-    ) < 0) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot listen port (ipv4:%d)\n",
-            __FILE__,
-            __LINE__,
-            config->PORT
-        );
-        return CH_EADDRINUSE;
-    }
+#   enddef
 
-    /* IPv6, as the dual stack feature doesn't work everywhere we bind both */
-    uv_tcp_init(ichirp->loop, &protocol->serverv6);
-    protocol->serverv6.data = chirp;
-    if(uv_inet_ntop(
-            AF_INET6, config->BIND_V6, tmp_addr.data, sizeof(ch_text_address_t)
-    ) < 0) {
-        return CH_VALUE_ERROR;
+#   begindef ch_pr_listen_sock_m(ip_version, af_inet, v6only)
+    {
+        uv_tcp_init(ichirp->loop, &protocol->serverv##ip_version);
+        protocol->serverv##ip_version.data = chirp;
+
+        if(uv_inet_ntop(
+                af_inet,
+                config->BIND_V##ip_version,
+                tmp_addr.data,
+                sizeof(ch_text_address_t)
+        ) < 0) {
+            return CH_VALUE_ERROR;
+        }
+
+        if(uv_ip##ip_version##_addr(
+                tmp_addr.data,
+                config->PORT,
+                &protocol->addrv##ip_version
+        ) < 0) {
+            return CH_VALUE_ERROR;
+        }
+
+        tmp_err = ch_uv_error_map(uv_tcp_bind(
+            &protocol->serverv##ip_version,
+            (const struct sockaddr*)&protocol->addrv##ip_version,
+            v6only
+        ));
+        if(tmp_err != CH_SUCCESS) {
+            ch_pr_log_listen_error_m(ip_version)
+            return tmp_err;
+        }
+
+        if(uv_tcp_nodelay(&protocol->serverv##ip_version, 1) < 0) {
+            return CH_UV_ERROR;
+        }
+
+        if(uv_listen(
+                (uv_stream_t*) &protocol->serverv##ip_version,
+                config->BACKLOG,
+                _ch_pr_new_connection_cb
+        ) < 0) {
+            ch_pr_log_listen_error_m(ip_version)
+            return CH_EADDRINUSE;
+        }
     }
-    if(uv_ip6_addr(tmp_addr.data, config->PORT, &protocol->addrv6) < 0) {
-        return CH_VALUE_ERROR;
-    }
-    tmp_err = ch_uv_error_map(uv_tcp_bind(
-            &protocol->serverv6,
-            (const struct sockaddr*) &protocol->addrv6,
-            UV_TCP_IPV6ONLY
-    ));
-    if(tmp_err != CH_SUCCESS) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot bind port (ipv6:%d)\n",
-            __FILE__,
-            __LINE__,
-            config->PORT
-        );
-        return tmp_err;
-    }
-    if(uv_tcp_nodelay(&protocol->serverv6, 1) < 0) {
-        return CH_UV_ERROR;
-    }
-    if(uv_listen(
-            (uv_stream_t*) &protocol->serverv6,
-            config->BACKLOG,
-            _ch_pr_new_connection_cb
-    ) < 0) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot listen port (ipv6:%d)\n",
-            __FILE__,
-            __LINE__,
-            config->PORT
-        );
-        return CH_EADDRINUSE;
-    }
+#   enddef
+
+    ch_pr_listen_sock_m(4, AF_INET, 0);
+    ch_pr_listen_sock_m(6, AF_INET6, UV_TCP_IPV6ONLY);
+
     ch_rm_tree_init(&protocol->remotes);
     protocol->old_connections = NULL;
     return CH_SUCCESS;
