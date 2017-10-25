@@ -235,7 +235,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             msg->port,
             (void*) conn
         );
-        conn->flags |= CH_CN_CONNECTED;
         /* Here we join the code called on accept. */
         ch_pr_conn_start(chirp, conn, &conn->client, 0);
     } else {
@@ -248,7 +247,6 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             status,
             (void*) conn
         );
-        conn->client.data = conn;
         uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
     }
 }
@@ -616,6 +614,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         conn->connect.data = conn;
         conn->remote       = remote;
         conn->connect_msg  = msg;
+        conn->client.data  = conn;
         ch_text_address_t taddr;
         ch_msg_get_address(msg, &taddr);
         if(!(

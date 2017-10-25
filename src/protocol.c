@@ -213,7 +213,6 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         )) {
             conn->flags |= CH_CN_ENCRYPTED;
         }
-        conn->flags |= CH_CN_CONNECTED;
         ch_pr_conn_start(chirp, conn, client, 1);
     }
     else {
@@ -237,7 +236,9 @@ ch_pr_conn_start(
 // .. code-block:: cpp
 //
 {
-    int tmp_err = ch_cn_init(chirp, conn, conn->flags);
+    conn->flags  |= CH_CN_CONNECTED;
+    client->data  = conn;
+    int tmp_err   = ch_cn_init(chirp, conn, conn->flags);
     if(tmp_err != CH_SUCCESS) {
         E(
             chirp,
