@@ -23,7 +23,6 @@ CFLAGS += \
 	-Wno-unused-function \
 	$(VISIBLITYFLAG) \
 	-I"$(BASE)/include" \
-	-I"$(BASE)/src" \
 	-I"$(BUILD)/src" \
 	-I"$(BUILD)"
 

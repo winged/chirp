@@ -17,7 +17,7 @@ Internal API
    src/buffer.h.rst
    src/chirp.h.rst
    src/chirp.c.rst
-   src/common.rg.h.rst
+   src/common.h.rst
    src/connection.h.rst
    src/connection.c.rst
    src/encryption.h.rst
@@ -30,7 +30,7 @@ Internal API
    src/reader.c.rst
    src/remote.h.rst
    src/remote.c.rst
-   src/serializer.rg.h.rst
+   src/serializer.h.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst
@@ -45,7 +45,7 @@ Test code
 
    src/message_test.h.rst
    src/message_test.c.rst
-   src/quickcheck_test.rg.h.rst
+   src/quickcheck_test.h.rst
    src/quickcheck_test.c.rst
    src/sds_test.h.rst
    src/sds_test.c.rst

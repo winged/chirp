@@ -87,16 +87,7 @@ def parse_depends(file_, h_files):
                     depend = path.realpath(
                         path.join(base, header)
                     )
-
-                rgh_depend = path.realpath(
-                    path.join(
-                        base,
-                        "%s.rg.h" % path.splitext(header)[0]
-                    )
-                )
-                if rgh_depend in h_files:
-                    yield replace_base_build(depend)
-                elif depend in h_files:
+                if depend in h_files:
                     yield depend
 
 
@@ -123,7 +114,8 @@ def read_depends():
     files = list(itertools.chain(c_files, h_files))
     for file_ in files:
         for depend in parse_depends(file_, h_files):
-            depends[file_].add(depend)
+            if depend != "config.h":
+                depends[file_].add(depend)
     dependency_list = {file_: flat_depends(
         file_,
         depends,
@@ -425,13 +417,18 @@ def write_makefile(args):
         )
         f.write("executables: $(EXECUTABLES)  ## Make all executables\n\n")
         f.write("HEADERS := \\\n")
-        h_list = [
-            "%s.h" % replace_base_build(h)[:-5]
-            for h in h_files if h.endswith("rg.h")
+        h_list = set([
+            h for h in h_files if not h.startswith(
+                "%s/include" % _base
+            )
+        ])
+        h_list_var = [
+            "%s.h" % replace_base_build(h)[:-2]
+            for h in h_list
         ]
-        for file_ in h_list[:-1]:
+        for file_ in h_list_var[:-1]:
             f.write("\t\t%s \\\n" % file_)
-        f.write("\t\t%s \n\n" % h_list[-1])
+        f.write("\t\t%s \n\n" % h_list_var[-1])
         f.write("headers: $(HEADERS)  ## Make all headers\n\n")
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
@@ -485,7 +482,10 @@ def write_makefile(args):
                 )
                 f.write("%s: \\\n" % bfile)
                 for depend in dep:
-                    f.write("\t\t%s \\\n" % replace_base_base(depend))
+                    if depend in h_list:
+                        f.write("\t\t%s \\\n" % replace_base_build(depend))
+                    else:
+                        f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/config.h \\\n")
                 if file_.endswith("_etest.c"):
                     f.write("\t\t$(BUILD)/libchirp.so \\\n")
@@ -505,7 +505,7 @@ def write_makefile(args):
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")
-    return [h for h in h_files if h.endswith("rg.h")]
+    return c_files, h_files
 
 
 def write_ide_files(args):
@@ -536,15 +536,18 @@ def write_ide_files(args):
                 print("failed", e)
 
 
-def write_pfix(rg_list):
+def write_pfix(c_files, h_files):
     """Write path fixer for compiler."""
     replaces = []
-    for file_ in rg_list:
+    for file_ in c_files:
+        new_file = path.join(_build, file_[_baselen + 1:-2])
+        new_file = "%s.o.rg.c" % new_file
+        replaces.append("('%s', '%s')," % (
+            new_file,
+            file_,
+        ))
+    for file_ in h_files:
         new_file = path.join(_build, file_[_baselen + 1:])
-        new_file = "%s%s" % (
-            new_file[:-4],
-            new_file[-1],
-        )
         replaces.append("('%s', '%s')," % (
             new_file,
             file_,
@@ -588,12 +591,12 @@ if __name__ == "__main__":
         os.chdir("build")
     _build = path.realpath(os.curdir)
     args = parse()
-    rg_list = write_makefile(args)
+    c_files, h_files = write_makefile(args)
     write_config()
     write_abi_check()
     copy_files(args)
     write_ide_files(args)
-    write_pfix(rg_list)
+    write_pfix(c_files, h_files)
     test_depends(args)
     print("\nTo build chirp call:\n")
     if in_source_attempt:

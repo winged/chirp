@@ -15,7 +15,10 @@
 #include "test_test.h"
 
 typedef enum {
-#   include "buffer_funcs.py"
+    func_init_e = 1,
+    func_acquire_e = 2,
+    func_release_e = 3,
+    func_cleanup_e = 4,
 } ch_tst_func_t;
 
 static ch_buffer_pool_t pool;

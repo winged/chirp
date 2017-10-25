@@ -90,21 +90,20 @@ pytest:  ## Run pytests
 
 # cppcheck target
 # ===============
-cppcheck: headers  ## Static analysis
+cppcheck: all  ## Static analysis
 	cppcheck -v \
 		--enable=style,performance,portability \
 		--suppress=unusedFunction \
-		--suppress=*:*mpack_test.? \
-		--suppress=*:*sds_test.? \
-		--config-exclude="$(BASE)/src/mpack" \
+		--suppress=*:*mpack_test.* \
+		--suppress=*:*sds_test.* \
+		--config-exclude="$(BUILD)/src/mpack" \
 		--error-exitcode=1 \
 		--std=c99 \
 		--inline-suppr \
 		-I"$(BASE)/include" \
-		-I"$(BASE)/src" \
 		-I"$(BUILD)/src" \
 		-DCH_ACCEPT_STRANGE_PLATFORM \
-		"$(BASE)/src"
+		"$(BUILD)/src"
 
 # Utility targets
 # ===============

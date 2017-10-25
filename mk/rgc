@@ -19,9 +19,8 @@ class State(object):
     DEF = 1
 
 
-cc = sys.argv[1]
-file_ = sys.argv[2]
-outfile = sys.argv[3]
+file_ = sys.argv[1]
+outfile = sys.argv[2]
 with codecs.open(file_, encoding="UTF-8") as in_:
     with codecs.open(outfile, mode="w", encoding="UTF-8") as out:
         for i, line in enumerate(in_.readlines()):

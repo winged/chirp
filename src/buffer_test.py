@@ -1,9 +1,13 @@
 """Test chirp buffers/handlers."""
 import mpipe
-import buffer_funcs as fnc
 
 from hypothesis.strategies import tuples, sampled_from, just, integers
 from hypothesis.stateful import GenericStateMachine
+
+func_init_e = 1
+func_acquire_e = 2
+func_release_e = 3
+func_cleanup_e = 4
 
 
 class GenBuffer(GenericStateMachine):
@@ -29,7 +33,7 @@ class GenBuffer(GenericStateMachine):
 
     def teardown(self):
         if self.initialized:
-            mpipe.write(self.proc, (fnc.func_cleanup_e, 0))
+            mpipe.write(self.proc, (func_cleanup_e, 0))
             assert mpipe.read(self.proc) == [0]
         mpipe.close(self.proc)
         del self.proc  # Hypothesis seems to keep GSM objects
@@ -55,13 +59,13 @@ class GenBuffer(GenericStateMachine):
             self.size = value
             mpipe.write(
                 self.proc,
-                (fnc.func_init_e, self.size)
+                (func_init_e, self.size)
             )
             assert mpipe.read(self.proc) == [0]
         elif action == 'acquire':
             mpipe.write(
                 self.proc,
-                (fnc.func_acquire_e, 0)
+                (func_acquire_e, 0)
             )
             last, id_ = mpipe.read(self.proc)
             if len(self.acquired) == self.size - 1:
@@ -76,7 +80,7 @@ class GenBuffer(GenericStateMachine):
             if value in self.acquired:
                 mpipe.write(
                     self.proc,
-                    (fnc.func_release_e, value)
+                    (func_release_e, value)
                 )
                 assert mpipe.read(self.proc) == [0]
                 self.acquired.remove(value)
@@ -84,7 +88,7 @@ class GenBuffer(GenericStateMachine):
                 try:
                     mpipe.write(
                         self.proc,
-                        (fnc.func_release_e, value)
+                        (func_release_e, value)
                     )
                     assert mpipe.read(self.proc) == [0]
                 except Exception:

@@ -5,22 +5,26 @@
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(MACRO_DEBUG),True)
+	$(V_E) RGC $<
+	$(V_M)$(BASE)/mk/rgc $< $@.rg.c
 	$(V_E) MDCC $<
-	$(V_M)$(CC) $(CFLAGS) -E -P $< | clang-format > $@.c
+	$(V_M)$(CC) $(CFLAGS) -E -P $@.rg.c | clang-format > $@.c
 	$(V_M)$(CC) -c -o $@ $@.c $(NWCFLAGS) \
 			2> $@.log || \
 		(cat $@.log; false)
 else
+	$(V_E) RGC $<
+	$(V_M)$(BASE)/mk/rgc $< $@.rg.c
 	$(V_E) CC $<
-	$(V_M)$(CC) -c -o $@ $< $(CFLAGS)
+	$(V_M)$(CC) -c -o $@ $@.rg.c $(CFLAGS)
 endif
 
-# Make .h from .rg.h files
-# =========================
-$(BUILD)/%.h: $(BASE)/%.rg.h
+# Preprocess headers
+# ==================
+$(BUILD)/%.h: $(BASE)/%.h
 	@mkdir -p "$(dir $@)"
 	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $(CC) $< $@
+	$(V_M)$(BASE)/mk/rgc $< $@
 
 # Make doc (c.rst) from .c files
 # ==============================
