@@ -28,10 +28,6 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 WORK IN PROGRESS
 ================
 
-.. image:: https://graphs.waffle.io/concretecloud/chirp/throughput.svg 
- :target: https://waffle.io/concretecloud/chirp/metrics/throughput 
- :alt: 'Throughput Graph'
-
 Features
 ========
 
