@@ -231,11 +231,15 @@ You can also run a shell.
    ./ci/arch.sh shell
 
 Note: Docker must have IPv6 enabled. Since we only need loopback, you can
-configure a link-only subnet.
+configure a unique local subnet. For some reason docker doesn't support loopback
+only anymore. I consider it a bug, the corresponding issue told me it isn't.
 
 .. code-block:: bash
 
-   DOCKER_OPTS="--ipv6 --fixed-cidr-v6 fe80::/64"
+   DOCKER_OPTS="--ipv6 --fixed-cidr-v6 fc00:beef:beef::/40"
+
+If IPv6 is working in your docker, you don't have to change anything. We only
+need to loopback. The above is just how I solved the problem.
 
 Windows
 -------
