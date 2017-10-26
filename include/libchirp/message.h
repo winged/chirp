@@ -17,18 +17,6 @@
 #include "common.h"
 #include "callbacks.h"
 
-// System includes
-// ===============
-//
-// .. code-block:: cpp
-//
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else // _WIN32
-#include <arpa/inet.h>
-#endif // _WIN32
-
 // Declarations
 // ============
 
