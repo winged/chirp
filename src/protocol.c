@@ -172,15 +172,15 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     uv_tcp_init(server->loop, client);
     conn->flags |= CH_CN_INIT_CLIENT;
 
-#   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version)
+#   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version, in_version)
     {
-        struct sockaddr_##inet_version* saddr =
-            (struct sockaddr_##inet_version*) &addr;
-        conn->ip_protocol = CH_IPV##ip_version;
+        struct sockaddr_##in_version* saddr =
+            (struct sockaddr_##in_version*) &addr;
+        conn->ip_protocol = AF_##inet_version;
         memcpy(
             &conn->address,
-            &saddr->s##inet_version##_addr,
-            sizeof(saddr->s##inet_version##_addr)
+            &saddr->s##in_version##_addr,
+            sizeof(saddr->s##in_version##_addr)
         );
         uv_ip##ip_version##_name(saddr, taddr.data, sizeof(taddr.data));
     }
@@ -206,9 +206,9 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             return;
         };
         if(addr.ss_family == AF_INET6)
-            ch_pr_parse_ip_addr_m(6, in6)
+            ch_pr_parse_ip_addr_m(6, INET6, in6)
         else
-            ch_pr_parse_ip_addr_m(4, in)
+            ch_pr_parse_ip_addr_m(4, INET, in)
         if(!(
                 ichirp->config.DISABLE_ENCRYPTION  ||
                 ch_is_local_addr(&taddr)

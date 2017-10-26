@@ -141,7 +141,7 @@ char* _ch_rd_state_names[] = {
     ch_text_address_t addr;
     char id[CH_ID_SIZE * 2 + 1];
     uv_inet_ntop(
-        conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
+        conn->ip_protocol,
         conn->address,
         addr.data,
         sizeof(addr)
@@ -480,7 +480,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                     msg->address,
                     conn->address,
                     (
-                        msg->ip_protocol == CH_IPV6
+                        msg->ip_protocol == AF_INET6
                     ) ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
                 );
                 /* Direct jump to next read state */

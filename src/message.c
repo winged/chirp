@@ -37,19 +37,11 @@ ch_msg_get_address(
 // .. code-block:: cpp
 //
 {
-    int af;
-    switch(message->ip_protocol) {
-        case CH_IPV4:
-            af = AF_INET;
-            break;
-        case CH_IPV6:
-            af = AF_INET6;
-            break;
-        default:
-            return CH_PROTOCOL_ERROR;
-    }
+    int ip_protocol = message->ip_protocol;
+    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6))
+        return CH_VALUE_ERROR;
     if(uv_inet_ntop(
-            af, message->address, address->data, sizeof(address->data)
+            ip_protocol, message->address, address->data, sizeof(address->data)
     )) {
         return CH_PROTOCOL_ERROR;
     }
@@ -105,19 +97,10 @@ ch_msg_set_address(
 // .. code-block:: cpp
 //
 {
-    int af;
     message->ip_protocol = ip_protocol;
-    switch(ip_protocol) {
-        case CH_IPV4:
-            af = AF_INET;
-            break;
-        case CH_IPV6:
-            af = AF_INET6;
-            break;
-        default:
-            return CH_VALUE_ERROR;
-    }
-    if(uv_inet_pton(af, address, message->address)) {
+    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6))
+        return CH_VALUE_ERROR;
+    if(uv_inet_pton(ip_protocol, address, message->address)) {
         return CH_VALUE_ERROR;
     }
     message->port = port;

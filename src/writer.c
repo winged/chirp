@@ -636,7 +636,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         );
         uv_tcp_init(ichirp->loop, &conn->client);
         conn->flags |= CH_CN_INIT_CLIENT;
-        if(msg->ip_protocol == CH_IPV6) {
+        if(msg->ip_protocol == AF_INET6) {
             struct sockaddr_in6 addr;
             uv_ip6_addr(taddr.data, msg->port, &addr);
             tmp_err = uv_tcp_connect(
@@ -646,7 +646,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 _ch_wr_connect_cb
             );
         } else {
-            A(msg->ip_protocol == CH_IPV4, "Unknown IP protocol");
+            A(msg->ip_protocol == AF_INET, "Unknown IP protocol");
             struct sockaddr_in addr;
             uv_ip4_addr(taddr.data, msg->port, &addr);
             tmp_err = uv_tcp_connect(

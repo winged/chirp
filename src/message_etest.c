@@ -93,7 +93,7 @@ _ch_tst_simple_msg(ch_message_t* msg)
     ch_msg_init(msg);
     ch_msg_set_address(
         msg,
-        CH_IPV4,
+        AF_INET,
         "127.0.0.1",
         PORT_ECHO
     );

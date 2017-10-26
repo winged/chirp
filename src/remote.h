@@ -188,7 +188,7 @@ ch_remote_cmp(ch_remote_t* x, ch_remote_t* y)
         int tmp_cmp = memcmp(
             x->address,
             y->address,
-            x->ip_protocol == CH_IPV6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
+            x->ip_protocol == AF_INET6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
         );
         if(tmp_cmp != 0) {
             return tmp_cmp;

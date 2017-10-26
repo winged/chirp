@@ -123,7 +123,7 @@ ch_tst_send(
             sdsfree(s);
             return 1;
         }
-        tmp_err = ch_msg_set_address(msg, CH_IPV4, spl[0], port);
+        tmp_err = ch_msg_set_address(msg, AF_INET, spl[0], port);
         if(tmp_err != CH_SUCCESS) {
             printf("Invalid argument\n");
             sdsfreesplitres(spl, cspl);

@@ -150,14 +150,14 @@ ch_tst_gen_message(void)
     if(ipv6)
         ch_msg_set_address(
             message,
-            CH_IPV6,
+            AF_INET6,
             "::1",
             59732
         );
     else
         ch_msg_set_address(
             message,
-            CH_IPV4,
+            AF_INET,
             "127.0.0.1",
             59732
         );
