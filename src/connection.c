@@ -40,6 +40,19 @@ _ch_cn_allocate_buffers(ch_connection_t* conn);
 //
 //    :param ch_connection_t* conn: Connection
 //
+//
+// .. c:function::
+static
+void
+_ch_cn_closing(uv_shutdown_t* req, int bypass);
+//
+//    Called by _ch_cn_shutdown_cb or ch_cn_shutdown to enter the closing
+//    stage.
+//
+//    :param uv_shutdown_t* req: Shutdown request type, holding the
+//                               connection handle
+//    :param int bypass: Boolean set to true if uv_shutdown was bypassed.
+
 
 // .. c:function::
 static
@@ -163,6 +176,73 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
     );
     return CH_SUCCESS;
 }
+
+// .. c:function::
+static
+void
+_ch_cn_closing(
+        uv_shutdown_t* req,
+        int bypass
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_cn_closing`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = req->handle->data;
+    ch_chirp_t* chirp = conn->chirp;
+    ch_chirp_check_m(chirp);
+    LC(
+        chirp,
+        "Shutdown callback called. ", "ch_connection_t:%p",
+        (void*) conn
+    );
+    conn->flags &= ~CH_CN_CONNECTED;
+    if(!bypass)
+    {
+        int tmp_err = uv_timer_stop(&conn->shutdown_timeout);
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                "Stopping shutdown timeout failed: %d. ", "ch_connection_t:%p",
+                tmp_err,
+                (void*) chirp
+            );
+        }
+    }
+    uv_handle_t* handle = (uv_handle_t*) req->handle;
+    if(uv_is_closing(handle)) {
+        EC(
+            chirp,
+            "Connection already closed after shutdown. ",
+            "ch_connection_t:%p",
+            (void*) conn
+        );
+    } else {
+        uv_read_stop(req->handle);
+        if(conn->flags & CH_CN_INIT_WRITER)
+            ch_wr_free(&conn->writer);
+        if(conn->flags & CH_CN_INIT_CLIENT) {
+            uv_close(handle, ch_cn_close_cb);
+            conn->shutdown_tasks += 1;
+            conn->flags &= ~CH_CN_INIT_CLIENT;
+        }
+        if(conn->flags & CH_CN_INIT_SHUTDOWN_TIMEOUT) {
+            uv_close((uv_handle_t*) &conn->shutdown_timeout, ch_cn_close_cb);
+            conn->flags &= ~CH_CN_INIT_SHUTDOWN_TIMEOUT;
+            conn->shutdown_tasks += 1;
+        }
+        LC(
+            chirp,
+            "Closing connection after shutdown. ",
+            "ch_connection_t:%p",
+            (void*) conn
+        );
+    }
+}
+
 
 // .. c:function::
 static
@@ -312,46 +392,8 @@ _ch_cn_shutdown_cb(
 // .. code-block:: cpp
 //
 {
-    (void)(status); // Ignore callback-arg
-    int tmp_err;
-    ch_connection_t* conn = req->handle->data;
-    ch_chirp_t* chirp = conn->chirp;
-    ch_chirp_check_m(chirp);
-    LC(
-        chirp,
-        "Shutdown callback called. ", "ch_connection_t:%p",
-        (void*) conn
-    );
-    tmp_err = uv_timer_stop(&conn->shutdown_timeout);
-    if(tmp_err != CH_SUCCESS) {
-        EC(
-            chirp,
-            "Stopping shutdown timeout failed: %d. ", "ch_connection_t:%p",
-            tmp_err,
-            (void*) chirp
-        );
-    }
-    uv_handle_t* handle = (uv_handle_t*) req->handle;
-    if(uv_is_closing(handle)) {
-        EC(
-            chirp,
-            "Connection already closed after shutdown. ",
-            "ch_connection_t:%p",
-            (void*) conn
-        );
-    } else {
-        uv_read_stop(req->handle);
-        ch_wr_free(&conn->writer);
-        uv_close(handle, ch_cn_close_cb);
-        uv_close((uv_handle_t*) &conn->shutdown_timeout, ch_cn_close_cb);
-        conn->shutdown_tasks += 2;
-        LC(
-            chirp,
-            "Closing connection after shutdown. ",
-            "ch_connection_t:%p",
-            (void*) conn
-        );
-    }
+    (void)(status);
+    _ch_cn_closing(req, 0);
 }
 
 // .. c:function::
@@ -490,13 +532,28 @@ ch_cn_close_cb(uv_handle_t* handle)
                 ch_free(conn->buffer_wtls);
                 ch_free(conn->buffer_rtls);
             }
+            conn->flags &= ~CH_CN_INIT_BUFFERS;
         }
-        if(conn->ssl != NULL)
+        if(conn->flags & CH_CN_ENCRYPTED) {
             /* The doc says this frees conn->bio_ssl I tested it. let's
              * hope they never change that. */
-            SSL_free(conn->ssl);
-        if(conn->bio_app != NULL)
-            BIO_free(conn->bio_app);
+            if(conn->flags & CH_CN_INIT_ENCRYPTION) {
+                assert(conn->ssl);
+                assert(conn->bio_app);
+                SSL_free(conn->ssl);
+                BIO_free(conn->bio_app);
+            }
+        }
+        /* Since we define a unecrypted connection as CH_CN_INIT_ENCRYPTION */
+        conn->flags &= ~CH_CN_INIT_ENCRYPTION;
+        A(
+            !(conn->flags & CH_CN_INIT),
+            "Connection resources haven't been freed completely"
+        );
+        A(
+            !(conn->flags & CH_CN_CONNECTED),
+            "Connection not properly disconnected"
+        );
         ch_free(conn);
         LC(
             chirp,
@@ -544,6 +601,7 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
         tmp_err = ch_cn_init_enc(chirp, conn);
     if(tmp_err != CH_SUCCESS)
         return tmp_err;
+    /* An unencrypted connection also has CH_CN_INIT_ENCRYPTION */
     conn->flags |= CH_CN_INIT_ENCRYPTION;
     return _ch_cn_allocate_buffers(conn);
 }
@@ -732,7 +790,8 @@ ch_cn_shutdown(
         "Shutdown connection. ", "ch_connection_t:%p",
         (void*) conn
     );
-    uv_read_stop((uv_stream_t*) &conn->client);
+    if(conn->flags & CH_CN_INIT_CLIENT)
+        uv_read_stop((uv_stream_t*) &conn->client);
     if(msg != NULL) {
         msg->_flags = CH_MSG_FAILURE;
         ch_chirp_try_message_finish(
@@ -743,7 +802,7 @@ ch_cn_shutdown(
             conn->load
         );
     }
-    if(conn->flags & CH_CN_ENCRYPTED) {
+    if(conn->flags & CH_CN_ENCRYPTED && conn->flags & CH_CN_INIT_ENCRYPTION) {
         tmp_err = SSL_get_verify_result(conn->ssl);
         if(tmp_err != X509_V_OK) {
             EC(
@@ -767,37 +826,43 @@ ch_cn_shutdown(
                 ch_cn_send_if_pending(conn);
         }
     }
-    tmp_err = uv_shutdown(
-        &conn->shutdown_req,
-        (uv_stream_t*) &conn->client,
-        _ch_cn_shutdown_cb
-    );
-    if(tmp_err != CH_SUCCESS) {
-        EC(
-            chirp,
-            "uv_shutdown returned error: %d. ", "ch_connection_t:%p",
-            tmp_err,
-            (void*) conn
-        );
-        return ch_uv_error_map(tmp_err);
-    }
     if(ichirp->flags & CH_CHIRP_CLOSING) {
         conn->flags |= CH_CN_DO_CLOSE_ACCOUTING;
         chirp->_->closing_tasks += 1;
     }
-    tmp_err = uv_timer_start(
-        &conn->shutdown_timeout,
-        _ch_cn_shutdown_timeout_cb,
-        ichirp->config.TIMEOUT * 1000,
-        0
-    );
-    if(tmp_err != CH_SUCCESS) {
-        EC(
-            chirp,
-            "Starting shutdown timeout failed: %d. ", "ch_connection_t:%p",
-            tmp_err,
-            (void*) conn
+    if(conn->flags & CH_CN_CONNECTED)
+    {
+        tmp_err = uv_timer_start(
+            &conn->shutdown_timeout,
+            _ch_cn_shutdown_timeout_cb,
+            ichirp->config.TIMEOUT * 1000,
+            0
         );
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                "Starting shutdown timeout failed: %d. ", "ch_connection_t:%p",
+                tmp_err,
+                (void*) conn
+            );
+        }
+        uv_shutdown(
+            &conn->shutdown_req,
+            (uv_stream_t*) &conn->client,
+            _ch_cn_shutdown_cb
+        );
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                "uv_shutdown returned error: %d. ", "ch_connection_t:%p",
+                tmp_err,
+                (void*) conn
+            );
+        }
+    } else {
+        /* We bypass shutdown */
+        conn->shutdown_req.handle = (uv_stream_t*) &conn->client;
+        _ch_cn_closing(&conn->shutdown_req, 1);
     }
     return CH_SUCCESS;
 }

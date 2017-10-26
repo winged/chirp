@@ -166,6 +166,8 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         return;
     }
     memset(conn, 0, sizeof(*conn));
+    conn->chirp = chirp;
+    conn->client.data = conn;
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
     conn->flags |= CH_CN_INIT_CLIENT;
@@ -252,7 +254,6 @@ ch_pr_conn_start(
 #   enddef
 
     conn->flags  |= CH_CN_CONNECTED;
-    client->data  = conn;
     int tmp_err = ch_cn_init(chirp, conn, conn->flags);
     ch_pr_conn_start_handle_error_m("Could not initialize")
 

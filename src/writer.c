@@ -480,6 +480,7 @@ ch_wr_free(ch_writer_t* writer)
     ch_connection_t* conn = writer->send_timeout.data;
     uv_close((uv_handle_t*) &writer->send_timeout, ch_cn_close_cb);
     conn->shutdown_tasks += 1;
+    conn->flags &= ~CH_CN_INIT_WRITER;
 }
 
 // .. c:function::

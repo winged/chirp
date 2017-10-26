@@ -180,7 +180,27 @@
 //    .. c:member:: CH_CN_DO_CLOSE_ACCOUTING
 //
 //       Indicates that this close should happened during chirp close and
-//       therefore has to be accounted for in closeing_tasks
+//       therefore has to be accounted for in closeing_tasks.
+//
+//    .. c:member:: CH_CN_INIT_CLIENT
+//
+//       The uv tcp client has been initialized.
+//
+//    .. c:member:: CH_CN_INIT_WRITER
+//
+//       The writer has been initialized.
+//
+//    .. c:member:: CH_CN_INIT_SHUTDOWN_TIMEOUT
+//
+//       The shutdown timeout has been initialized.
+//
+//    .. c:member:: CH_CN_INIT_ENCRYPTION
+//
+//       The encryption has been initialized.
+//
+//    .. c:member:: CH_CN_INIT_BUFFERS
+//
+//       The buffers have been initialized.
 //
 // .. code-block:: cpp
 //
