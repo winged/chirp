@@ -150,7 +150,7 @@ ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
 // .. code-block:: cpp
 //
 {
-    memset(protocol, 0, sizeof(ch_protocol_t));
+    memset(protocol, 0, sizeof(*protocol));
     protocol->chirp = chirp;
 }
 

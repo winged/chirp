@@ -98,7 +98,7 @@ ch_qc_tgen_bytes(uint8_t** bytes)
 //
 {
     ch_qc_mem_track_t* item;
-    ch_qc_tgen_array_m(item, *bytes, ch_qc_tgen_byte, uint8_t);
+    ch_qc_tgen_array_m(item, *bytes, ch_qc_tgen_byte);
 
     return item;
 }
@@ -114,7 +114,7 @@ ch_qc_tgen_string(char** string)
 //
 {
     ch_qc_mem_track_t* item;
-    ch_qc_tgen_array_m(item, *string, ch_qc_tgen_char, char);
+    ch_qc_tgen_array_m(item, *string, ch_qc_tgen_char);
     item->data[(item->count * item->size) - 1] = 0;
 
     return item;
@@ -131,7 +131,7 @@ ch_qc_track_alloc(size_t size)
 //
 {
     ch_buf* arr = ch_alloc(size);
-    ch_qc_mem_track_t* item = ch_alloc(sizeof(ch_qc_mem_track_t));
+    ch_qc_mem_track_t* item = ch_alloc(sizeof(*item));
     item->data = arr;
     item->count = size;
     item->size = 1;

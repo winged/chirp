@@ -49,7 +49,7 @@ ch_msg_get_address(
             return CH_PROTOCOL_ERROR;
     }
     if(uv_inet_ntop(
-            af, message->address, address->data, sizeof(ch_text_address_t)
+            af, message->address, address->data, sizeof(address->data)
     )) {
         return CH_PROTOCOL_ERROR;
     }
@@ -81,7 +81,7 @@ ch_msg_init(ch_message_t* message)
 // .. code-block:: cpp
 //
 {
-    memset(message, 0, sizeof(ch_message_t));
+    memset(message, 0, sizeof(*message));
     ch_random_ints_as_bytes(
         message->identity,
         sizeof(message->identity)

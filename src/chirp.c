@@ -689,12 +689,12 @@ ch_chirp_init(
 {
     int tmp_err;
     uv_mutex_lock(&_ch_chirp_init_lock);
-    memset(chirp, 0, sizeof(ch_chirp_t));
+    memset(chirp, 0, sizeof(*chirp));
     chirp->_log_lock = &_ch_chirp_log_lock;
     chirp->_done_cb = done_cb;
     chirp->_init            = CH_CHIRP_MAGIC;
     chirp->_thread          = uv_thread_self();
-    ch_chirp_int_t* ichirp  = ch_alloc(sizeof(ch_chirp_int_t));
+    ch_chirp_int_t* ichirp  = ch_alloc(sizeof(*ichirp));
     if(!ichirp) {
         fprintf(
             stderr,
@@ -706,7 +706,7 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_ENOMEM;
     }
-    memset(ichirp, 0, sizeof(ch_chirp_int_t));
+    memset(ichirp, 0, sizeof(*ichirp));
     ichirp->config          = *config;
     ichirp->public_port     = config->PORT;
     ichirp->loop            = loop;

@@ -461,7 +461,7 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags);
 //
 //    .. code-block:
 //
-//       memset(conn, 0, sizeof(ch_connection_t));
+//       memset(conn, 0, sizeof(*conn));
 //
 //    before calling this. We usually do this, but this is an exception.
 //

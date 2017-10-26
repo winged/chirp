@@ -580,7 +580,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 
     ch_rm_init_from_msg(chirp, &search_remote, msg);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
-        remote = ch_alloc(sizeof(ch_remote_t));
+        remote = ch_alloc(sizeof(*remote));
         *remote = search_remote;
         tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
@@ -595,7 +595,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 
     conn = remote->conn;
     if(conn == NULL) {
-        conn = ch_alloc(sizeof(ch_connection_t));
+        conn = ch_alloc(sizeof(*conn));
         remote->conn = conn;
         if(!conn) {
             E(
@@ -607,7 +607,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 send_cb(chirp, msg, CH_ENOMEM, -1);
             return CH_ENOMEM;
         }
-        memset(conn, 0, sizeof(ch_connection_t));
+        memset(conn, 0, sizeof(*conn));
         conn->chirp        = chirp;
         conn->port         = msg->port;
         conn->ip_protocol  = msg->ip_protocol;

@@ -76,7 +76,7 @@ _ch_realloc_cb = realloc;
         /* We do not track failed allocations */
         if(buf == NULL)
             return buf;
-        ch_alloc_track_t* track = _ch_alloc_cb(sizeof(ch_alloc_track_t));
+        ch_alloc_track_t* track = _ch_alloc_cb(sizeof(*track));
         assert(track);
         /* We treat a failure to track as an alloc failure. This code is here
          * if we ever need to use this in release mode (or just for
@@ -244,8 +244,8 @@ ch_is_local_addr(ch_text_address_t* addr)
         return 0;
     else {
         return (
-            strncmp("::1", addr->data, sizeof(ch_text_address_t)) == 0 ||
-            strncmp("127.0.0.1", addr->data, sizeof(ch_text_address_t)) == 0
+            strncmp("::1", addr->data, sizeof(addr->data)) == 0 ||
+            strncmp("127.0.0.1", addr->data, sizeof(addr->data)) == 0
         );
     }
 }

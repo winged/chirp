@@ -128,7 +128,7 @@ ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
 // .. code-block:: cpp
 //
 {
-    memset(enc, 0, sizeof(ch_encryption_t));
+    memset(enc, 0, sizeof(*enc));
     enc->chirp = chirp;
 }
 

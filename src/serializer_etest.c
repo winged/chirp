@@ -35,8 +35,8 @@ main(void)
         ch_buf buf[CH_SR_WIRE_MESSAGE_SIZE];
         ch_message_t in;
         ch_message_t out;
-        memset(&in, 0, sizeof(ch_message_t));
-        memset(&out, 0, sizeof(ch_message_t));
+        memset(&in, 0, sizeof(in));
+        memset(&out, 0, sizeof(out));
         ch_random_ints_as_bytes(in.identity, CH_ID_SIZE);
         in.serial = ch_qc_pgen_uint32_t();
         in.type = ch_qc_pgen_uint8_t();
@@ -44,7 +44,7 @@ main(void)
         in.data_len = ch_qc_pgen_uint32_t();
         ch_sr_msg_to_buf(&in, buf);
         ch_sr_buf_to_msg(buf, &out);
-        if(memcmp(&in, &out, sizeof(ch_message_t)) != 0) {
+        if(memcmp(&in, &out, sizeof(in)) != 0) {
             char id_str[CH_ID_SIZE * 2 + 1];
             ch_bytes_to_hex(
                 in.identity,

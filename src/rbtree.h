@@ -176,7 +176,7 @@
 //    void
 //    register_book(char isbn[14], char* title, char* author)
 //    {
-//        book_t* book = malloc(sizeof(book_t));
+//        book_t* book = malloc(sizeof(*book));
 //        bk_node_init(book);
 //        book->title  = title;
 //        book->author = author;

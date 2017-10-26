@@ -78,19 +78,19 @@ qs_stack_bind_decl_m(
 //
 // .. code-block:: cpp
 
-#begindef ch_qc_tgen_array_m(item, typed, gen_function, type)
+#begindef ch_qc_tgen_array_m(item, typed, gen_function)
 {
     size_t __ch_qc_tgen_len_ = (rand() % 99) + 1;
 
     typed = ch_alloc(
-        (size_t) __ch_qc_tgen_len_ * sizeof(type)
+        (size_t) __ch_qc_tgen_len_ * sizeof(*typed)
     );
     item = ch_alloc(
         sizeof(ch_qc_mem_track_t)
     );
     (item)->data = (ch_buf*) typed;
     (item)->count = __ch_qc_tgen_len_;
-    (item)->size = sizeof(type);
+    (item)->size = sizeof(*typed);
     (item)->next = NULL;
     ch_qc_push(&_ch_qc_mem_track, item);
 

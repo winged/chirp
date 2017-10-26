@@ -152,9 +152,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         return;
     }
 
-    ch_connection_t* conn = (ch_connection_t*) ch_alloc(
-        sizeof(ch_connection_t)
-    );
+    ch_connection_t* conn = (ch_connection_t*) ch_alloc(sizeof(*conn));
     LC(
         chirp,
         "Accepted connection. ", "ch_connection_t:%p",
@@ -167,7 +165,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         );
         return;
     }
-    memset(conn, 0, sizeof(ch_connection_t));
+    memset(conn, 0, sizeof(*conn));
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
 
@@ -181,13 +179,13 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             &saddr->s##inet_version##_addr,
             sizeof(saddr->s##inet_version##_addr)
         );
-        uv_ip##ip_version##_name(saddr, taddr.data, sizeof(ch_text_address_t));
+        uv_ip##ip_version##_name(saddr, taddr.data, sizeof(taddr.data));
     }
 #   enddef
 
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
         struct sockaddr_storage addr;
-        int addr_len = sizeof(struct sockaddr_storage);
+        int addr_len = sizeof(addr);
         ch_text_address_t taddr;
         if(uv_tcp_getpeername(
                     &conn->client,
@@ -437,7 +435,7 @@ ch_pr_start(ch_protocol_t* protocol)
                 af_inet,
                 config->BIND_V##ip_version,
                 tmp_addr.data,
-                sizeof(ch_text_address_t)
+                sizeof(tmp_addr.data)
         ) < 0) {
             return CH_VALUE_ERROR;
         }

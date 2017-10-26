@@ -171,7 +171,7 @@ _ch_rd_handshake(
     );
     ch_rm_init_from_conn(chirp, &search_remote, conn);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
-        remote = ch_alloc(sizeof(ch_remote_t));
+        remote = ch_alloc(sizeof(*remote));
         *remote = search_remote;
         int tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
@@ -284,7 +284,7 @@ _ch_rd_handle_msg(
     if(msg->type & CH_MSG_REQ_ACK) {
         /* Send ack */
         ch_message_t* ack_msg = &reader->ack_msg;
-        memset(ack_msg, 0, sizeof(ch_message_t));
+        memset(ack_msg, 0, sizeof(*ack_msg));
         memcpy(ack_msg->identity, msg->identity, CH_ID_SIZE);
         memcpy(ack_msg->address, msg->address, CH_IP_ADDR_SIZE);
         ack_msg->ip_protocol = msg->ip_protocol;
