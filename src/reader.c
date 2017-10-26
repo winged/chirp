@@ -129,6 +129,31 @@ char* _ch_rd_state_names[] = {
     "CH_RD_DATA",
 };
 
+// .. c:macro:: ch_rd_log_ip_and_id_to_string_m
+//
+//    Converts an ip and an id to string.
+//
+//    :param identity: The identity to convert
+//
+// .. code-block:: cpp
+
+#begindef ch_rd_log_ip_and_id_to_string_m(identity)
+    ch_text_address_t addr;
+    char id[CH_ID_SIZE * 2 + 1];
+    uv_inet_ntop(
+        conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
+        conn->address,
+        addr.data,
+        sizeof(addr)
+    );
+    ch_bytes_to_hex(
+        identity,
+        sizeof(identity),
+        id,
+        sizeof(id)
+    );
+#enddef
+
 // .. c:function::
 static
 ch_inline
@@ -198,26 +223,13 @@ _ch_rd_handshake(
     }
 #   ifndef NDEBUG
     {
-        ch_text_address_t addr;
-        char identity[CH_ID_SIZE * 2 + 1];
-        uv_inet_ntop(
-            conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
-            conn->address,
-            addr.data,
-            sizeof(addr)
-        );
-        ch_bytes_to_hex(
-            conn->remote_identity,
-            sizeof(conn->remote_identity),
-            identity,
-            sizeof(identity)
-        );
+        ch_rd_log_ip_and_id_to_string_m(conn->remote_identity);
         LC(
             chirp,
             "Handshake with remote %s:%d (%s) done. ", "ch_connection_t:%p",
             addr.data,
             conn->port,
-            identity,
+            id,
             (void*) conn
         );
     }
@@ -246,20 +258,7 @@ _ch_rd_handle_msg(
     ch_chirp_int_t* ichirp = chirp->_;
 #   ifndef NDEBUG
     {
-        ch_text_address_t addr;
-        char id[CH_ID_SIZE * 2 + 1];
-        uv_inet_ntop(
-            conn->ip_protocol == CH_IPV6 ? AF_INET6 : AF_INET,
-            conn->address,
-            addr.data,
-            sizeof(addr)
-        );
-        ch_bytes_to_hex(
-            msg->identity,
-            sizeof(msg->identity),
-            id,
-            sizeof(id)
-        );
+        ch_rd_log_ip_and_id_to_string_m(msg->identity);
         LC(
             chirp,
             "Read message with id: %s\n"
