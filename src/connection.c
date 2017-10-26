@@ -156,6 +156,11 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
         conn->buffer_wtls,
         conn->buffer_size
     );
+    conn->flags |= CH_CN_INIT_BUFFERS;
+    A(
+        (conn->flags & CH_CN_INIT) == CH_CN_INIT,
+        "Connection not fully initialized"
+    );
     return CH_SUCCESS;
 }
 
@@ -476,9 +481,12 @@ ch_cn_close_cb(uv_handle_t* handle)
     if(conn->shutdown_tasks < 1) {
         if(conn->flags & CH_CN_DO_CLOSE_ACCOUTING)
             ichirp->closing_tasks -= 1;
-        if(conn->buffer_uv != NULL) {
+        if(conn->flags & CH_CN_INIT_BUFFERS) {
+            assert(conn->buffer_uv);
             ch_free(conn->buffer_uv);
             if(conn->flags & CH_CN_ENCRYPTED) {
+                assert(conn->buffer_wtls);
+                assert(conn->buffer_rtls);
                 ch_free(conn->buffer_wtls);
                 ch_free(conn->buffer_rtls);
             }
@@ -517,7 +525,9 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->flags          |= flags;
     conn->write_req.data  = conn;
     ch_rd_init(&conn->reader);
-    ch_wr_init(&conn->writer, conn);
+    tmp_err = ch_wr_init(&conn->writer, conn);
+    if(tmp_err != CH_SUCCESS)
+        return tmp_err;
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
         EC(
@@ -528,11 +538,13 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
         );
         return tmp_err;
     }
+    conn->flags |= CH_CN_INIT_SHUTDOWN_TIMEOUT;
     conn->shutdown_timeout.data = conn;
     if(conn->flags & CH_CN_ENCRYPTED)
         tmp_err = ch_cn_init_enc(chirp, conn);
     if(tmp_err != CH_SUCCESS)
         return tmp_err;
+    conn->flags |= CH_CN_INIT_ENCRYPTION;
     return _ch_cn_allocate_buffers(conn);
 }
 

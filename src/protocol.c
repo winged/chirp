@@ -168,6 +168,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     memset(conn, 0, sizeof(*conn));
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
+    conn->flags |= CH_CN_INIT_CLIENT;
 
 #   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version)
     {
@@ -197,6 +198,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
                 "Could not get remote address. ", "ch_connection_t:%p",
                 (void*) conn
             );
+            // TODO use shutdown
             ch_free(conn);
             uv_close((uv_handle_t*) client, NULL);
             return;

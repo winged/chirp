@@ -89,7 +89,7 @@ ch_wr_free(ch_writer_t* writer);
 //
 
 // .. c:function::
-void
+int
 ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //
 //    Initialize the writer data structure.

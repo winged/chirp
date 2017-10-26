@@ -247,6 +247,7 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             status,
             (void*) conn
         );
+        // TODO use shutdown
         uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
     }
 }
@@ -482,7 +483,7 @@ ch_wr_free(ch_writer_t* writer)
 }
 
 // .. c:function::
-void
+int
 ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
 //    :noindex:
 //
@@ -497,13 +498,17 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
     ch_chirp_int_t* ichirp = chirp->_;
     tmp_err = uv_timer_init(ichirp->loop, &writer->send_timeout);
     if(tmp_err != CH_SUCCESS) {
-        E(
+        EC(
             chirp,
-            "Initializing send timeout failed: %d",
-            tmp_err
+            "Initializing send timeout failed: %d. ", "ch_connection_t:%p",
+            tmp_err,
+            (void*) conn
         );
+        return tmp_err;
     }
+    conn->flags |= CH_CN_INIT_WRITER;
     writer->send_timeout.data = conn;
+    return CH_SUCCESS;
 }
 
 // .. c:function::
@@ -629,6 +634,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             CH_IP_ADDR_SIZE
         );
         uv_tcp_init(ichirp->loop, &conn->client);
+        conn->flags |= CH_CN_INIT_CLIENT;
         if(msg->ip_protocol == CH_IPV6) {
             struct sockaddr_in6 addr;
             uv_ip6_addr(taddr.data, msg->port, &addr);

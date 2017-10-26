@@ -185,15 +185,27 @@
 // .. code-block:: cpp
 //
 typedef enum {
-    CH_CN_SHUTTING_DOWN      = 1 << 0,
-    CH_CN_CONNECTED          = 1 << 1,
-    CH_CN_WRITE_PENDING      = 1 << 2,
-    CH_CN_TLS_HANDSHAKE      = 1 << 3,
-    CH_CN_ENCRYPTED          = 1 << 4,
-    CH_CN_BUF_WTLS_USED      = 1 << 5,
-    CH_CN_BUF_RTLS_USED      = 1 << 6,
-    CH_CN_BUF_UV_USED        = 1 << 7,
-    CH_CN_DO_CLOSE_ACCOUTING = 1 << 8,
+    CH_CN_SHUTTING_DOWN         = 1 <<  0,
+    CH_CN_CONNECTED             = 1 <<  1,
+    CH_CN_WRITE_PENDING         = 1 <<  2,
+    CH_CN_TLS_HANDSHAKE         = 1 <<  3,
+    CH_CN_ENCRYPTED             = 1 <<  4,
+    CH_CN_BUF_WTLS_USED         = 1 <<  5,
+    CH_CN_BUF_RTLS_USED         = 1 <<  6,
+    CH_CN_BUF_UV_USED           = 1 <<  7,
+    CH_CN_DO_CLOSE_ACCOUTING    = 1 <<  8,
+    CH_CN_INIT_CLIENT           = 1 <<  9,
+    CH_CN_INIT_WRITER           = 1 << 10,
+    CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 11,
+    CH_CN_INIT_ENCRYPTION       = 1 << 12,
+    CH_CN_INIT_BUFFERS          = 1 << 13,
+    CH_CN_INIT                  = (
+        CH_CN_INIT_CLIENT |
+        CH_CN_INIT_WRITER |
+        CH_CN_INIT_SHUTDOWN_TIMEOUT |
+        CH_CN_INIT_ENCRYPTION |
+        CH_CN_INIT_BUFFERS
+    )
 } ch_cn_flags_t;
 
 // .. c:type:: ch_connection_t
