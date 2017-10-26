@@ -407,23 +407,7 @@ struct ch_connection_s {
     ch_connection_t* next;
 };
 
-
-// First pull request
-// TODO: Use rbtree for ch_remote_t dictionary
-// TODO: Create ch_remote_t
-// TODO: All callbacks use ch_remote_t and have to check the pointer to
-// ch_connection_t and act accordingly, other functions may deference with
-// an assert.
 // TODO: Timestamp has to be in ch_connection_t because of old connections
-// TODO: Remove current message from ch_writer_t, because the queue contains it
-// Second pull request
-// TODO: Move message-queue to ch_remote_t
-// Third pull request
-// TODO: new queuing
-// TODO: join ack and user messages code-path
-// TODO: handle timeout for acks
-// TODO: remove old queue header
-// TODO: remove try patches
 
 // Data Struct Prototypes
 // ----------------------
