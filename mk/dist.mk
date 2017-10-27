@@ -10,6 +10,12 @@ libchirp.a: libchirp.o
 	ar $(ARFLAGS) $@ $+
 	$(STRPCMD) $@
 
+chirp_test: libchirp.so
+	$(CC) -o $@ chirp_test.c -L. -lchirp $(LDFLAGS)
+
+check: chirp_test
+	LD_LIBRARY_PATH="." ./chirp_test
+
 install: all
 	mkdir -p $(DEST)$(PREFIX)/lib
 	cp -f libchirp.a $(DEST)$(PREFIX)/lib
@@ -27,4 +33,4 @@ uninstall:
 	rm -f $(DEST)$(PREFIX)/include/libchirp.h
 
 clean:
-	rm -f libchirp.o libchirp.so libchirp.a
+	rm -f libchirp.o libchirp.so libchirp.a chirp_test

@@ -179,6 +179,7 @@ dist: amalg
 	$(V_M)cp $(AMALB).c $(DISTD)
 	$(V_M)cp $(BUILD)/libchirp-config.h $(DISTD)
 	$(V_M)cp $(BASE)/LICENSE $(DISTD)
+	$(V_M)cp $(BASE)/src/chirp_etest.c $(DISTD)/chirp_test.c
 	$(V_M)echo 'UNAME_S := $$(shell uname -s)' > $(DISTM)
 	$(V_M)echo VERSION := $(VERSION) >> $(DISTM)
 	$(V_M)echo MAJOR := $(MAJOR) >> $(DISTM)
