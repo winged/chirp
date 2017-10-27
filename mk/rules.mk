@@ -1,22 +1,25 @@
 .PHONY += doc
 
+BN = $(basename $(@))
+
 # Make .o form .c files
 # =====================
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(MACRO_DEBUG),True)
 	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $< $@.rg.c
+	$(V_M)$(BASE)/mk/rgc $< $(BN).c
 	$(V_E) MDCC $<
-	$(V_M)$(CC) $(CFLAGS) -E -P $@.rg.c | clang-format > $@.c
-	$(V_M)$(CC) -c -o $@ $@.c $(NWCFLAGS) \
+	$(V_M)$(CC) $(CFLAGS) -E -P $(BN).c | clang-format > $(BN).f.c
+	$(V_M)mv $(BN).f.c $(BN).c
+	$(V_M)$(CC) -c -o $@ $(BN).c $(NWCFLAGS) \
 			2> $@.log || \
 		(cat $@.log; false)
 else
 	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $< $@.rg.c
+	$(V_M)$(BASE)/mk/rgc $< $(BN).c
 	$(V_E) CC $<
-	$(V_M)$(CC) -c -o $@ $@.rg.c $(CFLAGS)
+	$(V_M)$(CC) -c -o $@ $(BN).c $(CFLAGS)
 endif
 
 # Preprocess headers
