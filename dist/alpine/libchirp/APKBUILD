@@ -1,0 +1,32 @@
+# Contributor: Jean-Louis Fuchs <ganwell@fangorn.ch>
+# Maintainer: Jean-Louis Fuchs <ganwell@fangorn.ch>
+pkgname=libchirp
+pkgver=0.1.41574
+pkgrel=0
+pkgdesc="Message-passing for everyone"
+url="https://github.com/concretecloud/chirp"
+arch="all"
+license="LGPL"
+depends_dev="libuv-dev libressl-dev"
+makedepends="$depends_dev"
+subpackages="$pkgname-dev $pkgname-dbg"
+source="https://github.com/concretecloud/chirp/releases/download/$pkgver/libchirp-$pkgver.tar.gz"
+builddir="$srcdir/libchirp-$pkgver"
+
+build() {
+	cd "$builddir"
+	make
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+	make install PREFIX=/usr DEST="$pkgdir"
+}
+
+
+sha512sums="a1d55e5d68c6233fd543e428639e79a9ad271f3480b1a9f5e015a8a46ea155161e9fa27ffa07ad1366eb298ae2e88f19e4b49dfc55b1f33d24ff8fb7bbe68827  libchirp-0.1.41574.tar.gz"
