@@ -21,6 +21,7 @@ apk update
 apk upgrade
 apk add \
     sudo \
+    sed \
     alpine-sdk \
     python3 \
     graphviz \

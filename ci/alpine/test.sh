@@ -18,4 +18,12 @@ else
     make clean
     /outside/configure --doc
     make check
+    /outside/configure --dev
+    make dist
+    cd dist
+    make check
+    make install PREFIX=/usr DEST=out
+    [ -f out/usr/lib/libchirp.so ]
+    make uninstall PREFIX=/usr DEST=out
+    [ ! -f out/usr/lib/libchirp.so ]
 fi
