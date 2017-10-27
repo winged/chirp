@@ -1,33 +1,23 @@
-# Contributor: Jean-Louis Fuchs <ganwell@fangorn.ch>
-# Maintainer: Jean-Louis Fuchs <ganwell@fangorn.ch>
-pkgname=chirp
-pkgver=0.1.41564
+pkgname=libchirp
+pkgver=0.1.41574
 pkgrel=0
-pkgdesc="Message-passing and actor-based programming for everyone"
+pkgdesc="Message-passing for everyone"
 url="https://github.com/concretecloud/chirp"
 arch=("i686" "x86_64")
 license=("LGPL")
-provides=('chirp')
+provides=('libchirp')
 makedepends=("libuv"
-             "openssl"
-	     "python-sphinx"
-	     "python-sphinx_rtd_theme"
-	     "graphviz")
-source=("https://github.com/concretecloud/chirp/archive/$pkgver.tar.gz")
-sha512sums=("8dbeb85630e3bac4e3beb8760b38ff0f44f25a6914023d70a662e4d13d73c812ceeb8ee761fd6995ec49bd375ef37553ae4a955b091c9420793eff798322396a")
+             "openssl")
+source=("https://github.com/concretecloud/chirp/releases/download/$pkgver/libchirp-$pkgver.tar.gz")
+sha512sums=("a1d55e5d68c6233fd543e428639e79a9ad271f3480b1a9f5e015a8a46ea155161e9fa27ffa07ad1366eb298ae2e88f19e4b49dfc55b1f33d24ff8fb7bbe68827")
 
 build() {
 	cd "$pkgname-$pkgver"
-	./configure \
-		--doc \
-		--prefix "/usr" \
-		|| return 1
-	make || return 1
-	make doc || return 1
+	make
 }
 
 package() {
 	cd "$pkgname-$pkgver"
-	make install DEST="$pkgdir"
+	make install PREFIX=/usr DEST="$pkgdir"
 }
 
