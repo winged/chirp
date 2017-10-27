@@ -88,6 +88,127 @@ ch_qc_init(void)
 }
 
 // .. c:function::
+int
+ch_qc_tgen_bool(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_bool`
+//
+// .. code-block:: cpp
+//
+{
+    return rand() % 2 == 0;
+}
+
+// .. c:function::
+uint8_t
+ch_qc_tgen_byte(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_byte`
+//
+// .. code-block:: cpp
+//
+{
+    return rand();  // No need to mod overflow of unsigned char is
+                    // is well defined.
+}
+
+// .. c:function::
+char
+ch_qc_tgen_char(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_char`
+//
+// .. code-block:: cpp
+//
+{
+    return (char)((rand() % 127) + 1);
+}
+
+
+// .. c:function::
+double
+ch_qc_tgen_double(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_double`
+//
+// .. code-block:: cpp
+//
+{
+    return ((double) rand() / (double) RAND_MAX);
+}
+
+// .. c:function::
+int
+ch_qc_tgen_int(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_tgen_int`
+//
+// .. code-block:: cpp
+//
+{
+    return rand();
+}
+
+// .. c:function::
+uint8_t
+ch_qc_pgen_uint8_t(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_pgen_uint8_t`
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFF;
+    return rand();
+}
+
+// .. c:function::
+uint16_t
+ch_qc_pgen_uint16_t(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_pgen_uint16_t`
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFFFF;
+    return rand();
+}
+
+// .. c:function::
+uint32_t
+ch_qc_pgen_uint32_t(void)
+//    :noindex:
+//
+//    see: :c:func:`ch_qc_pgen_uint32_t`
+//
+// .. code-block:: cpp
+//
+{
+    double prop = ch_qc_tgen_double();
+    if(prop < 0.1)
+        return 0;
+    if(prop < 0.2)
+        return 0xFFFFFFFF;
+    return rand();
+}
+
+// .. c:function::
 ch_qc_mem_track_t*
 ch_qc_tgen_bytes(uint8_t** bytes)
 //    :noindex:

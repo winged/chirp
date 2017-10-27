@@ -15,6 +15,7 @@ Internal API
    :includehidden:
 
    src/buffer.h.rst
+   src/buffer.c.rst
    src/chirp.h.rst
    src/chirp.c.rst
    src/common.h.rst
@@ -31,6 +32,7 @@ Internal API
    src/remote.h.rst
    src/remote.c.rst
    src/serializer.h.rst
+   src/serializer.c.rst
    src/util.h.rst
    src/util.c.rst
    src/writer.h.rst

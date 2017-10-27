@@ -133,27 +133,15 @@ ch_pr_stop(ch_protocol_t* protocol);
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
 
-// Definitions
-// ===========
-
 // .. c:function::
-static
-inline
 void
-ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
+ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol);
 //
 //    Initialize the protocol structure.
 //
 //    :param ch_chirp_t* chirp: Chirp instance.
 //    :param ch_protocol_t* protocol: Protocol to initialize.
 //
-// .. code-block:: cpp
-//
-{
-    memset(protocol, 0, sizeof(*protocol));
-    protocol->chirp = chirp;
-}
-
 // .. code-block:: cpp
 //
 #endif //ch_protocol_h

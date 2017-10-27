@@ -20,8 +20,8 @@
 //
 #include <openssl/err.h>
 
-// Data Struc Prototypes
-// =====================
+// Data Struct Prototypes
+// ======================
 
 // .. code-block:: cpp
 //

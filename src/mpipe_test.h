@@ -1,5 +1,5 @@
 // =========
-// mpipe 0.4
+// mpipe 0.5
 // =========
 //
 // Send message-packs over a pipe. Meant as a very simple RPC. It is compatible
@@ -44,7 +44,7 @@
 // for that.
 //
 // If you set the environment variable MPP_MC to True. mpipe.open will run
-// valgrind --tool=memcheck --leak-check=full --error-exitcode=1.
+// valgrind --tool=memcheck --leak-check=full --error-exitcode=1
 //
 // Development
 // ===========
@@ -184,32 +184,8 @@ mpp_write_message_fin(mpp_context_t* context);
 int
 mpp_runner(mpp_handler_cb_t func);
 
-// Inline for Windows
-// ------------------
-//
-// .. code-block:: cpp
-//
-
-#ifdef _WIN32
-#   if defined(_MSC_VER) && _MSC_VER < 1600
-#       define mpp_inline __inline
-#   else // _MSC_VER
-#       define mpp_inline inline
-#   endif // _MSC_VER
-#else
-#   define mpp_inline inline
-#endif
-
-
-static
-mpp_inline
 void
-mpp_init_context(mpp_context_t* context)
-{
-    memset(context, 0, sizeof(mpp_context_t));
-    context->last = mpp_none;
-    context->rpc_mode = 1;
-}
+mpp_init_context(mpp_context_t* context);
 
 // STDIO Functions
 // ---------------
@@ -217,20 +193,12 @@ mpp_init_context(mpp_context_t* context)
 // .. code-block:: cpp
 //
 
-static
-mpp_inline
 mpack_node_t*
-mpp_read_message(mpp_context_t* context)
-{
-    return mpp_fdread_message(STDIN_FILENO, context);
-}
-static
-mpp_inline
+mpp_read_message(mpp_context_t* context);
+
 mpack_writer_t*
-mpp_write_message(mpp_context_t* context)
-{
-    return mpp_fdwrite_message(STDOUT_FILENO, context);
-}
+mpp_write_message(mpp_context_t* context);
+
 #endif //mpp_mpipe_h
 
 // MIT License

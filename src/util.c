@@ -200,6 +200,26 @@ ch_alloc(size_t size)
 
 // .. c:function::
 void
+ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
+//    :noindex:
+//
+//    see: :c:func:`ch_bytes_to_hex`
+//
+// .. code-block:: cpp
+//
+{
+    size_t i;
+    A(bytes_size * 2 + 1 <= str_size, "Not enough space for string");
+    for(i = 0; i < bytes_size; i++)
+    {
+            snprintf(str, 3, "%02X", bytes[i]);
+            str += 2;
+    }
+    *str = 0;
+}
+
+// .. c:function::
+void
 ch_chirp_set_always_encrypt()
 //    :noindex:
 //
@@ -248,6 +268,51 @@ ch_is_local_addr(ch_text_address_t* addr)
 }
 
 // .. c:function::
+void
+ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
+//    :noindex:
+//
+//    see: :c:func:`ch_random_ints_as_bytes`
+//
+// .. code-block:: cpp
+//
+{
+    size_t i;
+    int tmp_rand;
+    A(len % 4 == 0, "len must be multiple of four");
+#ifdef _WIN32
+#   if RAND_MAX < 16384 || INT_MAX < 16384 // 2**14
+#       error Seriously broken compiler or platform
+#   else // RAND_MAX < 16384 || INT_MAX < 16384
+        for(i = 0; i < len; i += 2) {
+            tmp_rand = rand();
+            memcpy(bytes + i, &tmp_rand, 2);
+        }
+#   endif // RAND_MAX < 16384 || INT_MAX < 16384
+#else // _WIN32
+#   if RAND_MAX < 1073741824 || INT_MAX < 1073741824 // 2**30
+#       ifdef CH_ACCEPT_STRANGE_PLATFORM
+            /* WTF, fallback platform */
+            (void)(tmp_rand);
+            for(i = 0; i < len; i++) {
+                bytes[i] = ((unsigned int) rand()) % 256;
+            }
+#       else // ACCEPT_STRANGE_PLATFORM
+            // cppcheck-suppress preprocessorErrorDirective
+#           error Unexpected RAND_MAX / INT_MAX, define \
+                CH_ACCEPT_STRANGE_PLATFORM
+#       endif // ACCEPT_STRANGE_PLATFORM
+#   else // RAND_MAX < 1073741824 || INT_MAX < 1073741824
+        /* Tested: this is 4 times faster*/
+        for(i = 0; i < len; i += 4) {
+            tmp_rand = rand();
+            memcpy(bytes + i, &tmp_rand, 4);
+        }
+#   endif // RAND_MAX < 1073741824 || INT_MAX < 1073741824
+#endif // _WIN32
+}
+
+// .. c:function::
 void*
 ch_realloc(
         void*  buf,
@@ -288,4 +353,27 @@ ch_set_alloc_funcs(
     _ch_alloc_cb = alloc;
     _ch_realloc_cb = realloc;
     _ch_free_cb = free;
+}
+
+// .. c:function::
+ch_error_t
+ch_uv_error_map(int error)
+//    :noindex:
+//
+//    see: :c:func:`ch_uv_error_map`
+//
+// .. code-block:: cpp
+//
+{
+    switch(error) {
+        case(0):
+            return CH_SUCCESS;
+        case(UV_EADDRINUSE):
+            return CH_EADDRINUSE;
+        case(UV_ENOTCONN):
+        case(UV_EINVAL):
+            return CH_VALUE_ERROR;
+        default:
+            return CH_UV_ERROR;
+    }
 }

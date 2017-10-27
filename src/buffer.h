@@ -16,7 +16,6 @@
 // .. code-block:: cpp
 //
 #include "message.h"
-#include "util.h"
 #include "config.h"
 
 // Declarations
@@ -87,72 +86,27 @@ typedef struct ch_buffer_pool_s {
     ch_bf_handler_t* handlers;
 } ch_buffer_pool_t;
 
-// Definitions
-// ===========
-
 // .. c:function::
-static
-inline
 void
-ch_bf_free(ch_buffer_pool_t* pool)
+ch_bf_free(ch_buffer_pool_t* pool);
 //
 //    Free the given buffer structure.
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure to free
 //
-// .. code-block:: cpp
-//
-{
-    ch_free(pool->handlers);
-}
 
 // .. c:function::
-static
-inline
 ch_error_t
-ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
+ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers);
 //
 //    Initialize the given buffer pool structure using given max. buffers.
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool object
 //    :param max_buffers: Buffers to allocate
-//
-// .. code-block:: cpp
-//
-{
-    int i;
-    A(max_buffers <= 32, "buffer.c can't handle more than 32 handlers");
-    memset(pool, 0, sizeof(*pool));
-    size_t pool_mem = max_buffers * sizeof(ch_bf_handler_t);
-    pool->used_buffers = 0;
-    pool->max_buffers  = max_buffers;
-    pool->handlers     = ch_alloc(pool_mem);
-    memset(pool->handlers, 0, pool_mem);
-    if(!pool->handlers) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Could not allocate memory fo r buffers. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
-        return CH_ENOMEM;
-    }
-    pool->free_buffers = 0xFFFFFFFFU;
-    pool->free_buffers <<= (32 - max_buffers);
-    for(i = 0; i < max_buffers; ++i) {
-        pool->handlers[i].id   = i;
-        pool->handlers[i].used = 0;
-    }
-    return CH_SUCCESS;
-}
 
 // .. c:function::
-static
-inline
 ch_bf_handler_t*
-ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
+ch_bf_acquire(ch_buffer_pool_t* pool, int* last);
 //
 //    Acquire and return a new handler buffer from the pool. If no handler can
 //    be reserved NULL is returned.
@@ -164,38 +118,10 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
 //   :return: a pointer to a reserved handler buffer from the given buffer
 //            pool. See :c:type:`ch_bf_handler_t`
 //   :rtype:  ch_bf_handler_t
-//
-// .. code-block:: cpp
-//
-{
-    *last = 0;
-    ch_bf_handler_t* handler_buf;
-    if(pool->used_buffers < pool->max_buffers) {
-        int free;
-        pool->used_buffers += 1;
-        if(pool->used_buffers == pool->max_buffers)
-            *last = 1;
-        free = ch_msb32(pool->free_buffers);
-        /* Reserve the buffer. */
-        pool->free_buffers &= ~(1 << (free - 1));
-        /* The msb represents the first buffer. So the value is inverted. */
-        handler_buf = &pool->handlers[32 - free];
-        A(handler_buf->used == 0, "Handler buffer already used.");
-        handler_buf->used = 1;
-        memset(&handler_buf->msg, 0, sizeof(handler_buf->msg));
-        handler_buf->msg._handler = handler_buf->id;
-        handler_buf->msg._pool    = pool;
-        handler_buf->msg._flags   = CH_MSG_IS_HANDLER;
-        return handler_buf;
-    }
-    return NULL;
-}
 
 // .. c:function::
-static
-inline
 void
-ch_bf_release(ch_buffer_pool_t* pool, int id)
+ch_bf_release(ch_buffer_pool_t* pool, int id);
 //
 //    Set given handler buffer as unused in the buffer pool structure and
 //    (re-)add it to the list of free buffers.
@@ -209,29 +135,4 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
 //
 // .. code-block:: cpp
 //
-{
-    ch_bf_handler_t* handler_buf =  &pool->handlers[id];
-    A(handler_buf->used == 1, "Double release of buffer.");
-    A(pool->used_buffers > 0, "Buffer pool inconsistent.");
-    A(handler_buf->id == id, "Id changed.");
-    A(handler_buf->msg._handler == id, "Id changed.");
-    int in_pool = pool->free_buffers & (1 << (31 - id));
-    A(!in_pool, "Buffer already in pool");
-    if(in_pool) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Double release of handler buffer. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
-        return;
-    }
-    pool->used_buffers -= 1;
-    /* Release the buffer. */
-    handler_buf->used = 0;
-    pool->free_buffers |= (1 << (31 - id));
-}
-
 #endif //ch_buffer_h

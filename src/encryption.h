@@ -115,21 +115,12 @@ ch_en_stop(ch_encryption_t* enc);
 // ===========
 
 // .. c:function::
-static
-inline
 void
-ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
+ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc);
 //
 //    Initialize the encryption struct.
 //
 //    :param ch_chirp_t* chirp: Chirp instance
 //    :param ch_encryption_t* enc: Encryption to initialize
-//
-// .. code-block:: cpp
-//
-{
-    memset(enc, 0, sizeof(*enc));
-    enc->chirp = chirp;
-}
 
 #endif //ch_encryption_h

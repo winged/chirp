@@ -10,6 +10,7 @@
 //
 #include "encryption.h"
 #include "chirp.h"
+#include "util.h"
 
 // System includes
 // ===============
@@ -75,6 +76,20 @@ static char _ch_en_manual_tls = 0;
 
 // Definitions
 // ===========
+//
+// .. c:function::
+void
+ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
+//    :noindex:
+//
+//    see: :c:func:`ch_en_init`
+//
+// .. code-block:: cpp
+//
+{
+    memset(enc, 0, sizeof(*enc));
+    enc->chirp = chirp;
+}
 
 #ifdef CH_OPENSSL_10_API
 // .. c:function::

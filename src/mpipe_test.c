@@ -32,6 +32,26 @@ readall(int fd, void *buf, size_t n)
     return ptr;
 }
 
+void
+mpp_init_context(mpp_context_t* context)
+{
+    memset(context, 0, sizeof(mpp_context_t));
+    context->last = mpp_none;
+    context->rpc_mode = 1;
+}
+
+mpack_node_t*
+mpp_read_message(mpp_context_t* context)
+{
+    return mpp_fdread_message(STDIN_FILENO, context);
+}
+
+mpack_writer_t*
+mpp_write_message(mpp_context_t* context)
+{
+    return mpp_fdwrite_message(STDOUT_FILENO, context);
+}
+
 mpack_node_t*
 mpp_fdread_message(int fd, mpp_context_t* context)
 {

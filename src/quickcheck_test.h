@@ -155,98 +155,51 @@ ch_qc_track_alloc(size_t size);
 //    Allocate memory and track it. The memory is freed by quickcheck.
 //
 //    :param size_t size: The size of memory to allocate
-//
-
-// Definitions
-// ===========
 
 // .. c:function::
-static
-inline
 int
-ch_qc_tgen_bool(void)
+ch_qc_tgen_bool(void);
 //
 //    Generate data of type bool.
 //
 //    :rtype: int
-//
-// .. code-block:: cpp
-//
-{
-    return rand() % 2 == 0;
-}
 
 // .. c:function::
-static
-inline
 uint8_t
-ch_qc_tgen_byte(void)
+ch_qc_tgen_byte(void);
 //
 //    Generate byte of type uint8_t.
 //
 //    :rtype: uint8_t
-//
-// .. code-block:: cpp
-//
-{
-    return rand();  // No need to mod overflow of unsigned char is
-                    // is well defined.
-}
 
 // .. c:function::
-static
-inline
 char
-ch_qc_tgen_char(void)
+ch_qc_tgen_char(void);
 //
 //    Generate ascii character of type char.
 //
 //    :rtype: char
 //
-// .. code-block:: cpp
-//
-{
-    return (char)((rand() % 127) + 1);
-}
-
 
 // .. c:function::
-static
-inline
 double
-ch_qc_tgen_double(void)
+ch_qc_tgen_double(void);
 //
 //    Generate positive float of type double.
 //
 //    :rtype: dobule
-//
-// .. code-block:: cpp
-//
-{
-    return ((double) rand() / (double) RAND_MAX);
-}
 
 // .. c:function::
-static
-inline
 int
-ch_qc_tgen_int(void)
+ch_qc_tgen_int(void);
 //
 //    Generate int.
 //
 //    :rtype: int
-//
-// .. code-block:: cpp
-//
-{
-    return rand();
-}
 
 // .. c:function::
-static
-inline
 uint8_t
-ch_qc_pgen_uint8_t(void)
+ch_qc_pgen_uint8_t(void);
 //
 //    Generate uint8_t using a property template.
 //
@@ -255,23 +208,10 @@ ch_qc_pgen_uint8_t(void)
 //    8/10: Random
 //
 //    :rtype: uint8_t
-//
-// .. code-block:: cpp
-//
-{
-    double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
-        return 0;
-    if(prop < 0.2)
-        return 0xFF;
-    return rand();
-}
 
 // .. c:function::
-static
-inline
 uint16_t
-ch_qc_pgen_uint16_t(void)
+ch_qc_pgen_uint16_t(void);
 //
 //    Generate uint16_t using a property template.
 //
@@ -280,23 +220,10 @@ ch_qc_pgen_uint16_t(void)
 //    8/10: Random
 //
 //    :rtype: uint16_t
-//
-// .. code-block:: cpp
-//
-{
-    double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
-        return 0;
-    if(prop < 0.2)
-        return 0xFFFF;
-    return rand();
-}
 
 // .. c:function::
-static
-inline
 uint32_t
-ch_qc_pgen_uint32_t(void)
+ch_qc_pgen_uint32_t(void);
 //
 //    Generate uint32_t using a property template.
 //
@@ -305,17 +232,6 @@ ch_qc_pgen_uint32_t(void)
 //    8/10: Random
 //
 //    :rtype: uint32_t
-//
-// .. code-block:: cpp
-//
-{
-    double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
-        return 0;
-    if(prop < 0.2)
-        return 0xFFFFFFFF;
-    return rand();
-}
 
 // .. code-block:: cpp
 

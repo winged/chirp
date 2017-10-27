@@ -361,6 +361,19 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
 
 // .. c:function::
 void
+ch_rd_init(ch_reader_t* reader)
+//    :noindex:
+//
+//    see: :c:func:`ch_rd_init`
+//
+// .. code-block:: cpp
+//
+{
+    reader->state = CH_RD_START;
+}
+
+// .. c:function::
+void
 ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
 //    :noindex:
 //

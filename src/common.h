@@ -476,14 +476,12 @@ __ch__silenence(void)
 //
 #begindef MINMAX_FUNCS(type)
     static
-    inline
     type
     ch_max_##type(type a, type b) {
         return (a > b) ? a : b;
     }
 
     static
-    inline
     type
     ch_min_##type(type a, type b) {
         return (a < b) ? a : b;

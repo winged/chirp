@@ -220,6 +220,20 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
 }
 
 // .. c:function::
+void
+ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_init`
+//
+// .. code-block:: cpp
+//
+{
+    memset(protocol, 0, sizeof(*protocol));
+    protocol->chirp = chirp;
+}
+
+// .. c:function::
 ch_error_t
 ch_pr_conn_start(
         ch_chirp_t* chirp,

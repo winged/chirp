@@ -104,23 +104,14 @@ ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
 //    :param void* buf:             The buffer containing ``read`` bytes read.
 //    :param size_t read:           The number of bytes read.
 
-// Definitions
-// ===========
-
 // .. c:function::
-static
-inline
 void
-ch_rd_init(ch_reader_t* reader)
+ch_rd_init(ch_reader_t* reader);
 //
 //    Initialize the reader structure
 //
 //    :param ch_reader_t* reader: The reader instance whose buffer pool shall
 //                                be initialized with ``max_buffers``.
 // .. code-block:: cpp
-//
-{
-    reader->state = CH_RD_START;
-}
 
 #endif //ch_reader_h

@@ -1,5 +1,5 @@
 // =================
-// Queue / Stack 0.4
+// Queue / Stack 0.5
 // =================
 //
 // Queue and stack with a rbtree-style interface. Both queue and stack use one
@@ -115,23 +115,6 @@
 #define qs_stack_queue_h
 #include <assert.h>
 
-// Inline for Windows
-// ------------------
-//
-// .. code-block:: cpp
-//
-
-#ifdef _WIN32
-#   if defined(_MSC_VER) && _MSC_VER < 1600
-#       define qs_inline __inline
-#   else // _MSC_VER
-#       define qs_inline inline
-#   endif // _MSC_VER
-#else
-#   define qs_inline inline
-#endif
-
-//
 // Traits
 // ------
 //
@@ -174,22 +157,22 @@
 //
 // .. code-block:: cpp
 //
-#define qs_enqueue_m( \
-        next, \
-        queue, \
-        item \
-) \
-{ \
-    assert(next(item) == NULL && "Item already in use"); \
-    if(queue == NULL) \
-        next(item) = item; \
-    else { \
-        next(item) = next(queue); \
-        next(queue) = item; \
-    } \
-    queue = item; \
-} \
-
+#begindef qs_enqueue_m(
+        next,
+        queue,
+        item
+)
+{
+    assert(next(item) == NULL && "Item already in use");
+    if(queue == NULL)
+        next(item) = item;
+    else {
+        next(item) = next(queue);
+        next(queue) = item;
+    }
+    queue = item;
+}
+#enddef
 
 // qs_dequeue_m
 // ------------
@@ -207,23 +190,23 @@
 //
 // .. code-block:: cpp
 //
-#define qs_dequeue_m( \
-        next, \
-        queue, \
-        item \
-) \
-{ \
-    if(queue != NULL) { \
-        item = next(queue); \
-        if(next(queue) == queue) \
-            queue = NULL; \
-        else \
-            next(queue) = next(item); \
-        next(item) = NULL; \
-    } else \
-        item = NULL; \
-} \
-
+#begindef qs_dequeue_m(
+        next,
+        queue,
+        item
+)
+{
+    if(queue != NULL) {
+        item = next(queue);
+        if(next(queue) == queue)
+            queue = NULL;
+        else
+            next(queue) = next(item);
+        next(item) = NULL;
+    } else
+        item = NULL;
+}
+#enddef
 
 // qs_queue_bind_decl_m
 // --------------------
@@ -240,60 +223,49 @@
 //
 // .. code-block:: cpp
 //
-#define _qs_queue_bind_decl_tr_m(cx, type, next) \
-    typedef type cx##_iter_t; \
-    typedef type cx##_type_t; \
-    void \
-    cx##_enqueue( \
-            type** queue, \
-            type* item \
-    ); \
-    void \
-    cx##_dequeue( \
-            type** queue, \
-            type** item \
-    ); \
-    void \
-    cx##_iter_init( \
-            type* queue, \
-            cx##_iter_t** iter, \
-            type** elem \
-    ); \
-    void \
-    cx##_iter_next( \
-            cx##_iter_t* iter, \
-            type** elem \
-    ); \
-    static \
-    qs_inline \
-    void \
-    cx##_head( \
-            type* queue, \
-            type** item \
-    ) { \
-        if(queue != NULL) \
-            *item = next(queue); \
-        else \
-            *item = NULL; \
-    } \
-    static \
-    qs_inline \
-    void \
-    cx##_tail( \
-            type* queue, \
-            type** item \
-    ) { \
-        *item = queue; \
-    } \
+#begindef _qs_queue_bind_decl_tr_m(cx, type, next)
+    typedef type cx##_iter_t;
+    typedef type cx##_type_t;
+    void
+    cx##_enqueue(
+            type** queue,
+            type* item
+    );
+    void
+    cx##_dequeue(
+            type** queue,
+            type** item
+    );
+    void
+    cx##_iter_init(
+            type* queue,
+            cx##_iter_t** iter,
+            type** elem
+    );
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    );
+    void
+    cx##_head(
+            type* queue,
+            type** item
+    );
+    void
+    cx##_tail(
+            type* queue,
+            type** item
+    );
+#enddef
 
+#begindef qs_queue_bind_decl_cx_m(cx, type)
+    _qs_queue_bind_decl_tr_m(cx, type, cx##_next_m)
+#enddef
 
-#define qs_queue_bind_decl_cx_m(cx, type) \
-    _qs_queue_bind_decl_tr_m(cx, type, cx##_next_m) \
-
-
-#define qs_queue_bind_decl_m(cx, type) \
-    _qs_queue_bind_decl_tr_m(cx, type, qs_next_m) \
-
+#begindef qs_queue_bind_decl_m(cx, type)
+    _qs_queue_bind_decl_tr_m(cx, type, qs_next_m)
+#enddef
 
 // qs_queue_bind_impl_m
 // ---------------------
@@ -311,70 +283,87 @@
 //
 // .. code-block:: cpp
 //
-#define _qs_queue_bind_impl_tr_m(cx, type, next) \
-    void \
-    cx##_enqueue( \
-            type** queue, \
-            type* item \
-    ) qs_enqueue_m( \
-            next, \
-            *queue, \
-            item \
-    ) \
-    void \
-    cx##_dequeue( \
-            type** queue, \
-            type** item \
-    ) qs_dequeue_m( \
-            next, \
-            *queue, \
-            *item \
-    ) \
-    void \
-    cx##_iter_init( \
-            type* queue, \
-            cx##_iter_t** iter, \
-            type** elem \
-    ) \
-    { \
-        qs_queue_iter_init_m( \
-            next, \
-            queue, \
-            *iter, \
-            *elem \
-        ); \
-    } \
-    void \
-    cx##_iter_next( \
-            cx##_iter_t* iter, \
-            type** elem \
-    ) \
-    { \
-        qs_queue_iter_next_m( \
-            next, \
-            iter, \
-            *elem \
-        ) \
-    } \
+#begindef _qs_queue_bind_impl_tr_m(cx, type, next)
+    void
+    cx##_enqueue(
+            type** queue,
+            type* item
+    ) qs_enqueue_m(
+            next,
+            *queue,
+            item
+    )
+    void
+    cx##_dequeue(
+            type** queue,
+            type** item
+    ) qs_dequeue_m(
+            next,
+            *queue,
+            *item
+    )
+    void
+    cx##_iter_init(
+            type* queue,
+            cx##_iter_t** iter,
+            type** elem
+    )
+    {
+        qs_queue_iter_init_m(
+            next,
+            queue,
+            *iter,
+            *elem
+        );
+    }
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    )
+    {
+        qs_queue_iter_next_m(
+            next,
+            iter,
+            *elem
+        )
+    }
+    void
+    cx##_head(
+            type* queue,
+            type** item
+    ) {
+        if(queue != NULL)
+            *item = next(queue);
+        else
+            *item = NULL;
+    }
+    void
+    cx##_tail(
+            type* queue,
+            type** item
+    ) {
+        *item = queue;
+    }
+#enddef
 
+#begindef qs_queue_bind_impl_cx_m(cx, type)
+    _qs_queue_bind_impl_tr_m(cx, type, cx##_next_m)
+#enddef
 
-#define qs_queue_bind_impl_cx_m(cx, type) \
-    _qs_queue_bind_impl_tr_m(cx, type, cx##_next_m) \
+#begindef qs_queue_bind_impl_m(cx, type)
+    _qs_queue_bind_impl_tr_m(cx, type, qs_next_m)
+#enddef
 
+#begindef qs_queue_bind_cx_m(cx, type)
+    qs_queue_bind_decl_cx_m(cx, type)
+    qs_queue_bind_impl_cx_m(cx, type)
+#enddef
 
-#define qs_queue_bind_impl_m(cx, type) \
-    _qs_queue_bind_impl_tr_m(cx, type, qs_next_m) \
-
-
-#define qs_queue_bind_cx_m(cx, type) \
-    qs_queue_bind_decl_cx_m(cx, type) \
-    qs_queue_bind_impl_cx_m(cx, type) \
-
-
-#define qs_queue_bind_m(cx, type) \
-    qs_queue_bind_decl_m(cx, type) \
-    qs_queue_bind_impl_m(cx, type) \
-
+#begindef qs_queue_bind_m(cx, type)
+    qs_queue_bind_decl_m(cx, type)
+    qs_queue_bind_impl_m(cx, type)
+#enddef
 
 // qs_queue_iter_decl_m
 // ---------------------
@@ -391,15 +380,15 @@
 //
 // .. code-block:: cpp
 //
-#define qs_queue_iter_decl_m(type, iter, elem) \
-    type* iter = NULL; \
-    type* elem = NULL; \
+#begindef qs_queue_iter_decl_m(type, iter, elem)
+    type* iter = NULL;
+    type* elem = NULL;
+#enddef
 
-
-#define qs_queue_iter_decl_cx_m(cx, iter, elem) \
-    cx##_type_t* iter = NULL; \
-    cx##_type_t* elem = NULL; \
-
+#begindef qs_queue_iter_decl_cx_m(cx, iter, elem)
+    cx##_type_t* iter = NULL;
+    cx##_type_t* elem = NULL;
+#enddef
 
 // qs_queue_iter_init_m
 // ---------------------
@@ -421,15 +410,15 @@
 //
 // .. code-block:: cpp
 //
-#define qs_queue_iter_init_m(next, queue, iter, elem) \
-{ \
-    iter = queue; \
-    if(queue == NULL) \
-        elem = NULL; \
-    else \
-        elem = next(queue); \
-} \
-
+#begindef qs_queue_iter_init_m(next, queue, iter, elem)
+{
+    iter = queue;
+    if(queue == NULL)
+        elem = NULL;
+    else
+        elem = next(queue);
+}
+#enddef
 
 // qs_queue_iter_next_m
 // --------------------
@@ -447,18 +436,18 @@
 //
 // .. code-block:: cpp
 //
-#define qs_queue_iter_next_m( \
-        next, \
-        queue, \
-        elem \
-) \
-{ \
-    if(elem == queue) \
-        elem = NULL; \
-    else \
-        elem = next(elem); \
-} \
-
+#begindef qs_queue_iter_next_m(
+        next,
+        queue,
+        elem
+)
+{
+    if(elem == queue)
+        elem = NULL;
+    else
+        elem = next(elem);
+}
+#enddef
 
 
 // Stack
@@ -484,17 +473,17 @@
 //
 // .. code-block:: cpp
 //
-#define qs_push_m( \
-        next, \
-        stack, \
-        item \
-) \
-{ \
-    assert(next(item) == NULL && "Item already in use"); \
-    next(item) = stack; \
-    stack = item; \
-} \
-
+#begindef qs_push_m(
+        next,
+        stack,
+        item
+)
+{
+    assert(next(item) == NULL && "Item already in use");
+    next(item) = stack;
+    stack = item;
+}
+#enddef
 
 // qs_pop_m
 // --------
@@ -512,19 +501,19 @@
 //
 // .. code-block:: cpp
 //
-#define qs_pop_m( \
-        next, \
-        stack, \
-        item \
-) \
-{ \
-    item = stack; \
-    if(stack != NULL) { \
-        stack = next(stack); \
-        next(item) = NULL; \
-    } \
-} \
-
+#begindef qs_pop_m(
+        next,
+        stack,
+        item
+)
+{
+    item = stack;
+    if(stack != NULL) {
+        stack = next(stack);
+        next(item) = NULL;
+    }
+}
+#enddef
 
 // qs_stack_bind_decl_m
 // --------------------
@@ -541,40 +530,36 @@
 //
 // .. code-block:: cpp
 //
-#define qs_stack_bind_decl_m(cx, type) \
-    typedef type cx##_iter_t; \
-    typedef type cx##_type_t; \
-    void \
-    cx##_push( \
-            type** stack, \
-            type* item \
-    ); \
-    void \
-    cx##_pop( \
-            type** stack, \
-            type** item \
-    ); \
-    void \
-    cx##_iter_init( \
-            type* stack, \
-            cx##_iter_t** iter, \
-            type** elem \
-    ); \
-    void \
-    cx##_iter_next( \
-            cx##_iter_t* iter, \
-            type** elem \
-    ); \
-    static \
-    qs_inline \
-    void \
-    cx##_top( \
-            type* stack, \
-            type** item \
-    ) { \
-        *item = stack; \
-    } \
-
+#begindef qs_stack_bind_decl_m(cx, type)
+    typedef type cx##_iter_t;
+    typedef type cx##_type_t;
+    void
+    cx##_push(
+            type** stack,
+            type* item
+    );
+    void
+    cx##_pop(
+            type** stack,
+            type** item
+    );
+    void
+    cx##_iter_init(
+            type* stack,
+            cx##_iter_t** iter,
+            type** elem
+    );
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    );
+    void
+    cx##_top(
+            type* stack,
+            type** item
+    );
+#enddef
 
 #define qs_stack_bind_decl_cx_m(cx, type) qs_stack_bind_decl_m(cx, type)
 
@@ -594,70 +579,77 @@
 //
 // .. code-block:: cpp
 //
-#define _qs_stack_bind_impl_tr_m(cx, type, next) \
-    void \
-    cx##_push( \
-            type** stack, \
-            type* item \
-    ) qs_push_m( \
-            next, \
-            *stack, \
-            item \
-    ) \
-    void \
-    cx##_pop( \
-            type** stack, \
-            type** item \
-    ) qs_pop_m( \
-            next, \
-            *stack, \
-            *item \
-    ) \
-    void \
-    cx##_iter_init( \
-            type* stack, \
-            cx##_iter_t** iter, \
-            type** elem \
-    ) \
-    { \
-        (void)(iter); \
-        qs_stack_iter_init_m( \
-            next, \
-            stack, \
-            *elem \
-        ); \
-    } \
-    void \
-    cx##_iter_next( \
-            cx##_iter_t* iter, \
-            type** elem \
-    ) \
-    { \
-        (void)(iter); \
-        qs_stack_iter_next_m( \
-            next, \
-            *elem \
-        ) \
-    } \
+#begindef _qs_stack_bind_impl_tr_m(cx, type, next)
+    void
+    cx##_push(
+            type** stack,
+            type* item
+    ) qs_push_m(
+            next,
+            *stack,
+            item
+    )
+    void
+    cx##_pop(
+            type** stack,
+            type** item
+    ) qs_pop_m(
+            next,
+            *stack,
+            *item
+    )
+    void
+    cx##_iter_init(
+            type* stack,
+            cx##_iter_t** iter,
+            type** elem
+    )
+    {
+        (void)(iter);
+        qs_stack_iter_init_m(
+            next,
+            stack,
+            *elem
+        );
+    }
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    )
+    {
+        (void)(iter);
+        qs_stack_iter_next_m(
+            next,
+            *elem
+        )
+    }
+    void
+    cx##_top(
+            type* stack,
+            type** item
+    ) {
+        *item = stack;
+    }
+#enddef
 
+#begindef qs_stack_bind_impl_cx_m(cx, type)
+    _qs_stack_bind_impl_tr_m(cx, type, cx##_next_m)
+#enddef
 
-#define qs_stack_bind_impl_cx_m(cx, type) \
-    _qs_stack_bind_impl_tr_m(cx, type, cx##_next_m) \
+#begindef qs_stack_bind_impl_m(cx, type)
+    _qs_stack_bind_impl_tr_m(cx, type, qs_next_m)
+#enddef
 
+#begindef qs_stack_bind_cx_m(cx, type)
+    qs_stack_bind_decl_cx_m(cx, type)
+    qs_stack_bind_impl_cx_m(cx, type)
+#enddef
 
-#define qs_stack_bind_impl_m(cx, type) \
-    _qs_stack_bind_impl_tr_m(cx, type, qs_next_m) \
-
-
-#define qs_stack_bind_cx_m(cx, type) \
-    qs_stack_bind_decl_cx_m(cx, type) \
-    qs_stack_bind_impl_cx_m(cx, type) \
-
-
-#define qs_stack_bind_m(cx, type) \
-    qs_stack_bind_decl_m(cx, type) \
-    qs_stack_bind_impl_m(cx, type) \
-
+#begindef qs_stack_bind_m(cx, type)
+    qs_stack_bind_decl_m(cx, type)
+    qs_stack_bind_impl_m(cx, type)
+#enddef
 
 // qs_stack_iter_decl_m
 // ---------------------
@@ -674,15 +666,15 @@
 //
 // .. code-block:: cpp
 //
-#define qs_stack_iter_decl_m(type, iter, elem) \
-    type* iter = NULL; \
-    type* elem = NULL; \
+#begindef qs_stack_iter_decl_m(type, iter, elem)
+    type* iter = NULL;
+    type* elem = NULL;
+#enddef
 
-
-#define qs_stack_iter_decl_cx_m(cx, iter, elem) \
-    cx##_type_t* iter = NULL; \
-    cx##_type_t* elem = NULL; \
-
+#begindef qs_stack_iter_decl_cx_m(cx, iter, elem)
+    cx##_type_t* iter = NULL;
+    cx##_type_t* elem = NULL;
+#enddef
 
 // qs_stack_iter_init_m
 // ---------------------
@@ -701,11 +693,11 @@
 //
 // .. code-block:: cpp
 //
-#define qs_stack_iter_init_m(next, stack, elem) \
-{ \
-    elem = stack; \
-} \
-
+#begindef qs_stack_iter_init_m(next, stack, elem)
+{
+    elem = stack;
+}
+#enddef
 
 // qs_stack_iter_next_m
 // --------------------
@@ -720,14 +712,14 @@
 //
 // .. code-block:: cpp
 //
-#define qs_stack_iter_next_m( \
-        next, \
-        elem \
-) \
-{ \
-    elem = next(elem); \
-} \
-
+#begindef qs_stack_iter_next_m(
+        next,
+        elem
+)
+{
+    elem = next(elem);
+}
+#enddef
 #endif //qs_stack_queue_h
 
 // MIT License

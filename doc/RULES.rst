@@ -10,6 +10,7 @@ RULES
   - Make it fast (only if really needed)
   - Make it beautiful
 
+* Do not use static functions in headers.
 * Log and assert a lot
 * Use C style comments for stuff that stays. C++-style for temporary stuff and
   NCONV and #else

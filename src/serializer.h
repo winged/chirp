@@ -55,11 +55,6 @@ typedef struct ch_sr_handshake_s {
     uint8_t  identity[CH_ID_SIZE];
 } ch_sr_handshake_t;
 
-// Definitions
-// ===========
-//
-// .. code-block:: cpp
-
 #define CH_SR_WIRE_MESSAGE_SIZE 27
 
 #ifndef NDEBUG
@@ -73,7 +68,6 @@ typedef struct ch_sr_handshake_s {
 #else
 #   define CH_SR_WIRE_MESSAGE_CHECK
 #endif
-
 
 #begindef CH_SR_WIRE_MESSAGE_LAYOUT
     size_t pos = 0;
@@ -93,12 +87,9 @@ typedef struct ch_sr_handshake_s {
     CH_SR_WIRE_MESSAGE_CHECK
 #enddef
 
-
 // .. c:function::
-static
-inline
 int
-ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg)
+ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg);
 //
 //    Convert a buffer containing the packed data of CH_WIRE_MESSAGE in network
 //    order to an ch_message_t.
@@ -106,26 +97,10 @@ ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg)
 //    :param ch_buf* buf: Pointer to the packed buffer of at least
 //                        CH_SR_WIRE_MESSAGE_SIZE
 //    :param ch_message_t* msg: Pointer to the message
-//
-// .. code-block:: cpp
-//
-{
-    CH_SR_WIRE_MESSAGE_LAYOUT;
-
-    memcpy(msg->identity, identity, CH_ID_SIZE);
-
-    msg->type       = *type;
-    msg->header_len = ntohs(*header_len);
-    msg->data_len   = ntohl(*data_len);
-    msg->serial     = ntohl(*serial);
-    return CH_SR_WIRE_MESSAGE_SIZE;
-}
 
 // .. c:function::
-static
-inline
 int
-ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
+ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf);
 //
 //    Convert a ch_message_t to a buffer containing the packed data of
 //    CH_WIRE_MESSAGE in network order.
@@ -135,18 +110,6 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
 //                        CH_SR_WIRE_MESSAGE_SIZE
 //
 // .. code-block:: cpp
-//
-{
-    CH_SR_WIRE_MESSAGE_LAYOUT;
-
-    memcpy(identity, msg->identity, CH_ID_SIZE);
-
-    *type       = msg->type;
-    *header_len = htons(msg->header_len);
-    *data_len   = htonl(msg->data_len);
-    *serial     = htonl(msg->serial);
-    return CH_SR_WIRE_MESSAGE_SIZE;
-}
 
 #define CH_SR_HANDSHAKE_SIZE 20
 
@@ -162,7 +125,6 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
 #   define CH_SR_HANDSHAKE_CHECK
 #endif
 
-
 #begindef CH_SR_HANDSHAKE_LAYOUT
     size_t pos = 0;
     uint16_t* port        = (void*) &buf[pos];
@@ -175,12 +137,9 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
     CH_SR_HANDSHAKE_CHECK
 #enddef
 
-
 // .. c:function::
-static
-inline
 int
-ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs)
+ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs);
 //
 //    Convert a buffer containing the packed data of a handshake in network
 //    order to an ch_sr_handshake_t.
@@ -188,24 +147,10 @@ ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs)
 //    :param ch_buf* buf: Pointer to the packed buffer of at least
 //                        CH_SR_HANDSHAKE_SIZE
 //    :param ch_sr_handshake_t: Pointer to the handshake struct
-//
-// .. code-block:: cpp
-//
-{
-    CH_SR_HANDSHAKE_LAYOUT;
-
-    hs->port = ntohs(*port);
-    hs->max_timeout = ntohs(*max_timeout);
-    memcpy(hs->identity, identity, CH_ID_SIZE);
-
-    return CH_SR_HANDSHAKE_SIZE;
-}
 
 // .. c:function::
-static
-inline
 int
-ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf)
+ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf);
 //
 //    Convert a ch_sr_handshake_t to  a buffer containing the packed data of
 //    the handshake in network order.
@@ -216,14 +161,4 @@ ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf)
 //
 // .. code-block:: cpp
 //
-{
-    CH_SR_HANDSHAKE_LAYOUT;
-
-    *port = htons(hs->port);
-    *max_timeout = ntohs(hs->max_timeout);
-    memcpy(identity, hs->identity, CH_ID_SIZE);
-
-    return CH_SR_HANDSHAKE_SIZE;
-}
-
 #endif //ch_serializer_h
