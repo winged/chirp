@@ -37,7 +37,6 @@ ch_loop_init(uv_loop_t* loop);
 
 // .. c:function::
 static
-inline
 int
 ch_loop_close(uv_loop_t* loop)
 //
@@ -68,7 +67,6 @@ ch_loop_close(uv_loop_t* loop)
 
 // .. c:function::
 static
-inline
 int
 ch_run(uv_loop_t* loop)
 //

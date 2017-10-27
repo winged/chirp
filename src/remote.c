@@ -23,7 +23,6 @@ rb_bind_impl_m(ch_rm, ch_remote_t)
 // .. code-block:: cpp
 
 static
-inline
 void
 _ch_rm_init(
         ch_chirp_t* chirp,

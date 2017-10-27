@@ -32,7 +32,6 @@ qs_stack_bind_impl_m(ch_cn_old, ch_connection_t)
 
 // .. c:function::
 static
-inline
 ch_error_t
 _ch_cn_allocate_buffers(ch_connection_t* conn);
 //
@@ -56,7 +55,6 @@ _ch_cn_closing(uv_shutdown_t* req, int bypass);
 
 // .. c:function::
 static
-inline
 void
 _ch_cn_partial_write(ch_connection_t* conn);
 //
@@ -119,7 +117,6 @@ MINMAX_FUNCS(size_t)
 
 // .. c:function::
 static
-inline
 ch_error_t
 _ch_cn_allocate_buffers(ch_connection_t* conn)
 //    :noindex:
@@ -246,7 +243,6 @@ _ch_cn_closing(
 
 // .. c:function::
 static
-inline
 void
 _ch_cn_partial_write(ch_connection_t* conn)
 //    :noindex:
