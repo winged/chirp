@@ -158,7 +158,7 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
     A(msg != NULL, "Not a ch_message_t*");
     A(!(msg->type & CH_MSG_ACK), "ACK should not call callback");
     A(!(msg->_flags & CH_MSG_USED), "The message should not be used");
-    if(memcmp(msg->data, "hello", min_int(5, msg->data_len)) == 0) {
+    if(memcmp(msg->data, "hello", ch_min_int(5, msg->data_len)) == 0) {
         L(
             chirp,
             "Echo received hello%s", ""

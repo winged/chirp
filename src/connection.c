@@ -136,7 +136,7 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
     conn->buffer_size = size;
     if(conn->flags & CH_CN_ENCRYPTED) {
         conn->buffer_wtls  = ch_alloc(size);
-        size = min_size_t(size, CH_ENC_BUFFER_SIZE);
+        size = ch_min_size_t(size, CH_ENC_BUFFER_SIZE);
         conn->buffer_rtls  = ch_alloc(size);
     }
     conn->buffer_rtls_size = size;

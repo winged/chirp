@@ -478,14 +478,14 @@ __ch__silenence(void)
     static
     inline
     type
-    max_##type(type a, type b) {
+    ch_max_##type(type a, type b) {
         return (a > b) ? a : b;
     }
 
     static
     inline
     type
-    min_##type(type a, type b) {
+    ch_min_##type(type a, type b) {
         return (a < b) ? a : b;
     }
 #enddef
