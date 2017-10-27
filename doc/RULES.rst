@@ -89,8 +89,6 @@ RULES
    #endif //_WIN32
 
 * Always unpack handles in functions and callbacks till you can verify the chirp magic
-* Chirp and C3irp are only used to disambiguate the python-only and the C based
-  version of chirp, everywhere else chirp is used
 * Embeddable: allocate memory via user callback
 * Every function returns ch_error_t
 * Use pointers sparsely

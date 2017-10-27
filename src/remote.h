@@ -164,7 +164,7 @@ ch_rm_init_from_conn(
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_remote_cmp(ch_remote_t* x, ch_remote_t* y)
 //

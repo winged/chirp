@@ -84,7 +84,7 @@ ch_realloc(
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
 //
@@ -110,7 +110,7 @@ ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_msb32(uint32_t x)
 //
@@ -136,7 +136,7 @@ ch_msb32(uint32_t x)
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
 //
@@ -188,7 +188,7 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
 
 // .. c:function::
 static
-ch_inline
+inline
 ch_error_t
 ch_uv_error_map(int error)
 //

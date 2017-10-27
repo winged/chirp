@@ -109,7 +109,7 @@ ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_rd_init(ch_reader_t* reader)
 //

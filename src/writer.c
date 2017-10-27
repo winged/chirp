@@ -19,7 +19,7 @@
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 _ch_wr_check_write_error(
         ch_chirp_t* chirp,
@@ -99,7 +99,7 @@ _ch_wr_write_data_cb(uv_write_t* req, int status);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_wr_write_finish(
         ch_chirp_t* chirp,
@@ -155,7 +155,7 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle);
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 _ch_wr_check_write_error(
         ch_chirp_t* chirp,
@@ -325,7 +325,7 @@ _ch_wr_write_data_cb(uv_write_t* req, int status)
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_wr_write_finish(
         ch_chirp_t* chirp,

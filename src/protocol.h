@@ -138,7 +138,7 @@ ch_pr_stop(ch_protocol_t* protocol);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
 //

@@ -162,7 +162,7 @@ ch_qc_track_alloc(size_t size);
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_qc_tgen_bool(void)
 //
@@ -178,7 +178,7 @@ ch_qc_tgen_bool(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 uint8_t
 ch_qc_tgen_byte(void)
 //
@@ -195,7 +195,7 @@ ch_qc_tgen_byte(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 char
 ch_qc_tgen_char(void)
 //
@@ -212,7 +212,7 @@ ch_qc_tgen_char(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 double
 ch_qc_tgen_double(void)
 //
@@ -228,7 +228,7 @@ ch_qc_tgen_double(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_qc_tgen_int(void)
 //
@@ -244,7 +244,7 @@ ch_qc_tgen_int(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 uint8_t
 ch_qc_pgen_uint8_t(void)
 //
@@ -269,7 +269,7 @@ ch_qc_pgen_uint8_t(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 uint16_t
 ch_qc_pgen_uint16_t(void)
 //
@@ -294,7 +294,7 @@ ch_qc_pgen_uint16_t(void)
 
 // .. c:function::
 static
-ch_inline
+inline
 uint32_t
 ch_qc_pgen_uint32_t(void)
 //

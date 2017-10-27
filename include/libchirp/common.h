@@ -35,6 +35,7 @@
 //
 #include <uv.h>
 #include <stdio.h>
+#include <stdint.h>
 
 
 // Typedefs
@@ -67,23 +68,5 @@ struct ch_config_s;
 typedef struct ch_config_s ch_config_t;
 struct ch_message_s;
 typedef struct ch_message_s ch_message_t;
-
-// Windows compatiblity
-// ====================
-//
-// .. code-block:: cpp
-
-#ifdef _WIN32
-#   if defined(_MSC_VER) && _MSC_VER < 1600
-#       include <stdint-msvc2008.h>
-#       define ch_inline __inline
-#   else // _MSC_VER
-#       include <stdint.h>
-#       define ch_inline inline
-#   endif // _MSC_VER
-#else
-#   include <stdint.h>
-#   define ch_inline inline
-#endif
 
 #endif //ch_libchirp_common_h

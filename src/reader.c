@@ -20,7 +20,7 @@
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_rd_handshake(
         ch_connection_t* conn,
@@ -74,7 +74,7 @@ _ch_rd_handshake_cb(uv_write_t* req, int status);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_rd_handle_msg(
         ch_connection_t* conn,
@@ -91,7 +91,7 @@ _ch_rd_handle_msg(
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 _ch_rd_read_buffer(
         ch_connection_t* conn,
@@ -156,7 +156,7 @@ char* _ch_rd_state_names[] = {
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_rd_handshake(
         ch_connection_t* conn,
@@ -240,7 +240,7 @@ _ch_rd_handshake(
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_rd_handle_msg(
         ch_connection_t* conn,
@@ -572,7 +572,7 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
 }
 
 static
-ch_inline
+inline
 int
 _ch_rd_read_buffer(
         ch_connection_t* conn,

@@ -26,7 +26,7 @@
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_pr_close_free_connections(ch_chirp_t* chirp);
 //
@@ -36,7 +36,7 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_pr_do_handshake(ch_connection_t* conn);
 //
@@ -61,7 +61,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_pr_close_free_connections(ch_chirp_t* chirp)
 //    :noindex:
@@ -91,7 +91,7 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 _ch_pr_do_handshake(ch_connection_t* conn)
 //    :noindex:

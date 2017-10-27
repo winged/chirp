@@ -116,7 +116,7 @@ ch_en_stop(ch_encryption_t* enc);
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
 //

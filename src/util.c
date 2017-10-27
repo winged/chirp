@@ -62,7 +62,7 @@ _ch_realloc_cb = realloc;
 
 // .. c:function::
     static
-    ch_inline
+    inline
     void*
     _ch_at_alloc(void* buf)
 //
@@ -126,7 +126,7 @@ _ch_realloc_cb = realloc;
 
 // .. c:function::
     static
-    ch_inline
+    inline
     void
     _ch_at_free(void* buf)
 //
@@ -147,7 +147,7 @@ _ch_realloc_cb = realloc;
 
 // .. c:function::
     static
-    ch_inline
+    inline
     void*
     _ch_at_realloc(void* buf, void* rbuf)
 //

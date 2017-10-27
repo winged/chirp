@@ -96,7 +96,7 @@ typedef struct ch_sr_handshake_s {
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg)
 //
@@ -123,7 +123,7 @@ ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg)
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
 //
@@ -178,7 +178,7 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf)
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs)
 //
@@ -203,7 +203,7 @@ ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs)
 
 // .. c:function::
 static
-ch_inline
+inline
 int
 ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf)
 //

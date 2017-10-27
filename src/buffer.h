@@ -92,7 +92,7 @@ typedef struct ch_buffer_pool_s {
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_bf_free(ch_buffer_pool_t* pool)
 //
@@ -108,7 +108,7 @@ ch_bf_free(ch_buffer_pool_t* pool)
 
 // .. c:function::
 static
-ch_inline
+inline
 ch_error_t
 ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 //
@@ -150,7 +150,7 @@ ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers)
 
 // .. c:function::
 static
-ch_inline
+inline
 ch_bf_handler_t*
 ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
 //
@@ -193,7 +193,7 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
 
 // .. c:function::
 static
-ch_inline
+inline
 void
 ch_bf_release(ch_buffer_pool_t* pool, int id)
 //
