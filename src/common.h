@@ -192,42 +192,6 @@ __ch__silenence(void)
 #enddef
 #define E(chirp, message, ...) EC(chirp, message, "",  __VA_ARGS__)
 
-// .. c:macro:: TA
-//
-//    Test assert.
-//
-//    Validates the given condition and reports arbitrary arguments when the
-//    condition is not met in debug-/development-mode.
-//
-//    Be aware of :ref:`double-eval`
-//
-//    The assert macro TA(condition, ...) behaves like printf and allows to
-//    print a arbitrary arguments when the given assertion fails.
-//
-//    :param condition: A boolean condition to check.
-//    :param ...: Variadic arguments for xprintf
-//
-// .. code-block:: cpp
-//
-#   begindef TA(condition, ...)
-    {
-        _ch_lg_get_file_m();
-        if(!(condition)) {
-            fprintf(
-                stderr,
-                "%s%20s:%4d ",
-                _ch_lg_err,
-                __ch_log__file_,
-                __LINE__
-            );
-            fprintf(stderr, __VA_ARGS__);
-            fprintf(stderr, "%s\n", _ch_lg_reset);
-            fflush(stderr);
-            exit(1);
-        }
-    }
-#   enddef
-
 #ifndef NDEBUG
 
 // .. c:macro:: V
