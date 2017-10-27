@@ -105,6 +105,69 @@ cppcheck: all  ## Static analysis
 		-DCH_ACCEPT_STRANGE_PLATFORM \
 		"$(BUILD)/src"
 
+# Amalgamation
+# ============
+AMALB = $(BUILD)/libchirp
+AMALS = $(BASE)/src
+AMALI = $(BASE)/include
+AMALIL = $(BASE)/include/libchirp
+
+amalg: $(LIB_CFILES)  ## Create amalgamation
+	$(V_E) GEN header.h
+	$(V_M)echo // ============================ > $(BUILD)/header.h
+	$(V_M)echo // libchirp $(VERSION) amalgamation >> $(BUILD)/header.h
+	$(V_M)echo // ============================ >> $(BUILD)/header.h
+	$(V_M)echo >> $(BUILD)/header.h
+	$(V_E) RGC common.h
+	$(V_M)$(BASE)/mk/rgc $(AMALS)/common.h $(BUILD)/common.rg.h
+	$(V_E) AMAL libchirp.c
+	$(V_M)echo '#include "libchirp.h"' >> $(AMALB).rg.c
+	$(V_M)cat \
+		$(BUILD)/common.rg.h \
+		$(AMALS)/qs.h \
+		$(AMALS)/rbtree.h \
+		$(AMALS)/message.h \
+		$(AMALS)/util.h \
+		$(AMALS)/protocol.h \
+		$(AMALS)/encryption.h \
+		$(AMALS)/remote.h \
+		$(AMALS)/serializer.h \
+		$(AMALS)/writer.h \
+		$(AMALS)/buffer.h \
+		$(AMALS)/reader.h \
+		$(AMALS)/connection.h \
+		$(AMALS)/chirp.h \
+		$^ > $(AMALB).rg.c
+	$(V_E) RGC libchirp.c
+	$(V_M)$(BASE)/mk/rgc $(AMALB).rg.c $(AMALB).pre.c
+	$(V_M)sed -E \
+		's/(#include "[[:alnum:]./-]+.h")/\/* \1 *\//g' \
+		< $(AMALB).pre.c >  $(AMALB).sed.c
+	$(V_M)cat $(BUILD)/header.h > $(AMALB).c
+	$(V_M)echo '#include "libchirp.h"' >> $(AMALB).c
+	$(V_M)echo '#include "libchirp-config.h"' >> $(AMALB).c
+	$(V_M)echo >> $(AMALB).c
+	$(V_M)cat $(AMALB).sed.c >> $(AMALB).c
+	$(V_E) AMAL libchirp.h
+	$(V_M)cat \
+		$(AMALIL)/const.h \
+		$(AMALIL)/error.h \
+		$(AMALIL)/common.h \
+		$(AMALIL)/callbacks.h \
+		$(AMALIL)/message.h \
+		$(AMALIL)/wrappers.h \
+		$(AMALIL)/chirp.h \
+		$(AMALIL)/encryption.h \
+		$(AMALI)/libchirp.h \
+		> $(AMALB).pre.h
+	$(V_M)sed -E \
+		's/(#include "[[:alnum:]./]+.h")/\/* \1 *\//g' \
+		< $(AMALB).pre.h >  $(AMALB).sed.h
+	$(V_M)cat $(BUILD)/header.h > $(AMALB).h
+	$(V_M)cat $(AMALB).sed.h >> $(AMALB).h
+	$(V_M)rm -f *.rg.* *.sed.* *.pre.* header.h
+
+
 # Utility targets
 # ===============
 todo:  ## Show todos

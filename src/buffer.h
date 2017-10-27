@@ -16,7 +16,7 @@
 // .. code-block:: cpp
 //
 #include "message.h"
-#include "config.h"
+#include "libchirp-config.h"
 
 // Declarations
 // ============

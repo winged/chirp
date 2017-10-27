@@ -213,6 +213,10 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
 	$(V_M)cd "$(BUILD)" && rm -f *.a *.so
+	$(V_M)cd "$(BUILD)" && \
+		mv libchirp-config.h libchirp-config_h && \
+		rm -f *.c *.h && \
+		mv libchirp-config_h libchirp-config.h
 	$(V_M)cd "$(BASE)" && rm -rf .cache
 	$(V_M)cd "$(BASE)" && rm -rf __pycache__
 	$(V_M)cd "$(BASE)" && rm -rf src/.cache

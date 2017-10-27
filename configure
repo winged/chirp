@@ -114,7 +114,7 @@ def read_depends():
     files = list(itertools.chain(c_files, h_files))
     for file_ in files:
         for depend in parse_depends(file_, h_files):
-            if depend != "config.h":
+            if depend != "libchirp-config.h":
                 depends[file_].add(depend)
     dependency_list = {file_: flat_depends(
         file_,
@@ -349,19 +349,19 @@ def copy_files(args):
 
 
 def write_config():
-    """Write config.h file with version."""
+    """Write libchirp-config.h file with version."""
     with codecs.open(
             path.join(_base, "mk", "config.defs.h"),
             "r",
             "UTF-8"
     ) as infile:
-        with codecs.open("config.h", "w", "UTF-8") as outfile:
+        with codecs.open("libchirp-config.h", "w", "UTF-8") as outfile:
             for line in infile:
                 if line.startswith('#define CH_VERSION "XVERSIONX"'):
                     outfile.write('#define CH_VERSION "%s"\n' % _version)
                 else:
                     outfile.write(line)
-    print("Created config.h. It contains sensible defaults.")
+    print("Created libchirp-config.h. It contains sensible defaults.")
 
 
 def write_makefile(args):
@@ -451,6 +451,14 @@ def write_makefile(args):
         f.write("\t\t%s.o \n\n" % replace_base_build(
             path.splitext(lib_objs[-1])[0]
         ))
+        f.write("LIB_CFILES := \\\n")
+        lib_objs = [
+            file_ for file_, _ in depends
+            if not file_.endswith("test.c")
+        ]
+        for file_ in lib_objs[:-1]:
+            f.write("\t\t%s \\\n" % replace_base_base(file_))
+        f.write("\t\t%s \n\n" % replace_base_base(lib_objs[-1]))
 
         f.write("TEST_OBJECTS := \\\n")
         test_objs = [
@@ -486,7 +494,7 @@ def write_makefile(args):
                         f.write("\t\t%s \\\n" % replace_base_build(depend))
                     else:
                         f.write("\t\t%s \\\n" % replace_base_base(depend))
-                f.write("\t\t$(BUILD)/config.h \\\n")
+                f.write("\t\t$(BUILD)/libchirp-config.h \\\n")
                 if file_.endswith("_etest.c"):
                     f.write("\t\t$(BUILD)/libchirp.so \\\n")
                     f.write("\t\t$(BUILD)/libchirp_test.a \\\n")
@@ -501,7 +509,7 @@ def write_makefile(args):
         f.write("include $(BASE)/mk/rules.mk\n")
         f.write("# cf65e84fdbb7644a0c7725ebe6259490\n")
     try:
-        os.unlink(path.join(_base, "config.h"))
+        os.unlink(path.join(_base, "libchirp-config.h"))
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")

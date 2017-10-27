@@ -45,7 +45,7 @@
 #include <assert.h>
 #include <limits.h>
 #include "sds_test.h"
-#include "config.h"
+#include "libchirp-config.h"
 
 static inline int sdsHdrSize(char type) {
     switch(type&SDS_TYPE_MASK) {

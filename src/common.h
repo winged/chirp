@@ -2,8 +2,7 @@
 // Common header
 // =============
 //
-// I know common headers aren't good style but Windows is forcing me.
-// .. todo:: Document purpose
+// Defines global forward declarations and utility macros.
 //
 // .. code-block:: cpp
 //
@@ -16,6 +15,7 @@
 // .. code-block:: cpp
 //
 #include "libchirp/common.h"
+#include "libchirp-config.h"
 
 // System includes
 // ===============
