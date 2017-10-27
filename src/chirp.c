@@ -447,22 +447,30 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
 //
 {
     ch_config_t* conf = &chirp->_->config;
-    V(
-        chirp,
-        conf->DH_PARAMS_PEM != NULL,
-        "Config: DH_PARAMS_PEM must be set."
-    );
-    V(
-        chirp,
-        conf->CERT_CHAIN_PEM != NULL,
-        "Config: CERT_CHAIN_PEM must be set."
-    );
-    V(
-        chirp,
-        ch_access(conf->CERT_CHAIN_PEM, F_OK ) != -1,
-        "Config: cert %s does not exist.",
-        conf->CERT_CHAIN_PEM
-    );
+    if(!conf->DISABLE_ENCRYPTION) {
+        V(
+            chirp,
+            conf->DH_PARAMS_PEM != NULL,
+            "Config: DH_PARAMS_PEM must be set."
+        );
+        V(
+            chirp,
+            conf->CERT_CHAIN_PEM != NULL,
+            "Config: CERT_CHAIN_PEM must be set."
+        );
+        V(
+            chirp,
+            ch_access(conf->CERT_CHAIN_PEM, F_OK ) != -1,
+            "Config: cert %s does not exist.",
+            conf->CERT_CHAIN_PEM
+        );
+        V(
+            chirp,
+            ch_access(conf->DH_PARAMS_PEM, F_OK ) != -1,
+            "Config: cert %s does not exist.",
+            conf->CERT_CHAIN_PEM
+        );
+    }
     V(
         chirp,
         conf->PORT > 1024,

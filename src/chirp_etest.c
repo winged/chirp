@@ -34,8 +34,7 @@ main()
     uv_loop_t loop;
     ch_config_t config;
     ch_chirp_config_init(&config);
-    config.CERT_CHAIN_PEM = "./cert.pem";
-    config.DH_PARAMS_PEM = "./dh.pem";
+    config.DISABLE_ENCRYPTION = 1;
     ch_libchirp_init();
     ch_loop_init(&loop);
     if(ch_chirp_init(
