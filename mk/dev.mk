@@ -167,6 +167,30 @@ amalg: $(LIB_CFILES)  ## Create amalgamation
 	$(V_M)cat $(AMALB).sed.h >> $(AMALB).h
 	$(V_M)rm -f *.rg.* *.sed.* *.pre.* header.h
 
+# Distribution
+# ============
+DISTD=$(BUILD)/dist
+DISTM=$(DISTD)/Makefile
+DISTR=$(DISTD)/README.rst
+dist: amalg
+	$(V_E) DIST $(DISTD)
+	$(V_M)mkdir -p $(DISTD)
+	$(V_M)cp $(AMALB).h $(DISTD)
+	$(V_M)cp $(AMALB).c $(DISTD)
+	$(V_M)cp $(BUILD)/libchirp-config.h $(DISTD)
+	$(V_M)cp $(BASE)/LICENSE $(DISTD)
+	$(V_M)echo 'UNAME_S := $$(shell uname -s)' > $(DISTM)
+	$(V_M)echo VERSION := $(VERSION) >> $(DISTM)
+	$(V_M)echo MAJOR := $(MAJOR) >> $(DISTM)
+	$(V_M)echo STRIP := True >> $(DISTM)
+	$(V_M)echo >> $(DISTM)
+	$(V_M)cat $(BASE)/mk/base-flags.mk >> $(DISTM)
+	$(V_M)cat $(BASE)/mk/rel.mk >> $(DISTM)
+	$(V_M)cat $(BASE)/mk/dist.mk >> $(DISTM)
+	$(V_M)echo =================== > $(DISTR)
+	$(V_M)echo libchirp $(VERSION) >> $(DISTR)
+	$(V_M)echo =================== >> $(DISTR)
+	$(V_M)cat $(BASE)/mk/DIST-README.rst >> $(DISTR)
 
 # Utility targets
 # ===============

@@ -10,29 +10,15 @@ else
 	V_E:=@echo
 endif
 
-# Standard flags
+include $(BASE)/mk/base-flags.mk
+
+# Include flags
 # ==============
-# Will be extended depending on build-mode, system and compiler
 CFLAGS += \
-	-std=gnu99 \
-	-fPIC \
-	-Wall \
-	-Wextra \
-	-Werror \
-	-pedantic \
-	-Wno-unused-function \
-	$(VISIBLITYFLAG) \
 	-I"$(BASE)/include" \
 	-I"$(BUILD)/src" \
 	-I"$(BUILD)"
 
-LDFLAGS += \
-	$(VISIBLITYFLAG) \
-	-luv \
-	-lssl \
-	-lm \
-	-lpthread \
-	-lcrypto
 
 # Override targets
 # ================
@@ -49,47 +35,6 @@ $(BUILD)/src/mpack_test.c.rst:
 	@true
 $(BUILD)/src/mpack-config.h.rst:
 	@true
-
-# Export API symbols only
-# =======================
-CFLAGS += -DCH_BUILD
-
-# Only define for known compilers
-ifeq ($(CC),clang)
-	VISIBLITYFLAG := -fvisibility=hidden
-endif
-ifeq ($(CC),gcc)
-	VISIBLITYFLAG := -fvisibility=hidden
-endif
-ifeq ($(CC),cc)
-	_CC_OUT := $(shell cc -v 2>&1)
-ifneq (,$(findstring gcc version,$(_CC_OUT)))
-	VISIBLITYFLAG := -fvisibility=hidden
-endif
-ifneq (,$(findstring clang version,$(_CC_OUT)))
-	VISIBLITYFLAG := -fvisibility=hidden
-endif
-endif
-
-# Additional flags
-# ================
-ifeq ($(UNAME_S),Darwin)
-# Homebrew include path
-CFLAGS += -I/usr/local/opt/openssl/include
-LDFLAGS += -L/usr/local/opt/openssl/lib
-else
-# Linux specific
-CFLAGS += -pthread
-LDFLAGS += -lrt
-endif
-
-# Strip command
-# =============
-ifeq ($(UNAME_S),Darwin)
-STRPCMD := strip -S
-else
-STRPCMD:= strip --strip-debug
-endif
 
 # Non Werror flags for external modules
 # =====================================
@@ -212,6 +157,7 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf include/
 	$(V_M)cd "$(BUILD)" && rm -rf doc/
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
+	$(V_M)cd "$(BUILD)" && rm -rf dist/
 	$(V_M)cd "$(BUILD)" && rm -f *.a *.so
 	$(V_M)cd "$(BUILD)" && \
 		mv libchirp-config.h libchirp-config_h && \
