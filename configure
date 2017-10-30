@@ -538,20 +538,9 @@ def write_ide_files(args):
 
 def write_pfix(c_files, h_files):
     """Write path fixer for compiler."""
-    replaces = []
-    for file_ in c_files:
-        new_file = path.join(_build, file_[_baselen + 1:-2])
-        new_file = "%s.o.rg.c" % new_file
-        replaces.append("('%s', '%s')," % (
-            new_file,
-            file_,
-        ))
-    for file_ in h_files:
-        new_file = path.join(_build, file_[_baselen + 1:])
-        replaces.append("('%s', '%s')," % (
-            new_file,
-            file_,
-        ))
+    # At the moment there is only one replacement rule, extend the replaces
+    # list to add more replacement rules
+    replaces = ["('%s', '%s')," % (_build, _base)]
     replaces = "\n    ".join(replaces)
     try:
         sys.stdout.write("Creating pfix ide helper: ")
