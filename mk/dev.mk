@@ -177,7 +177,7 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		< $(AMALB).pre.h >  $(AMALB).sed.h
 	$(V_M)cat $(BUILD)/header.h > $(AMALB).h
 	$(V_M)cat $(AMALB).sed.h >> $(AMALB).h
-	$(V_M)rm -f *.rg.* *.sed.* *.pre.* header.h
+	$(V_M)rm -f *.rg.* *.def.* *.sed.* *.pre.* header.h
 
 # Distribution
 # ============
