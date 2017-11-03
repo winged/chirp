@@ -12,11 +12,20 @@
 
 #include "util.h"
 #include "rbtree.h"
+#include "chirp.h"
+
+// System includes
+// ===============
+//
+// .. code-block:: cpp
+
+#include <stdarg.h>
 
 // Declarations
 // ============
 //
 // .. code-block:: cpp
+//
 
 static
 int
@@ -33,6 +42,30 @@ _ch_alloc_cb = malloc;
 static
 ch_realloc_cb_t
 _ch_realloc_cb = realloc;
+
+// Logging and assert macros
+// =========================
+//
+// Colors
+// ------
+//
+// .. code-block:: cpp
+
+static char* const
+_ch_lg_reset = "\x1B[0m";
+static char* const
+_ch_lg_err = "\x1B[1;31m";
+static char* const
+_ch_lg_colors[8] = {
+    "\x1B[0;34m",
+    "\x1B[0;32m",
+    "\x1B[0;36m",
+    "\x1B[0;33m",
+    "\x1B[1;34m",
+    "\x1B[1;32m",
+    "\x1B[1;36m",
+    "\x1B[1;33m",
+};
 
 // Debug alloc tracking
 // ====================
@@ -375,5 +408,74 @@ ch_uv_error_map(int error)
             return CH_VALUE_ERROR;
         default:
             return CH_UV_ERROR;
+    }
+}
+
+// .. c:function::
+void
+ch_write_log(
+    ch_chirp_t* chirp,
+    char* file,
+    int   line,
+    char* message,
+    char* clear,
+    int   error,
+    ...
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_write_log`
+//
+// .. code-block:: cpp
+//
+{
+    va_list args;
+    va_start(args, error);
+    file = strrchr(file, '/') + 1;
+    char buf1[1024];
+    if(chirp->_log != NULL) {
+        char buf2[1024];
+        snprintf(
+            buf1,
+            1024,
+            "%s:%d %s %s",
+            file,
+            line,
+            message,
+            clear
+        );
+        vsnprintf(buf2, 1024, buf1, args);
+        chirp->_log(buf2, error);
+    } else {
+        uint8_t log_id = ((uint8_t) chirp->_->identity[0]) % 8;
+        char* tmpl;
+        char* first;
+        char* second;
+        if(error) {
+            tmpl = "%s%02X%02X%s %17s:%4d Error: %s%s %s%s\n";
+            first = _ch_lg_err;
+            second = _ch_lg_err;
+        } else {
+            tmpl = "%s%02X%02X%s %17s:%4d %s%s %s%s\n";
+            first  = _ch_lg_colors[log_id];
+            second = _ch_lg_reset;
+        }
+        snprintf(
+            buf1,
+            1024,
+            tmpl,
+            first,
+            chirp->_->identity[0],
+            chirp->_->identity[1],
+            second,
+            file,
+            line,
+            _ch_lg_colors[log_id],
+            message,
+            _ch_lg_reset,
+            clear
+        );
+        vfprintf(stderr, buf1, args);
+        fflush(stderr);
     }
 }

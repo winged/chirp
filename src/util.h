@@ -17,8 +17,19 @@
 #include "common.h"
 #include "libchirp/callbacks.h"
 
+// Declarations
+// ============
+
+// .. c:function::
+void*
+ch_alloc(size_t size);
+//
+//    Allocate fixed amount of memory.
+//
+//    :param size_t size: The amount of memory in bytes to allocate
+//
 // Debug alloc tracking
-// ====================
+// --------------------
 //
 // .. code-block:: cpp
 
@@ -37,17 +48,6 @@
 //
 #endif
 
-// Declarations
-// ============
-
-// .. c:function::
-void*
-ch_alloc(size_t size);
-//
-//    Allocate fixed amount of memory.
-//
-//    :param size_t size: The amount of memory in bytes to allocate
-
 // .. c:function::
 void
 ch_free(
@@ -59,27 +59,6 @@ ch_free(
 //    :param void* buf: The handle to free.
 
 // .. c:function::
-int
-ch_is_local_addr(ch_text_address_t* addr);
-//
-//    Check if an address is either 127.0.0.1 or ::1
-//
-//    :param ch_text_address_t* addr: Address to check
-
-
-// .. c:function::
-void*
-ch_realloc(
-        void*  buf,
-        size_t size
-);
-//
-//    Resize allocated memory.
-//
-//    :param void* buf:    The handle to resize.
-//    :param size_t size:  The new size of the memory in bytes.
-
-// .. c:function::
 void
 ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size);
 //
@@ -89,6 +68,14 @@ ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size);
 //    :param size_t bytes_size:  Length of the bytes to convert.
 //    :param char* str:          Destination string.
 //    :param size_t str_size:    Length of the buffer to write the string to.
+
+// .. c:function::
+int
+ch_is_local_addr(ch_text_address_t* addr);
+//
+//    Check if an address is either 127.0.0.1 or ::1
+//
+//    :param ch_text_address_t* addr: Address to check
 
 // .. c:function::
 void
@@ -103,6 +90,18 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len);
 //    :param size_t  len:     The length of the buffer.
 
 // .. c:function::
+void*
+ch_realloc(
+        void*  buf,
+        size_t size
+);
+//
+//    Resize allocated memory.
+//
+//    :param void* buf:    The handle to resize.
+//    :param size_t size:  The new size of the memory in bytes.
+
+// .. c:function::
 ch_error_t
 ch_uv_error_map(int error);
 //
@@ -112,5 +111,26 @@ ch_uv_error_map(int error);
 //
 //    :return:           a chirp error.
 //    :rtype:            ch_error_t
+
+// .. c:function::
+void
+ch_write_log(
+    ch_chirp_t* chirp,
+    char* file,
+    int   line,
+    char* message,
+    char* clear,
+    int   error,
+    ...
+);
+//
+//    Write log message, either to logging callback (if defined) or to stderr.
+//
+//    :param char* file: file to log
+//    :param int line: line to log
+//    :param char* message: message to log
+//    :param char* clear: clear message to log
+//    :param int error: message is an error
+//    :param ...: variable args passed to vsnprintf
 
 #endif // ch_util_h

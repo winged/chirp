@@ -16,6 +16,7 @@
 //
 #include "libchirp/common.h"
 #include "libchirp-config.h"
+#include "util.h"
 
 // System includes
 // ===============
@@ -42,52 +43,15 @@ typedef struct ch_connection_s ch_connection_t;
 struct ch_receipt_s;
 typedef struct ch_receipt_s ch_receipt_t;
 
-
-// Logging and assert macros
-// =========================
-//
-// Colors
-// ------
-//
-// .. code-block:: cpp
-
-static const char*
-_ch_lg_reset = "\x1B[0m";
-static const char*
-_ch_lg_err = "\x1B[1;31m";
-static const char*
-_ch_lg_colors[8] = {
-    "\x1B[0;34m",
-    "\x1B[0;32m",
-    "\x1B[0;36m",
-    "\x1B[0;33m",
-    "\x1B[1;34m",
-    "\x1B[1;32m",
-    "\x1B[1;36m",
-    "\x1B[1;33m",
-};
-
-static
-void
-__ch__silenence(void)
-{
-    (void)(_ch_lg_err);
-    (void)(_ch_lg_reset);
-    (void)(_ch_lg_colors);
-}
-
 //
 // .. _double-eval:
 //
 // Double evaluation
-// ------------------
+// =================
 //
 // In order to get proper file and line number we have to implement validation
 // and assertion using macros. But macros are prone to double evaluation, if you
 // pass function having side-effects. Passing a pure function or data is valid.
-// Our macros check if the condition passed is unstable, this doesn't mean they
-// will point out all mistakes, checking for stability once will catch the
-// most obvious mistakes, nothing more.
 //
 // So ONLY pass variables to the V and A macros!
 //
@@ -112,33 +76,7 @@ __ch__silenence(void)
 //    V(chirp, i == 0, "The first int generated isn't zero");
 //
 // Definitions
-// -----------
-//
-// .. c:macro:: ch_lg_get_id_m
-//
-//    Creates a id from 0-7 based on the identity of a chirp object.
-//
-//    :param chirp: Pointer to a chirp object.
-//
-// .. code-block:: cpp
-//
-#begindef _ch_lg_get_id_m(chirp)
-    uint8_t __ch_log__id_ = (
-        (uint8_t) chirp->_->identity[0]
-    ) % 8
-#enddef
-
-// .. c:macro:: ch_lg_get_file_m
-//
-//    Creates the variable char* __ch_log__file_ pointing the file part of the
-//    __FILE__ path.
-//
-// .. code-block:: cpp
-//
-#begindef _ch_lg_get_file_m()
-    char* __ch_log__file_ = __FILE__;
-    __ch_log__file_ = strrchr(__ch_log__file_, '/') + 1
-#enddef
+// ===========
 
 // .. c:macro:: EC
 //
@@ -156,43 +94,10 @@ __ch__silenence(void)
 //
 // .. code-block:: cpp
 //
-#begindef EC(chirp, message, clear, ...)
-{
-    _ch_lg_get_file_m();
-    if(chirp->_log != NULL) {
-        char __ch_v_buf_[1024];
-        snprintf(
-            __ch_v_buf_,
-            1024,
-            "%s:%d " message clear,
-            __ch_log__file_,
-            __LINE__,
-            __VA_ARGS__
-        );
-        chirp->_log(__ch_v_buf_, 1);
-    } else {
-        _ch_lg_get_id_m(chirp);
-        uv_mutex_lock(chirp->_log_lock);
-        fprintf(
-            stderr,
-            "%s%02X%02X %15s:%4d Error: %s" message "\x1B[0m" clear "%s\n",
-            _ch_lg_err,
-            chirp->_->identity[0],
-            chirp->_->identity[1],
-            __ch_log__file_,
-            __LINE__,
-            _ch_lg_colors[__ch_log__id_],
-            __VA_ARGS__,
-            _ch_lg_reset
-        );
-        fflush(stderr);
-        uv_mutex_unlock(chirp->_log_lock);
-    }
-}
-#enddef
+#define EC(chirp, message, clear, ...) \
+    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
 #define E(chirp, message, ...) EC(chirp, message, "",  __VA_ARGS__)
 
-#ifndef NDEBUG
 
 // .. c:macro:: V
 //
@@ -213,56 +118,14 @@ __ch__silenence(void)
 //
 // .. code-block:: cpp
 //
-#   begindef V(chirp, condition, ...)
-    {
-        if(!(condition)) {
-            _ch_lg_get_file_m();
-            if(chirp->_log != NULL) {
-                size_t __ch_v_siz_ = 1024;
-                size_t __ch_v_ret_;
-                char __ch_v_buf_[__ch_v_siz_];
-                char* __ch_v_xbuf_ = __ch_v_buf_;
-                __ch_v_ret_ = snprintf(
-                    __ch_v_xbuf_,
-                    __ch_v_siz_,
-                    "%s:%d ",
-                    __ch_log__file_,
-                    __LINE__
-                );
-                __ch_v_xbuf_ += __ch_v_ret_;
-                __ch_v_siz_ -= __ch_v_ret_;
-                snprintf(
-                    __ch_v_xbuf_,
-                    __ch_v_siz_,
-                    __VA_ARGS__
-                );
-                chirp->_log(__ch_v_buf_, 1);
-                return CH_VALUE_ERROR;
-            } else {
-                _ch_lg_get_id_m(chirp);
-                uv_mutex_lock(chirp->_log_lock);
-                fprintf(
-                    stderr,
-                    "%s%02X%02X %15s:%4d %s",
-                    _ch_lg_err,
-                    chirp->_->identity[0],
-                    chirp->_->identity[1],
-                    __ch_log__file_,
-                    __LINE__,
-                    _ch_lg_colors[__ch_log__id_]
-                );
-                fprintf(stderr, __VA_ARGS__);
-                fprintf(stderr, "%s\n", _ch_lg_reset);
-                fflush(stderr);
-                uv_mutex_unlock(chirp->_log_lock); /* Just for consistency */
-                assert(condition);
-                /* See the double evaluation chapter. */
-                fprintf(stderr, "Bad assert: condition not stable\n");
-                assert(0);
-            }
-        }
+#define V(chirp, condition, message, ...) \
+    if(!(condition)) { \
+        ch_write_log(chirp, __FILE__, __LINE__, message, "", 0, __VA_ARGS__); \
+        assert(0); \
+        return CH_VALUE_ERROR; \
     }
-#   enddef
+
+#ifndef NDEBUG
 
 // .. c:macro:: LC
 //
@@ -280,41 +143,8 @@ __ch__silenence(void)
 //
 // .. code-block:: cpp
 //
-#   begindef LC(chirp, message, clear, ...)
-    {
-        _ch_lg_get_file_m();
-        if(chirp->_log != NULL) {
-            char buf[1024];
-            snprintf(
-                buf,
-                1024,
-                "%s:%d " message clear,
-                __ch_log__file_,
-                __LINE__,
-                __VA_ARGS__
-            );
-            chirp->_log(buf, 0);
-        } else {
-            _ch_lg_get_id_m(chirp);
-            uv_mutex_lock(chirp->_log_lock);
-            fprintf(
-                stderr,
-                "%s%02X%02X%s %15s:%4d%s " message "\x1B[0m" clear "%s\n",
-                _ch_lg_colors[__ch_log__id_],
-                chirp->_->identity[0],
-                chirp->_->identity[1],
-                _ch_lg_reset,
-                __ch_log__file_,
-                __LINE__,
-                _ch_lg_colors[__ch_log__id_],
-                __VA_ARGS__,
-                _ch_lg_reset
-            );
-            fflush(stderr);
-            uv_mutex_unlock(chirp->_log_lock);
-        }
-    }
-#   enddef
+#define LC(chirp, message, clear, ...) \
+    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
 #define L(chirp, message, ...) LC(chirp, message, "",  __VA_ARGS__)
 
 // .. c:macro:: A
@@ -332,20 +162,11 @@ __ch__silenence(void)
 //
 // .. code-block:: cpp
 //
-#   begindef A(condition, ...)
-    {
-        if(!(condition)) {
-            fprintf(stderr, "%20s", _ch_lg_err);
-            fprintf(stderr, __VA_ARGS__);
-            fprintf(stderr, "%s\n", _ch_lg_reset);
-            assert(condition);
-            /* See the double evaluation chapter. */
-            fprintf(stderr, "Bad assert: condition not stable\n");
-            fflush(stderr);
-            assert(0);
-        }
+#define A(condition, ...) \
+    if(!(condition)) { \
+        fprintf(stderr, __VA_ARGS__); \
+        assert(0); \
     }
-#   enddef
 
 // .. c:macro:: ch_chirp_check_m()
 //
@@ -354,78 +175,17 @@ __ch__silenence(void)
 //
 // .. code-block:: cpp
 
-#   begindef ch_chirp_check_m(chirp)
-    {
-        A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
-        uv_thread_t __ch_chirp_check_self_ = uv_thread_self();
-        A(
-            uv_thread_equal(&__ch_chirp_check_self_, &chirp->_thread) != 0,
-            "Call on the wrong thread"
-        );
+#define ch_chirp_check_m(chirp) \
+    { \
+        A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*"); \
+        uv_thread_t __ch_chirp_check_self_ = uv_thread_self(); \
+        A( \
+            uv_thread_equal(&__ch_chirp_check_self_, &chirp->_thread) != 0, \
+            "Call on the wrong thread" \
+        ); \
     }
-#   enddef
 
 #else //NDEBUG
-
-// .. c:macro:: V
-//
-//    Validates the given condition and reports a message including arbitrary
-//    given arguments when the condition is not met in release-mode.
-//
-//    Be aware of :ref:`double-eval`
-//
-//    The validate macro V(chirp, condition, message, ...) behaves like printf
-//    and allows to print a message given an assertion. If that assertion is
-//    not fullfilled, it will print the given message and return
-//    :c:member:`ch_error_t.CH_VALUE_ERROR`, even in release mode.
-//
-//    :param chirp: Pointer to a chirp object.
-//    :param condition: A boolean condition to check.
-//    :param message: Message to print when the condition is not met.
-//    :param ...: Variadic arguments for xprintf
-//
-// .. code-block:: cpp
-//
-#   begindef V(chirp, condition, ...)
-    {
-        if(!(condition)) {
-            _ch_lg_get_file_m();
-            if(chirp->_log != NULL) {
-                size_t __ch_v_siz_ = 1024;
-                size_t __ch_v_ret_;
-                char __ch_v_buf_[__ch_v_siz_];
-                char* __ch_v_xbuf_ = __ch_v_buf_;
-                __ch_v_ret_ = snprintf(
-                    __ch_v_xbuf_,
-                    __ch_v_siz_,
-                    "%s:%d ",
-                    __ch_log__file_,
-                    __LINE__
-                );
-                __ch_v_xbuf_ += __ch_v_ret_;
-                __ch_v_siz_ -= __ch_v_ret_;
-                snprintf(
-                    __ch_v_xbuf_,
-                    __ch_v_siz_,
-                    __VA_ARGS__
-                );
-                chirp->_log(__ch_v_buf_, 1);
-                return CH_VALUE_ERROR;
-            } else {
-                fprintf(
-                    stderr,
-                    "%s:%d", /* No coloring because its not debug mode */
-                    __ch_log__file_,
-                    __LINE__
-                );
-                fprintf(stderr, __VA_ARGS__);
-                fprintf(stderr, "\n");
-                fflush(stderr);
-            }
-            return CH_VALUE_ERROR;
-        }
-    }
-#   enddef
 
 // .. c:macro:: L
 //
@@ -474,18 +234,17 @@ __ch__silenence(void)
 //
 // .. code-block:: text
 //
-#begindef MINMAX_FUNCS(type)
-    static
-    type
-    ch_max_##type(type a, type b) {
-        return (a > b) ? a : b;
+#define MINMAX_FUNCS(type) \
+    static \
+    type \
+    ch_max_##type(type a, type b) { \
+        return (a > b) ? a : b; \
+    } \
+\
+    static \
+    type \
+    ch_min_##type(type a, type b) { \
+        return (a < b) ? a : b; \
     }
-
-    static
-    type
-    ch_min_##type(type a, type b) {
-        return (a < b) ? a : b;
-    }
-#enddef
 
 #endif //ch_common_h
