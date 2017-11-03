@@ -478,4 +478,5 @@ ch_write_log(
         vfprintf(stderr, buf1, args);
         fflush(stderr);
     }
+    va_end(args);
 }

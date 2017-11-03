@@ -602,7 +602,8 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         if(!conn) {
             E(
                 chirp,
-                "Could not allocate memory for connection%s", ""
+                "Could not allocate memory for connection",
+                CH_NO_ARG
             );
             msg->_flags &= ~CH_MSG_USED;
             if(send_cb != NULL)

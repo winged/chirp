@@ -207,7 +207,8 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
     if(ichirp->closing_tasks < 0) {
         E(
             chirp,
-            "Check closing semaphore dropped blow 0%s", ""
+            "Check closing semaphore dropped blow 0",
+            CH_NO_ARG
         );
     }
 }
@@ -229,7 +230,8 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     if(chirp->_ == NULL) {
         E(
             chirp,
-            "Chirp closing callback called on closed%s", ""
+            "Chirp closing callback called on closed",
+            CH_NO_ARG
         );
         return;
     }
@@ -237,13 +239,15 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     if(ichirp->flags & CH_CHIRP_CLOSED) {
         E(
             chirp,
-            "Chirp closing callback called on closed%s", ""
+            "Chirp closing callback called on closed",
+            CH_NO_ARG
         );
         return;
     }
     L(
         chirp,
-        "Chirp closing callback called%s", ""
+        "Chirp closing callback called",
+        CH_NO_ARG
     );
     tmp_err = ch_pr_stop(&ichirp->protocol);
     A(tmp_err == CH_SUCCESS, "Could not stop protocol");
@@ -320,7 +324,7 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
         );
     }
     uv_mutex_destroy(&ichirp->send_ts_queue_lock);
-    L(chirp, "Closed.%s", "");
+    L(chirp, "Closed.", CH_NO_ARG);
     chirp->_ = NULL;
     ch_bf_free(&ichirp->pool);
     ch_free(ichirp);
@@ -372,7 +376,8 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         )) {
             E(
                 chirp,
-                "Unable to set SIGINT handler%s", ""
+                "Unable to set SIGINT handler",
+                CH_NO_ARG
             );
             return;
         }
@@ -386,7 +391,8 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
             uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
             E(
                 chirp,
-                "Unable to set SIGTERM handler%s", ""
+                "Unable to set SIGTERM handler",
+                CH_NO_ARG
             );
         }
 #   else
@@ -451,12 +457,14 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
         V(
             chirp,
             conf->DH_PARAMS_PEM != NULL,
-            "Config: DH_PARAMS_PEM must be set."
+            "Config: DH_PARAMS_PEM must be set.",
+            CH_NO_ARG
         );
         V(
             chirp,
             conf->CERT_CHAIN_PEM != NULL,
-            "Config: CERT_CHAIN_PEM must be set."
+            "Config: CERT_CHAIN_PEM must be set.",
+            CH_NO_ARG
         );
         V(
             chirp,
@@ -518,31 +526,36 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
         V(
             chirp,
             conf->MAX_HANDLERS >= 16,
-            "Config: if flow control is on max_handlers must be >= 16."
+            "Config: if flow control is on max_handlers must be >= 16.",
+            CH_NO_ARG
         );
     } else {
         V(
             chirp,
             conf->MAX_HANDLERS >= 1,
-            "Config: max_handlers must be >= 1."
+            "Config: max_handlers must be >= 1.",
+            CH_NO_ARG
         );
     }
     if(conf->ACKNOWLEDGE == 0) {
         V(
             chirp,
             conf->RETRIES != 0,
-            "Config: if acknowledge is disabled retries has to be 0."
+            "Config: if acknowledge is disabled retries has to be 0.",
+            CH_NO_ARG
         );
         V(
             chirp,
             conf->FLOW_CONTROL != 0,
-            "Config: if acknowledge is disabled flow-control has to be 0."
+            "Config: if acknowledge is disabled flow-control has to be 0.",
+            CH_NO_ARG
         );
     }
     V(
         chirp,
         conf->MAX_HANDLERS <= 32,
-        "Config: max_handlers must be <= 1."
+        "Config: max_handlers must be <= 1.",
+        CH_NO_ARG
     );
     V(
         chirp,
@@ -613,17 +626,19 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
     if(ichirp->flags & CH_CHIRP_CLOSING) {
         E(
             chirp,
-            "Close already in progress%s", ""
+            "Close already in progress",
+            CH_NO_ARG
         );
         return CH_IN_PRORESS;
     }
     ichirp->flags |= CH_CHIRP_CLOSING;
     ichirp->close.data = chirp;
-    L(chirp, "Closing chirp via callback%s", "");
+    L(chirp, "Closing chirp via callback", CH_NO_ARG);
     if(uv_async_send(&ichirp->close) < 0) {
         E(
             chirp,
-            "Could not call close callback%s", ""
+            "Could not call close callback",
+            CH_NO_ARG
         );
         return CH_UV_ERROR;
     }
@@ -748,7 +763,8 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
         E(
             chirp,
-            "Could not initialize close callback%s", ""
+            "Could not initialize close callback",
+            CH_NO_ARG
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -758,7 +774,8 @@ ch_chirp_init(
     if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
         E(
             chirp,
-            "Could not initialize done handler%s", ""
+            "Could not initialize done handler",
+            CH_NO_ARG
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -769,7 +786,8 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
         E(
             chirp,
-            "Could not initialize done handler%s", ""
+            "Could not initialize done handler",
+            CH_NO_ARG
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -780,7 +798,8 @@ ch_chirp_init(
     if(uv_async_init(loop, &ichirp->send_ts, _ch_wr_send_ts_cb) < 0) {
         E(
             chirp,
-            "Could not initialize send_ts handler%s", ""
+            "Could not initialize send_ts handler",
+            CH_NO_ARG
         );
         ch_free(ichirp);
         chirp->_init = 0;
@@ -888,7 +907,7 @@ ch_chirp_try_message_finish(
                 LC(
                     chirp,
                     "Sent ACK message id: %s\n"
-                    "                          "
+                    "                            "
                     "serial: %u. ", "ch_message_t:%p",
                     id,
                     msg->serial,
@@ -898,7 +917,7 @@ ch_chirp_try_message_finish(
                 LC(
                     chirp,
                     "Finished message id: %s\n"
-                    "                          "
+                    "                            "
                     "serial: %u. ", "ch_message_t:%p",
                     id,
                     msg->serial,

@@ -513,7 +513,8 @@ ch_cn_close_cb(uv_handle_t* handle)
     if(conn->shutdown_tasks < 0) {
         E(
             chirp,
-            "Shutdown semaphore dropped blow 0%s", ""
+            "Shutdown semaphore dropped blow 0. ch_connection_t: %p",
+            conn
         );
     }
     if(conn->shutdown_tasks < 1) {

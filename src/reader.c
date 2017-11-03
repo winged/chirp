@@ -257,9 +257,9 @@ _ch_rd_handle_msg(
         LC(
             chirp,
             "Read message with id: %s\n"
-            "                          "
+            "                            "
             "serial:%u\n"
-            "                          "
+            "                            "
             "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
             id,
             msg->serial,
@@ -322,7 +322,8 @@ _ch_rd_handle_msg(
         } else {
             E(
                 chirp,
-                "No receiving callback function registered%s", ""
+                "No receiving callback function registered",
+                CH_NO_ARG
             );
             ch_chirp_release_recv_handler(msg);
         }

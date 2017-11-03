@@ -161,14 +161,16 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
     if(memcmp(msg->data, "hello", ch_min_int(5, msg->data_len)) == 0) {
         L(
             chirp,
-            "Echo received hello%s", ""
+            "Echo received hello",
+            CH_NO_ARG
         );
     } else {
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
         L(
             chirp,
-            "Echo received a message%s", ""
+            "Echo received a message",
+            CH_NO_ARG
         );
     }
     ch_chirp_send(

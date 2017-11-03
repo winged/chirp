@@ -157,7 +157,8 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     if(!conn) {
         E(
             chirp,
-            "Could not allocate memory for connection%s", ""
+            "Could not allocate memory for connection",
+            CH_NO_ARG
         );
         return;
     }
@@ -505,7 +506,7 @@ ch_pr_stop(ch_protocol_t* protocol)
 //
 {
     ch_chirp_t* chirp = protocol->chirp;
-    L(chirp, "Closing protocol%s", "");
+    L(chirp, "Closing protocol", CH_NO_ARG);
     _ch_pr_close_free_connections(chirp);
     uv_close((uv_handle_t*) &protocol->serverv4, ch_chirp_close_cb);
     uv_close((uv_handle_t*) &protocol->serverv6, ch_chirp_close_cb);

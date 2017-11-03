@@ -229,6 +229,8 @@ typedef struct ch_receipt_s ch_receipt_t;
 
 #define CH_CHIRP_MAGIC 42429
 
+#define CH_NO_ARG 1
+
 // Generic functions
 // =================
 //

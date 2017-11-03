@@ -286,7 +286,8 @@ ch_en_start(ch_encryption_t* enc)
     if(method == NULL) {
         E(
             chirp,
-            "Could not get the TLSv1_2_method%s", ""
+            "Could not get the TLSv1_2_method",
+            CH_NO_ARG
         );
         return CH_TLS_ERROR;
     }
@@ -294,7 +295,8 @@ ch_en_start(ch_encryption_t* enc)
     if(enc->ssl_ctx == NULL) {
         E(
             chirp,
-            "Could create the SSL_CTX%s", ""
+            "Could create the SSL_CTX",
+            CH_NO_ARG
         );
         return CH_TLS_ERROR;
     }
@@ -407,7 +409,8 @@ ch_en_start(ch_encryption_t* enc)
     ) != 1) {
         E(
             chirp,
-            "Could not set the cipher list%s", ""
+            "Could not set the cipher list. ch_chirp_t: %p",
+            chirp
         );
         DH_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
@@ -415,7 +418,8 @@ ch_en_start(ch_encryption_t* enc)
     }
     L(
         chirp,
-        "Created SSL context for chirp%s", ""
+        "Created SSL context for chirp",
+        CH_NO_ARG
     );
     DH_free(dh);
     return CH_SUCCESS;
