@@ -8,6 +8,9 @@
 // Connection state machine
 // ========================
 //
+// TODO: Due missing features the state machine is not yet completely followed.
+// Please always consider this definitions when changing connection handling.
+//
 // Variables
 // ---------
 //

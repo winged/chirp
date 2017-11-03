@@ -38,18 +38,11 @@ Features
   * Connections to 127.0.0.1 and ::1 aren't encrypted
   * We support and test with OpenSSL, but we prefer LibreSSL
 
-* Flow control
-
-  * Chirp won't overload peers out-of-the box, if you work with long requests
-    >2.5s adjust the timeout
-  * Peer-load is reported so you can implement load-balancing easily
-
 * Easy message routing
 
 * Robust
 
   * No message can be lost without an error (or it is a bug)
-  * Due to retry it takes a very bad network for messages to be lost
 
 * Very thin API
 
@@ -63,6 +56,34 @@ Features
 
     * Which shows that chirp is highly optimized, but still if the network delay
       is bigger star-topology is the way to go.
+
+Planned features
+================
+
+* Flow control
+
+  * Chirp won't overload peers out-of-the box, if you work with long requests
+    >2.5s adjust the timeout
+  * Peer-load is reported so you can implement load-balancing easily
+
+* Retry
+
+Consequences
+------------
+
+* Missing flow-control means you should not overload your peer. Let the peer
+  send a completed-message and wait for it. If you overload your peer you will
+  get timeout errors. It also means that chirp is not yet routing friendly.
+
+* Retry: There is a very rare edge-case: if a connections is
+  garbage-collected just when the peer sends a message, you will get a
+  disconnected error. With retry these errors will not appear.
+
+* Load is not reported
+
+We want to keep the interfaces, so the versions implementing these feature won't
+break the ABI. Please also leave retry and flow-control on their defaults, they
+will integrate seemingless.
 
 Install
 =======
