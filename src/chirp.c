@@ -741,12 +741,6 @@ ch_chirp_init(
     chirp->_                = ichirp;
     if(log_cb != NULL)
         ch_chirp_set_log_callback(chirp, log_cb);
-    tmp_err = _ch_chirp_verify_cfg(chirp);
-    if(tmp_err != CH_SUCCESS) {
-        chirp->_init = 0;
-        uv_mutex_unlock(&_ch_chirp_init_lock);
-        return tmp_err;
-    }
 
     srand((unsigned int) time(NULL));
     unsigned int i = 0;
@@ -759,6 +753,12 @@ ch_chirp_init(
     else
         *ichirp->identity = *tmp_conf->IDENTITY;
 
+    tmp_err = _ch_chirp_verify_cfg(chirp);
+    if(tmp_err != CH_SUCCESS) {
+        chirp->_init = 0;
+        uv_mutex_unlock(&_ch_chirp_init_lock);
+        return tmp_err;
+    }
 
     if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
         E(
