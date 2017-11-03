@@ -184,6 +184,7 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 DISTD=$(BUILD)/dist
 DISTM=$(DISTD)/Makefile
 DISTR=$(DISTD)/README.rst
+DISTK=$(DISTD)/.keys
 
 dist: $(DISTR)  ## Create source distribution
 
@@ -206,6 +207,10 @@ $(DISTR): $(AMALB).c
 	$(V_M)echo libchirp $(VERSION) >> $(DISTR)
 	$(V_M)echo =================== >> $(DISTR)
 	$(V_M)cat $(BASE)/mk/DIST-README.rst >> $(DISTR)
+	$(V_E) KEYS
+	$(V_M)mkdir -p $(DISTK)
+	$(V_M)cat $(BASE)/mk/dh.pem | tr 'a' '%' > $(DISTK)/dh.pem
+	$(V_M)cat $(BASE)/mk/cert.pem | tr 'a' '%' > $(DISTK)/cert.pem
 
 # Utility targets
 # ===============

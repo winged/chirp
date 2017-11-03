@@ -22,7 +22,10 @@ chirp_test: libchirp.so
 	$(CC) -o $@ chirp_test.c -L. -lchirp $(LDFLAGS)
 
 check: chirp_test
+	@cat .keys/dh.pem | tr '%' 'a' > dh.pem
+	@cat .keys/cert.pem | tr '%' 'a' > cert.pem
 	LD_LIBRARY_PATH="." ./chirp_test
+	@rm -f *.pem
 
 # Install
 # =======
