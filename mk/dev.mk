@@ -112,7 +112,9 @@ AMALS = $(BASE)/src
 AMALI = $(BASE)/include
 AMALIL = $(BASE)/include/libchirp
 
-amalg: $(LIB_CFILES)  ## Create amalgamation
+amalg: $(AMALB).c  ## Create amalgamation
+
+$(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 	$(V_E) GEN header.h
 	$(V_M)echo // ============================ > $(BUILD)/header.h
 	$(V_M)echo // libchirp $(VERSION) amalgamation >> $(BUILD)/header.h
@@ -137,7 +139,7 @@ amalg: $(LIB_CFILES)  ## Create amalgamation
 		$(AMALS)/reader.h \
 		$(AMALS)/connection.h \
 		$(AMALS)/chirp.h \
-		$^ > $(AMALB).rg.c
+		$(LIB_CFILES) > $(AMALB).rg.c
 	$(V_E) RGC libchirp.c
 	$(V_M)$(BASE)/mk/rgc $(AMALB).rg.c $(AMALB).pre.c
 	$(V_M)sed -E \
@@ -172,7 +174,10 @@ amalg: $(LIB_CFILES)  ## Create amalgamation
 DISTD=$(BUILD)/dist
 DISTM=$(DISTD)/Makefile
 DISTR=$(DISTD)/README.rst
-dist: amalg
+
+dist: $(DISTR)  ## Create source distribution
+
+$(DISTR): $(AMALB).c
 	$(V_E) DIST $(DISTD)
 	$(V_M)mkdir -p $(DISTD)
 	$(V_M)cp $(AMALB).h $(DISTD)
