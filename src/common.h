@@ -95,7 +95,7 @@ typedef struct ch_receipt_s ch_receipt_t;
 // .. code-block:: cpp
 //
 #define EC(chirp, message, clear, ...) \
-    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
+    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 1, __VA_ARGS__);
 #define E(chirp, message, ...) EC(chirp, message, "",  __VA_ARGS__)
 
 
