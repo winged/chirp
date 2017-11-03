@@ -6,11 +6,15 @@ all: libchirp.so libchirp.a
 # =======
 libchirp.so: libchirp.o
 	$(CC) -shared -o $@ $+ $(LDFLAGS)
+ifeq ($(STRIP),True)
 	$(STRPCMD) $@
+endif
 
 libchirp.a: libchirp.o
 	ar $(ARFLAGS) $@ $+
+ifeq ($(STRIP),True)
 	$(STRPCMD) $@
+endif
 
 # Checks
 # ======

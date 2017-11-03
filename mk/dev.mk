@@ -188,7 +188,6 @@ $(DISTR): $(AMALB).c
 	$(V_M)echo 'UNAME_S := $$(shell uname -s)' > $(DISTM)
 	$(V_M)echo VERSION := $(VERSION) >> $(DISTM)
 	$(V_M)echo MAJOR := $(MAJOR) >> $(DISTM)
-	$(V_M)echo STRIP := True >> $(DISTM)
 	$(V_M)echo >> $(DISTM)
 	$(V_M)cat $(BASE)/mk/base-flags.mk >> $(DISTM)
 	$(V_M)cat $(BASE)/mk/rel.mk >> $(DISTM)

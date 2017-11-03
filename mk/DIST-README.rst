@@ -19,12 +19,19 @@ Example: Install in /usr
 
 .. code-block:: bash
 
-   make
+   make STRIP=True
    sudo make install PREFIX=/usr
 
-Example: Packaging
+Example: Packaging (no strip since distributions usually want to control strip)
 
 .. code-block:: bash
 
    make
    make install PREFIX=/usr DEST=./pkgdir
+
+Example: Debug (NDEBUG will still be set so no debug macros active)
+
+.. code-block:: bash
+
+   CFLAGS=-O0 make
+   make install PREFIX=/usr/local
