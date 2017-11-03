@@ -43,7 +43,7 @@ ch_tst_log_callback(char msg[], char error)
 {
     if(error)
         fprintf(stderr, "is error");
-    fprintf(stderr, msg);
+    fprintf(stderr, "%s", msg);
     fprintf(stderr, "\n");
 }
 
