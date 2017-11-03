@@ -431,7 +431,9 @@ ch_write_log(
 {
     va_list args;
     va_start(args, error);
-    file = strrchr(file, '/') + 1;
+    char* tfile = strrchr(file, '/');
+    if(tfile != NULL)
+        file = tfile + 1;
     char buf1[1024];
     if(chirp->_log != NULL) {
         char buf2[1024];
