@@ -16,6 +16,7 @@
 // .. code-block:: cpp
 //
 #include "message.h"
+#include "common.h"
 #include "libchirp-config.h"
 
 // Declarations
@@ -49,15 +50,19 @@
 //
 typedef struct ch_bf_handler_s {
     ch_message_t msg;
-    ch_buf  header[CH_BF_PREALLOC_HEADER];
-    ch_buf  data[CH_BF_PREALLOC_DATA];
-    uint8_t id;
-    uint8_t used;
+    ch_buf       header[CH_BF_PREALLOC_HEADER];
+    ch_buf       data[CH_BF_PREALLOC_DATA];
+    uint8_t      id;
+    uint8_t      used;
 } ch_bf_handler_t;
 
 // .. c:type:: ch_buffer_pool_t
 //
 //    Contains the preallocated buffers for the chirp handlers.
+//
+//    .. c:member:: ch_protocol_t*
+//
+//       Pointer to protocol
 //
 //    .. c:member:: uint8_t max_buffers
 //
@@ -80,6 +85,7 @@ typedef struct ch_bf_handler_s {
 // .. code-block:: cpp
 //
 typedef struct ch_buffer_pool_s {
+    ch_protocol_t* protocol;
     uint8_t  max_buffers;
     uint8_t  used_buffers;
     uint32_t free_buffers;
@@ -97,12 +103,17 @@ ch_bf_free(ch_buffer_pool_t* pool);
 
 // .. c:function::
 ch_error_t
-ch_bf_init(ch_buffer_pool_t* pool, uint8_t max_buffers);
+ch_bf_init(
+        ch_protocol_t* protocol,
+        ch_buffer_pool_t* pool,
+        uint8_t max_buffers
+);
 //
 //    Initialize the given buffer pool structure using given max. buffers.
 //
+//    :param ch_protocol_t* protocol: The chirp instance
 //    :param ch_buffer_pool_t* pool: The buffer pool object
-//    :param max_buffers: Buffers to allocate
+//    :param uint8_t max_buffers: Buffers to allocate
 
 // .. c:function::
 ch_bf_handler_t*

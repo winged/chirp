@@ -188,10 +188,6 @@ typedef enum {
 //
 //       Callback when message is received
 //
-//    .. c:member:: ch_buffer_pool_t pool
-//
-//       Data structure containing preallocated buffers for the chirp handlers.
-//
 // .. code-block:: cpp
 //
 struct ch_chirp_int_s {
@@ -212,7 +208,6 @@ struct ch_chirp_int_s {
     uv_async_t          send_ts;
     uv_mutex_t          send_ts_queue_lock;
     ch_recv_cb_t        recv_cb;
-    ch_buffer_pool_t    pool;
 };
 
 // .. c:function::

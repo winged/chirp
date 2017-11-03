@@ -326,7 +326,6 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
     uv_mutex_destroy(&ichirp->send_ts_queue_lock);
     L(chirp, "Closed.", CH_NO_ARG);
     chirp->_ = NULL;
-    ch_bf_free(&ichirp->pool);
     ch_free(ichirp);
 }
 
@@ -809,18 +808,6 @@ ch_chirp_init(
     ichirp->send_ts.data = chirp;
     uv_mutex_init(&ichirp->send_ts_queue_lock);
 
-    tmp_err = ch_bf_init(&ichirp->pool, ichirp->config.MAX_HANDLERS);
-    if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could initialize buffer pool: %d",
-            tmp_err
-        );
-        ch_free(ichirp);
-        chirp->_init = 0;
-        uv_mutex_unlock(&_ch_chirp_init_lock);
-        return tmp_err;
-    }
     ch_pr_init(chirp, protocol);
     tmp_err = ch_pr_start(protocol);
     if(tmp_err != CH_SUCCESS) {
@@ -829,7 +816,6 @@ ch_chirp_init(
             "Could not start protocol: %d",
             tmp_err
         );
-        ch_bf_free(&ichirp->pool);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -847,7 +833,6 @@ ch_chirp_init(
                 "Could not start encryption: %d",
                 tmp_err
             );
-            ch_bf_free(&ichirp->pool);
             ch_free(ichirp);
             chirp->_init = 0;
             uv_mutex_unlock(&_ch_chirp_init_lock);

@@ -189,9 +189,9 @@
 //
 //       The uv tcp client has been initialized.
 //
-//    .. c:member:: CH_CN_INIT_WRITER
+//    .. c:member:: CH_CN_INIT_READER_WRITER
 //
-//       The writer has been initialized.
+//       The reader/writer has been initialized.
 //
 //    .. c:member:: CH_CN_INIT_SHUTDOWN_TIMEOUT
 //
@@ -217,14 +217,15 @@ typedef enum {
     CH_CN_BUF_RTLS_USED         = 1 <<  6,
     CH_CN_BUF_UV_USED           = 1 <<  7,
     CH_CN_DO_CLOSE_ACCOUTING    = 1 <<  8,
-    CH_CN_INIT_CLIENT           = 1 <<  9,
-    CH_CN_INIT_WRITER           = 1 << 10,
-    CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 11,
-    CH_CN_INIT_ENCRYPTION       = 1 << 12,
-    CH_CN_INIT_BUFFERS          = 1 << 13,
+    CH_CN_STOPPED               = 1 <<  9,
+    CH_CN_INIT_CLIENT           = 1 << 10,
+    CH_CN_INIT_READER_WRITER    = 1 << 11,
+    CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 12,
+    CH_CN_INIT_ENCRYPTION       = 1 << 13,
+    CH_CN_INIT_BUFFERS          = 1 << 14,
     CH_CN_INIT                  = (
         CH_CN_INIT_CLIENT |
-        CH_CN_INIT_WRITER |
+        CH_CN_INIT_READER_WRITER |
         CH_CN_INIT_SHUTDOWN_TIMEOUT |
         CH_CN_INIT_ENCRYPTION |
         CH_CN_INIT_BUFFERS

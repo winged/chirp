@@ -58,7 +58,7 @@
 //
 // .. code-block:: cpp
 //
-typedef struct ch_protocol_s {
+struct ch_protocol_s {
     struct sockaddr_in  addrv4;
     struct sockaddr_in6 addrv6;
     uv_tcp_t            serverv4;
@@ -66,7 +66,7 @@ typedef struct ch_protocol_s {
     ch_remote_t*        remotes;
     ch_connection_t*    old_connections;
     ch_chirp_t*         chirp;
-} ch_protocol_t;
+};
 
 // .. c:function::
 ch_error_t

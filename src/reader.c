@@ -166,12 +166,12 @@ _ch_rd_handshake(
 // .. code-block:: cpp
 //
 {
+    ch_remote_t search_remote;
     ch_connection_t* old_conn = NULL;
-    ch_chirp_t* chirp = conn->chirp;
-    ch_remote_t  search_remote;
-    ch_remote_t* remote = NULL;
-    ch_chirp_int_t* ichirp = chirp->_;
-    ch_protocol_t* protocol = &ichirp->protocol;
+    ch_chirp_t* chirp         = conn->chirp;
+    ch_remote_t* remote       = NULL;
+    ch_chirp_int_t* ichirp    = chirp->_;
+    ch_protocol_t* protocol   = &ichirp->protocol;
     ch_sr_handshake_t hs_tmp;
     if(read < CH_SR_HANDSHAKE_SIZE) {
         EC(
@@ -272,6 +272,13 @@ _ch_rd_handle_msg(
     }
 #   endif
 
+    /* If this was the last handler, we need to stop reading, or next
+     * CH_RD_WAIT will have no buffer. */
+    if(reader->last_handler) {
+        conn->flags |= CH_CN_STOPPED;
+        LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
+        uv_read_stop((uv_stream_t*) &conn->client);
+    }
     reader->state = CH_RD_WAIT;
     reader->handler = NULL;
 
@@ -328,7 +335,7 @@ _ch_rd_handle_msg(
             ch_chirp_release_recv_handler(msg);
         }
     } else
-        ch_bf_release(&ichirp->pool, msg->_handler);
+        ch_chirp_release_recv_handler(msg);
 
 }
 
@@ -362,7 +369,20 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
 
 // .. c:function::
 void
-ch_rd_init(ch_reader_t* reader)
+ch_rd_free(ch_reader_t* reader)
+//    :noindex:
+//
+//    see: :c:func:`ch_rd_free`
+//
+// .. code-block:: cpp
+//
+{
+    ch_bf_free(&reader->pool);
+}
+
+// .. c:function::
+int
+ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_init`
@@ -371,6 +391,11 @@ ch_rd_init(ch_reader_t* reader)
 //
 {
     reader->state = CH_RD_START;
+    return ch_bf_init(
+        &ichirp->protocol,
+        &reader->pool,
+        ichirp->config.MAX_HANDLERS
+    );
 }
 
 // .. c:function::
@@ -438,10 +463,9 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                 reader->state = CH_RD_WAIT;
                 break;
             case CH_RD_WAIT:
-                /* TODO add read timeout (dos protection) */
                 if(reader->handler == NULL) {
                     reader->handler = ch_bf_acquire(
-                        &ichirp->pool,
+                        &reader->pool,
                         &reader->last_handler
                     );
                 }
@@ -578,6 +602,32 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
     if(msg->_flags & CH_MSG_FREE_HEADER)
         ch_free(msg->header);
     ch_bf_release(pool, msg->_handler);
+    ch_remote_t search_remote;
+    ch_remote_t* remote = NULL;
+    search_remote.ip_protocol = msg->ip_protocol;
+    search_remote.port        = msg->port;
+    memcpy(
+        &search_remote.address,
+        &msg->address,
+        CH_IP_ADDR_SIZE
+    );
+    ch_rm_find(
+        pool->protocol->remotes,
+        &search_remote,
+        &remote
+    );
+    if(remote != NULL) {
+        ch_connection_t* conn = remote->conn;
+        if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
+            conn->flags &= ~CH_CN_STOPPED;
+            LC(conn->chirp, "Restart reading", "ch_connection_t:%p", conn);
+            uv_read_start(
+                (uv_stream_t*) &conn->client,
+                ch_cn_read_alloc_cb,
+                ch_pr_read_data_cb
+            );
+        }
+    }
 }
 
 static

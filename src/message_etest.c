@@ -14,6 +14,7 @@
 #include "quickcheck_test.h"
 #include "message_test.h"
 #include "chirp.h"
+#include "qs.h"
 
 // System includes
 // ===============
@@ -36,7 +37,8 @@ typedef enum {
     CH_TST_BUFFER_SIZE    = 1002,
     CH_TST_TIMEOUT        = 1003,
     CH_TST_NO_ACK         = 1004,
-    CH_TST_HELP           = 1005,
+    CH_TST_SLOW           = 1005,
+    CH_TST_HELP           = 1006,
 } ch_tst_args_t;
 
 typedef int (*ch_tst_chirp_send_t)(
@@ -52,8 +54,6 @@ typedef int (*ch_tst_chirp_send_t)(
 
 #define PORT_SENDER     59731
 #define PORT_ECHO       59732
-
-static int ch_tst_ack = 1;
 
 
 static
@@ -71,24 +71,36 @@ MINMAX_FUNCS(int)
 //
 // .. code-block:: cpp
 //
-static int _ch_tst_msg_send_count = 0;
-static ch_message_t _ch_tst_msg;
-static int _msg_echo_count = 0;
-static char _data[] = "hello";
-static int _ch_tst_buffer_size = 0;
-static float _ch_tst_timeout = 5.0;
-static int _ch_tst_message_count = 20;
-static uv_timer_t stop_timer;
 
 struct ch_tst_chirp_thread_s;
 typedef struct ch_tst_chirp_thread_s ch_tst_chirp_thread_t;
-
 struct ch_tst_chirp_thread_s {
     int port;
     ch_start_cb_t init;
     ch_tst_chirp_thread_t* other;
     ch_chirp_t* chirp;
 };
+
+struct ch_tst_msg_stack_s;
+typedef struct ch_tst_msg_stack_s ch_tst_msg_stack_t;
+struct ch_tst_msg_stack_s {
+    ch_message_t* msg;
+    ch_tst_msg_stack_t* next;
+};
+
+qs_stack_bind_m(ch_tst_msg, ch_tst_msg_stack_t)
+
+static int _ch_tst_msg_send_count = 0;
+static ch_message_t _ch_tst_msg;
+static int _ch_tst_msg_echo_count = 0;
+static char _ch_tst_data[] = "hello";
+static int _ch_tst_buffer_size = 0;
+static float _ch_tst_timeout = 5.0;
+static int _ch_tst_message_count = 20;
+static uv_timer_t _ch_tst_sleep_timer;
+static int _ch_tst_ack = 1;
+static int _ch_tst_slow = 0;
+static ch_tst_msg_stack_t* _ch_tst_msg_stack = NULL;
 
 static
 void
@@ -101,8 +113,22 @@ _ch_tst_simple_msg(ch_message_t* msg)
         "127.0.0.1",
         PORT_ECHO
     );
-    msg->data = _data;
-    msg->data_len = strnlen(_data, sizeof(_data));
+    msg->data = _ch_tst_data;
+    msg->data_len = strnlen(_ch_tst_data, sizeof(_ch_tst_data));
+}
+
+static
+void
+_ch_tst_delay_release(uv_timer_t* handle)
+{
+    (void)(handle);
+    ch_tst_msg_stack_t* cur;
+    ch_tst_msg_pop(&_ch_tst_msg_stack, &cur);
+    while(cur != NULL) {
+        ch_chirp_release_recv_handler(cur->msg);
+        ch_free(cur);
+        ch_tst_msg_pop(&_ch_tst_msg_stack, &cur);
+    }
 }
 
 static
@@ -112,20 +138,24 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(chirp);
     (void)(status);
     (void)(load);
-    (void)(msg);
-    _msg_echo_count += 1;
-    ch_chirp_release_recv_handler(msg);
-}
-
-static
-void
-_ch_tst_send_stop(uv_timer_t* handle)
-{
-    ch_chirp_t* chirp = handle->data;
-    uv_timer_stop(handle);
-    uv_close((uv_handle_t*) handle, NULL);
-    ch_chirp_close_ts(ch_tr_other_chirp(chirp));
-    ch_chirp_close_ts(chirp);
+    _ch_tst_msg_echo_count += 1;
+    int stack_was_null = _ch_tst_msg_stack == NULL;
+    if(_ch_tst_slow) {
+        ch_tst_msg_stack_t* item = ch_alloc(sizeof(*item));
+        item->next = NULL;
+        item->msg = msg;
+        ch_tst_msg_push(&_ch_tst_msg_stack, item);
+        if(stack_was_null)
+            uv_timer_start(&_ch_tst_sleep_timer, _ch_tst_delay_release, 300, 0);
+    } else
+        ch_chirp_release_recv_handler(msg);
+    if(_ch_tst_msg_echo_count == _ch_tst_message_count) {
+        uv_timer_stop(&_ch_tst_sleep_timer);
+        _ch_tst_delay_release(&_ch_tst_sleep_timer);
+        uv_close((uv_handle_t*) &_ch_tst_sleep_timer, NULL);
+        ch_chirp_close_ts(ch_tr_other_chirp(chirp));
+        ch_chirp_close_ts(chirp);
+    }
 }
 
 static
@@ -144,13 +174,6 @@ _ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
             _ch_tst_message_count -_ch_tst_msg_send_count
         );
         _ch_tst_send_message(chirp);
-    } else {
-        /* TODO: Insted of sleep, actually wait for the last echoed message to
-         * arrive.
-         */;
-        uv_timer_init(ch_chirp_get_loop(chirp), &stop_timer);
-        stop_timer.data = chirp;
-        uv_timer_start(&stop_timer, _ch_tst_send_stop, 2000, 0);
     }
 }
 
@@ -233,6 +256,7 @@ void
 _ch_tst_echo_init_handler(ch_chirp_t* chirp)
 {
     ch_chirp_check_m(chirp);
+    uv_timer_init(ch_chirp_get_loop(chirp), &_ch_tst_sleep_timer);
     ch_chirp_set_recv_callback(chirp, _ch_tst_recv_echo_message_cb);
 }
 
@@ -251,7 +275,7 @@ _ch_tst_run_chirp(void* arg)
     config.PORT           = args->port;
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM  = "./dh.pem";
-    config.ACKNOWLEDGE    = ch_tst_ack;
+    config.ACKNOWLEDGE    = _ch_tst_ack;
     ch_loop_init(&loop);
     if(ch_chirp_init(
             &chirp,
@@ -304,6 +328,7 @@ main(int argc, char *argv[])
         {"timeout",        required_argument, 0, CH_TST_TIMEOUT },
         {"buffer-size",    required_argument, 0, CH_TST_BUFFER_SIZE },
         {"no-ack",         no_argument,       0, CH_TST_NO_ACK },
+        {"slow",           no_argument,       0, CH_TST_SLOW },
         {"help",           no_argument,       0, CH_TST_HELP },
         {NULL,             0,                 0, 0 }
     };
@@ -349,7 +374,11 @@ main(int argc, char *argv[])
                 break;
             case CH_TST_NO_ACK:
                 printf("Set no-ack\n");
-                ch_tst_ack = 0;
+                _ch_tst_ack = 0;
+                break;
+            case CH_TST_SLOW:
+                printf("Set slow\n");
+                _ch_tst_slow = 1;
                 break;
             default:
                 fprintf(stderr, "unknown option\n");

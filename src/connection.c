@@ -219,8 +219,11 @@ _ch_cn_closing(
         );
     } else {
         uv_read_stop(req->handle);
-        if(conn->flags & CH_CN_INIT_WRITER)
+        if(conn->flags & CH_CN_INIT_READER_WRITER) {
             ch_wr_free(&conn->writer);
+            ch_rd_free(&conn->reader);
+            conn->flags &= ~CH_CN_INIT_READER_WRITER;
+        }
         if(conn->flags & CH_CN_INIT_CLIENT) {
             uv_close(handle, ch_cn_close_cb);
             conn->shutdown_tasks += 1;
@@ -578,10 +581,13 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->chirp           = chirp;
     conn->flags          |= flags;
     conn->write_req.data  = conn;
-    ch_rd_init(&conn->reader);
+    tmp_err = ch_rd_init(&conn->reader, ichirp);
+    if(tmp_err != CH_SUCCESS)
+        return tmp_err;
     tmp_err = ch_wr_init(&conn->writer, conn);
     if(tmp_err != CH_SUCCESS)
         return tmp_err;
+    conn->flags |= CH_CN_INIT_READER_WRITER;
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
         EC(

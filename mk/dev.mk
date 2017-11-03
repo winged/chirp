@@ -55,6 +55,12 @@ etests: all  ## Run binary tests
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--always-encrypt \
+			--slow \
+			--message-count 50 \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			--always-encrypt \
 			--buffer-size 1024 \
 			2> message_etest.log || \
 		(cat message_etest.log; false)

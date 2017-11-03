@@ -42,6 +42,8 @@ struct ch_connection_s;
 typedef struct ch_connection_s ch_connection_t;
 struct ch_receipt_s;
 typedef struct ch_receipt_s ch_receipt_t;
+struct ch_protocol_s;
+typedef struct ch_protocol_s ch_protocol_t;
 
 //
 // .. _double-eval:
@@ -192,9 +194,9 @@ typedef struct ch_receipt_s ch_receipt_t;
 //    See :c:macro:`L`. Does nothing in release-mode.
 // .. code-block:: cpp
 //
-#   define L(chrip, message, ...) \
+#   define L(chirp, message, ...) \
         (void)(chirp); (void)(message)
-#   define LC(chrip, message, clear, ...) \
+#   define LC(chirp, message, clear, ...) \
         (void)(chirp); (void)(message); (void)(clear)
 
 //.. c:macro:: A

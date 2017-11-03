@@ -83,6 +83,10 @@ typedef enum {
 //
 //       The last handler (buffer) was used (bool)
 //
+//    .. c:member:: ch_buffer_pool_t pool
+//
+//       Data structure containing preallocated buffers for the chirp handlers.
+//
 // .. code-block:: cpp
 //
 typedef struct ch_reader_s {
@@ -92,7 +96,28 @@ typedef struct ch_reader_s {
     size_t           bytes_read;
     int              last_handler;
     ch_buf           net_msg[CH_SR_WIRE_MESSAGE_SIZE];
+    ch_buffer_pool_t pool;
 } ch_reader_t;
+
+// .. c:function::
+void
+ch_rd_free(ch_reader_t* reader);
+//
+//    Free the (data-) buffer pool of the given reader instance.
+//
+//    :param ch_reader_t* reader: The reader instance whose buffer
+//                                pool shall be freed.
+
+// .. c:function::
+int
+ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp);
+//
+//    Initialize the reader structure.
+//
+//    :param ch_reader_t* reader: The reader instance whose buffer pool shall
+//                                be initialized with ``max_buffers``.
+//    :param ch_chirp_int_t ichirp: Internal chirp instance
+//    :rtype: ch_error_t
 
 // .. c:function::
 void
@@ -103,15 +128,7 @@ ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
 //    :param ch_connection_t* conn: Connection the data was read from.
 //    :param void* buf:             The buffer containing ``read`` bytes read.
 //    :param size_t read:           The number of bytes read.
-
-// .. c:function::
-void
-ch_rd_init(ch_reader_t* reader);
 //
-//    Initialize the reader structure
-//
-//    :param ch_reader_t* reader: The reader instance whose buffer pool shall
-//                                be initialized with ``max_buffers``.
 // .. code-block:: cpp
 
 #endif //ch_reader_h
