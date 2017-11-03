@@ -2,6 +2,8 @@ PREFIX ?= /usr/local
 
 all: libchirp.so libchirp.a
 
+# Library
+# =======
 libchirp.so: libchirp.o
 	$(CC) -shared -o $@ $+ $(LDFLAGS)
 	$(STRPCMD) $@
@@ -10,12 +12,16 @@ libchirp.a: libchirp.o
 	ar $(ARFLAGS) $@ $+
 	$(STRPCMD) $@
 
+# Checks
+# ======
 chirp_test: libchirp.so
 	$(CC) -o $@ chirp_test.c -L. -lchirp $(LDFLAGS)
 
 check: chirp_test
 	LD_LIBRARY_PATH="." ./chirp_test
 
+# Install
+# =======
 install: all
 	mkdir -p $(DEST)$(PREFIX)/lib
 	cp -f libchirp.a $(DEST)$(PREFIX)/lib
