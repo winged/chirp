@@ -35,7 +35,8 @@ typedef enum {
     CH_TST_MESSAGE_COUNT  = 1001,
     CH_TST_BUFFER_SIZE    = 1002,
     CH_TST_TIMEOUT        = 1003,
-    CH_TST_HELP           = 1004,
+    CH_TST_NO_ACK         = 1004,
+    CH_TST_HELP           = 1005,
 } ch_tst_args_t;
 
 typedef int (*ch_tst_chirp_send_t)(
@@ -51,6 +52,9 @@ typedef int (*ch_tst_chirp_send_t)(
 
 #define PORT_SENDER     59731
 #define PORT_ECHO       59732
+
+static int ch_tst_ack = 1;
+
 
 static
 void
@@ -247,6 +251,7 @@ _ch_tst_run_chirp(void* arg)
     config.PORT           = args->port;
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM  = "./dh.pem";
+    config.ACKNOWLEDGE    = ch_tst_ack;
     ch_loop_init(&loop);
     if(ch_chirp_init(
             &chirp,
@@ -298,6 +303,7 @@ main(int argc, char *argv[])
         {"message-count",  required_argument, 0, CH_TST_MESSAGE_COUNT },
         {"timeout",        required_argument, 0, CH_TST_TIMEOUT },
         {"buffer-size",    required_argument, 0, CH_TST_BUFFER_SIZE },
+        {"no-ack",         no_argument,       0, CH_TST_NO_ACK },
         {"help",           no_argument,       0, CH_TST_HELP },
         {NULL,             0,                 0, 0 }
     };
@@ -340,6 +346,10 @@ main(int argc, char *argv[])
                     fprintf(stderr, "timeout must be float.\n");
                     exit(1);
                 }
+                break;
+            case CH_TST_NO_ACK:
+                printf("Set no-ack\n");
+                ch_tst_ack = 0;
                 break;
             default:
                 fprintf(stderr, "unknown option\n");

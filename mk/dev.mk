@@ -42,6 +42,12 @@ etests: all  ## Run binary tests
 	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest --no-ack --always-encrypt \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest --no-ack \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--always-encrypt \
 			--message-count 50 \
