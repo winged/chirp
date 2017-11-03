@@ -147,7 +147,7 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		$(AMALS)/chirp.h \
 		$(LIB_CFILES) > $(AMALB).def.c
 	$(V_E) UNIFDEF libchirp.c
-	$(V_M)$(BUILD)/unifdef -o $(AMALB).rg.c -DNDEBUG $(AMALB).def.c; true
+	$(V_M)$(BUILD)/unifdef -x 2 -DNDEBUG -o $(AMALB).rg.c $(AMALB).def.c
 	$(V_E) RGC libchirp.c
 	$(V_M)$(BASE)/mk/rgc $(AMALB).rg.c $(AMALB).pre.c
 	$(V_M)sed -E \
@@ -171,7 +171,7 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		$(AMALI)/libchirp.h \
 		> $(AMALB).def.h
 	$(V_E) UNIFDEF libchirp.c
-	$(V_M)$(BUILD)/unifdef -o $(AMALB).pre.h -DNDEBUG $(AMALB).def.h; true
+	$(V_M)$(BUILD)/unifdef -x 2 -DNDEBUG -o $(AMALB).pre.h $(AMALB).def.h
 	$(V_M)sed -E \
 		's/(#include "[[:alnum:]./]+.h")/\/* \1 *\//g' \
 		< $(AMALB).pre.h >  $(AMALB).sed.h
