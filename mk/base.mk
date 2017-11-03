@@ -159,6 +159,7 @@ clean:  # Clean chirp
 	$(V_M)cd "$(BUILD)" && rm -rf logs/
 	$(V_M)cd "$(BUILD)" && rm -rf dist/
 	$(V_M)cd "$(BUILD)" && rm -f *.a *.so
+	$(V_M)cd "$(BUILD)" && rm -f unifdef
 	$(V_M)cd "$(BUILD)" && \
 		mv libchirp-config.h libchirp-config_h && \
 		rm -f *.c *.h && \

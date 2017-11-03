@@ -105,6 +105,12 @@ cppcheck: all  ## Static analysis
 		-DCH_ACCEPT_STRANGE_PLATFORM \
 		"$(BUILD)/src"
 
+# Unifdef
+# =======
+$(BUILD)/unifdef: $(BASE)/mk/unifdef.c
+	$(V_E) CC $<
+	$(V_M)$(CC) -o $@ $< $(NWCFLAGS) $(LDFLAGS) -Os
+
 # Amalgamation
 # ============
 AMALB = $(BUILD)/libchirp
@@ -139,7 +145,9 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		$(AMALS)/reader.h \
 		$(AMALS)/connection.h \
 		$(AMALS)/chirp.h \
-		$(LIB_CFILES) > $(AMALB).rg.c
+		$(LIB_CFILES) > $(AMALB).def.c
+	$(V_E) UNIFDEF libchirp.c
+	$(V_M)$(BUILD)/unifdef -o $(AMALB).rg.c -DNDEBUG $(AMALB).def.c; true
 	$(V_E) RGC libchirp.c
 	$(V_M)$(BASE)/mk/rgc $(AMALB).rg.c $(AMALB).pre.c
 	$(V_M)sed -E \
@@ -161,7 +169,9 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		$(AMALIL)/chirp.h \
 		$(AMALIL)/encryption.h \
 		$(AMALI)/libchirp.h \
-		> $(AMALB).pre.h
+		> $(AMALB).def.h
+	$(V_E) UNIFDEF libchirp.c
+	$(V_M)$(BUILD)/unifdef -o $(AMALB).pre.h -DNDEBUG $(AMALB).def.h; true
 	$(V_M)sed -E \
 		's/(#include "[[:alnum:]./]+.h")/\/* \1 *\//g' \
 		< $(AMALB).pre.h >  $(AMALB).sed.h
