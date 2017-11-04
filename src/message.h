@@ -2,7 +2,7 @@
 // Message header
 // ==============
 //
-// .. todo:: Document purpose
+// Message queue and internal message flags.
 //
 // .. code-block:: cpp
 //

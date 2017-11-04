@@ -253,7 +253,7 @@ ch_pr_conn_start(
                 msg " connection (%d)",
                 tmp_err
             );
-            ch_cn_shutdown(conn, tmp_err);
+            ch_cn_shutdown(conn, CH_FATAL);
             return tmp_err;
         }
 #   enddef

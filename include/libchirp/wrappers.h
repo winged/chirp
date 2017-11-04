@@ -2,7 +2,7 @@
 // External functions
 // ==================
 //
-// .. todo:: Document purpose
+// Wrapper around commonly used libuv functions: init, close, run
 //
 // .. code-block:: cpp
 

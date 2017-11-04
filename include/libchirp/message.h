@@ -2,7 +2,7 @@
 // Message
 // =======
 //
-// .. todo:: Document purpose
+// The message structure, initialization and setting/getting address.
 //
 // .. code-block:: cpp
 //

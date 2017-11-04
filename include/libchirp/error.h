@@ -2,7 +2,7 @@
 // Errors
 // ======
 //
-// ..todo:: Document purpose
+// Chirp error constants.
 //
 // .. code-block:: cpp
 
@@ -35,13 +35,26 @@
 //
 //    .. c:member:: CH_FATAL
 //
-//       .. todo: List all fatal error cases.
+//       Error that should not happen in normal operation, but the underlaying
+//       system has errors for.
 //
 //       * We do not have an entropy source
+//
+//       * Closing closed chirp
+//
+//       * Cannot get remote IP-Address
+//
+//       * Cannot accept remote connection
+//
+//       * Cannot set socket options
 //
 //    .. c:member:: CH_TLS_ERROR
 //
 //       General TLS error.
+//
+//    .. c:member:: CH_WRITE_ERROR
+//
+//       Error while writing to socket.
 //
 //    .. c:member:: CH_UNINIT
 //
@@ -114,6 +127,7 @@ typedef enum {
     CH_MORE           = 15,
     CH_BUSY           = 16,
     CH_EMPTY          = 17,
+    CH_WRITE_ERROR    = 18,
 } ch_error_t;
 
 #endif //ch_libchirp_error_h

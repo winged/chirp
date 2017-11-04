@@ -2,8 +2,7 @@
 // Writer Header
 // =============
 //
-// Chirp protocol writer
-// .. todo:: Document purpose
+// Chirp protocol writer. Everything about putting a message on the wire.
 //
 // .. code-block:: cpp
 //

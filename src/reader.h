@@ -2,7 +2,8 @@
 // Reader Header
 // =============
 //
-// .. todo:: Document purpose
+// Reader state machine and buffer pool. Everything about reading a message
+// from the wire.
 //
 // .. code-block:: cpp
 //

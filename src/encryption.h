@@ -2,7 +2,7 @@
 // Encryption header
 // =================
 //
-// .. todo:: Document purpose
+// Setting up and cleaning up TLS.
 //
 // .. code-block:: cpp
 

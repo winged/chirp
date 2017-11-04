@@ -1047,6 +1047,21 @@ ch_chirp_set_log_callback(ch_chirp_t* chirp, ch_log_cb_t log_cb)
 // .. c:function::
 CH_EXPORT
 void
+ch_chirp_set_public_port(ch_chirp_t* chirp, uint16_t port)
+//    :noindex:
+//
+//    see: :c:func:`ch_chirp_set_public_port`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_check_m(chirp);
+    chirp->_->public_port = port;
+}
+
+// .. c:function::
+CH_EXPORT
+void
 ch_chirp_set_recv_callback(ch_chirp_t* chirp, ch_recv_cb_t recv_cb)
 //    :noindex:
 //

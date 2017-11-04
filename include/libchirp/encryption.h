@@ -2,7 +2,8 @@
 // Encryption
 // ==========
 //
-// ..todo:: Document purpose
+// Interface for manual or fine-grained encryption setup: Only use if you know
+// what you are doing.
 //
 // .. code-block:: cpp
 

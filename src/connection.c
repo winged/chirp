@@ -356,7 +356,7 @@ _ch_cn_send_pending_cb(uv_write_t* req, int status)
             "Sending pending data failed. ", "ch_connection_t:%p",
             (void*) conn
         );
-        ch_cn_shutdown(conn, status);
+        ch_cn_shutdown(conn, CH_WRITE_ERROR);
         return;
     }
     if(conn->flags & CH_CN_SHUTTING_DOWN) {
@@ -453,8 +453,8 @@ _ch_cn_write_cb(uv_write_t* req, int status)
         );
         uv_write_cb cb = conn->write_callback;
         conn->write_callback = NULL;
-        cb(req, status);
-        ch_cn_shutdown(conn, status);
+        cb(req, CH_WRITE_ERROR);
+        ch_cn_shutdown(conn, CH_WRITE_ERROR);
         return;
     }
     /* Check if we can write data */
@@ -775,18 +775,9 @@ ch_cn_shutdown(
     conn->flags |= CH_CN_SHUTTING_DOWN;
     int tmp_err;
     ch_chirp_int_t* ichirp = chirp->_;
-    ch_protocol_t* protocol = &ichirp->protocol;
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    /* # TODO this should use ch_remote_t directly from function signature */
-    ch_remote_t search_remote;
-    ch_remote_t* remote;
-    ch_rm_init_from_conn(chirp, &search_remote, conn);
-    ch_rm_find(
-        protocol->remotes,
-        &search_remote,
-        &remote
-    );
+    ch_remote_t* remote = conn->remote;
     remote->conn = NULL;
     LC(
         chirp,

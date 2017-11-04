@@ -2,7 +2,7 @@
 // Chirp
 // =====
 //
-// .. todo:: Document purpose
+// Interface to chirp: Config, startup, closing and sending messages.
 //
 // .. code-block:: cpp
 //
@@ -378,6 +378,17 @@ ch_chirp_set_log_callback(ch_chirp_t* chirp, ch_log_cb_t log_cb);
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_log_cb_t   log: Callback to be called when logging messages.
+
+// .. c:function::
+CH_EXPORT
+void
+ch_chirp_set_public_port(ch_chirp_t* chirp, uint16_t port);
+//
+//    Set a different public port. Used if your are behind a firewall/NAT that
+//    will change public port from the actual port.
+//
+//    :param ch_chirp_t* chirp: Pointer to a chirp object.
+//    :param uint16_t port: New public port
 
 // .. c:function::
 CH_EXPORT

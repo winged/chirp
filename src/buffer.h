@@ -137,11 +137,6 @@ ch_bf_release(ch_buffer_pool_t* pool, int id);
 //    Set given handler buffer as unused in the buffer pool structure and
 //    (re-)add it to the list of free buffers.
 //
-//    .. todo:: Maybe use another name for this method as it does not seem to
-//              return something?
-//
-//    :param ch_buffer_pool_t* pool: The buffer pool structure containing the
-//                                   handler buffer
 //    :param int id: The id of the buffer that should be marked free
 //
 // .. code-block:: cpp

@@ -363,7 +363,7 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
             "Sending handshake failed. ", "ch_connection_t:%p",
             (void*) conn
         );
-        ch_cn_shutdown(conn, status);
+        ch_cn_shutdown(conn, CH_WRITE_ERROR);
         return;
     }
     /* Check if we already have a message (just after handshake) */
