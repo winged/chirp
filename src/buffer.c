@@ -74,7 +74,6 @@ ch_bf_init(
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;
     pool->handlers     = ch_alloc(pool_mem);
-    memset(pool->handlers, 0, pool_mem);
     if(!pool->handlers) {
         fprintf(
             stderr,
@@ -86,6 +85,7 @@ ch_bf_init(
         );
         return CH_ENOMEM;
     }
+    memset(pool->handlers, 0, pool_mem);
     pool->free_buffers = 0xFFFFFFFFU;
     pool->free_buffers <<= (32 - max_buffers);
     for(i = 0; i < max_buffers; ++i) {

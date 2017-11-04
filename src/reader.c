@@ -193,6 +193,10 @@ _ch_rd_handshake(
     ch_rm_init_from_conn(chirp, &search_remote, conn);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(*remote));
+        if(remote == NULL) {
+            ch_cn_shutdown(conn, CH_ENOMEM);
+            return;
+        }
         *remote = search_remote;
         int tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");

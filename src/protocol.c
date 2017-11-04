@@ -149,11 +149,6 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     }
 
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(sizeof(*conn));
-    LC(
-        chirp,
-        "Accepted connection. ", "ch_connection_t:%p",
-        (void*) conn
-    );
     if(!conn) {
         E(
             chirp,
@@ -162,6 +157,11 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         );
         return;
     }
+    LC(
+        chirp,
+        "Accepted connection. ", "ch_connection_t:%p",
+        (void*) conn
+    );
     memset(conn, 0, sizeof(*conn));
     conn->chirp = chirp;
     conn->client.data = conn;
@@ -197,9 +197,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
                 "Could not get remote address. ", "ch_connection_t:%p",
                 (void*) conn
             );
-            // TODO use shutdown
-            ch_free(conn);
-            uv_close((uv_handle_t*) client, NULL);
+            ch_cn_shutdown(conn, CH_FATAL);
             return;
         };
         if(addr.ss_family == AF_INET6)
@@ -214,10 +212,8 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         }
         ch_pr_conn_start(chirp, conn, client, 1);
     }
-    else {
-        // TODO free??
-        uv_close((uv_handle_t*) client, NULL);
-    }
+    else
+        ch_cn_shutdown(conn, CH_FATAL);
 }
 
 // .. c:function::
@@ -257,9 +253,7 @@ ch_pr_conn_start(
                 msg " connection (%d)",
                 tmp_err
             );
-            /* TODO this is so wrong */
-            ch_free(conn);
-            uv_close((uv_handle_t*) client, NULL);
+            ch_cn_shutdown(conn, tmp_err);
             return tmp_err;
         }
 #   enddef

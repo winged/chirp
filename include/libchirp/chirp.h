@@ -246,8 +246,7 @@ ch_chirp_init(
 //    :param ch_chirp_t* chirp: Out: Pointer to a chirp object.
 //    :param ch_config_t* config: Pointer to a chirp configration.
 //    :param uv_loop_t* loop: Reference to a libuv loop.
-//    :param ch_recv_cb_t recv_cb: Called when chirp receives a message,
-//                                 can be NULL.
+//    :param ch_recv_cb_t recv_cb: Called when chirp receives a message.
 //    :param ch_start_cb_t start_cb: Called when chirp is started, can be NULL.
 //    :param ch_done_cb_t done_cb: Called when chirp is finished, can be NULL.
 //    :param ch_log_cb_t log_cb: Callback to the logging facility, can be NULL.

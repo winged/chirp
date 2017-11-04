@@ -110,7 +110,8 @@ static
 void
 _ch_chirp_done(uv_async_t* handle);
 //
-//    Done callback calls the user supplied done callback.
+//    Done callback calls the user supplied done callback when chirp is
+//    finished.
 //
 
 // .. c:function::
@@ -882,6 +883,9 @@ ch_chirp_try_message_finish(
 #       ifndef NDEBUG
         {
             char id[CH_ID_SIZE * 2 + 1];
+            char* action = "Success";
+            if(status != CH_SUCCESS)
+                action = "Failure:";
             ch_bytes_to_hex(
                 msg->identity,
                 sizeof(msg->identity),
@@ -891,9 +895,10 @@ ch_chirp_try_message_finish(
             if(msg->type & CH_MSG_ACK) {
                 LC(
                     chirp,
-                    "Sent ACK message id: %s\n"
+                    "%s: sending ACK message id: %s\n"
                     "                            "
                     "serial: %u. ", "ch_message_t:%p",
+                    action,
                     id,
                     msg->serial,
                     (void*) msg
@@ -901,9 +906,10 @@ ch_chirp_try_message_finish(
             } else {
                 LC(
                     chirp,
-                    "Finished message id: %s\n"
+                    "%s: finishing message id: %s\n"
                     "                            "
                     "serial: %u. ", "ch_message_t:%p",
+                    action,
                     id,
                     msg->serial,
                     (void*) msg

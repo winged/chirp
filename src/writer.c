@@ -48,17 +48,6 @@ _ch_wr_check_write_error(
 // .. c:function::
 static
 void
-_ch_wr_close_failed_conn_cb(uv_handle_t* handle);
-//
-//    Called by libuv when failed connection is close.
-//
-//    :param uv_handle_t* handle: The libuv handle holding the
-//                                connection
-
-
-// .. c:function::
-static
-void
 _ch_wr_connect_cb(uv_connect_t* req, int status);
 //
 //    Called by libuv after trying to connect. Contains the connection status.
@@ -183,31 +172,6 @@ _ch_wr_check_write_error(
 }
 
 // .. c:function::
-static
-void _ch_wr_close_failed_conn_cb(uv_handle_t* handle)
-//    :noindex:
-//
-//    see: :c:func:`_ch_wr_close_failed_conn_cb`
-//
-// .. code-block:: cpp
-//
-{
-    ch_connection_t* conn = handle->data;
-    ch_chirp_t* chirp = conn->chirp;
-    ch_chirp_check_m(chirp);
-    A(chirp == conn->chirp, "Chirp on connection should match");
-    ch_message_t* msg = conn->connect_msg;
-    ch_free(conn);
-    msg->_flags &= ~CH_MSG_USED;
-    if(msg->_send_cb != NULL) {
-        /* The user may free the message in the cb */
-        ch_send_cb_t cb = msg->_send_cb;
-        msg->_send_cb = NULL;
-        cb(chirp, msg, CH_CANNOT_CONNECT, -1);
-    }
-}
-
-// .. c:function::
 void
 _ch_wr_connect_cb(uv_connect_t* req, int status)
 //    :noindex:
@@ -244,8 +208,7 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
             status,
             (void*) conn
         );
-        // TODO use shutdown
-        uv_close((uv_handle_t*) &conn->client, _ch_wr_close_failed_conn_cb);
+        ch_cn_shutdown(conn, CH_CANNOT_CONNECT);
     }
 }
 
@@ -581,6 +544,11 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_rm_init_from_msg(chirp, &search_remote, msg);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(*remote));
+        if(remote == NULL) {
+            if(send_cb != NULL)
+                send_cb(chirp, msg, CH_ENOMEM, -1);
+            return CH_ENOMEM;
+        }
         *remote = search_remote;
         tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
@@ -596,7 +564,6 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     conn = remote->conn;
     if(conn == NULL) {
         conn = ch_alloc(sizeof(*conn));
-        remote->conn = conn;
         if(!conn) {
             E(
                 chirp,
@@ -608,6 +575,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 send_cb(chirp, msg, CH_ENOMEM, -1);
             return CH_ENOMEM;
         }
+        remote->conn = conn;
         memset(conn, 0, sizeof(*conn));
         conn->chirp        = chirp;
         conn->port         = msg->port;

@@ -139,7 +139,6 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
         size = ch_min_size_t(size, CH_ENC_BUFFER_SIZE);
         conn->buffer_rtls  = ch_alloc(size);
     }
-    conn->buffer_rtls_size = size;
     int alloc_nok = 0;
     if(conn->flags & CH_CN_ENCRYPTED)
         alloc_nok = !(
@@ -158,6 +157,7 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
         );
         return CH_ENOMEM;
     }
+    conn->buffer_rtls_size = size;
     conn->buffer_uv_uv = uv_buf_init(
         conn->buffer_uv,
         conn->buffer_size
