@@ -61,6 +61,7 @@ void
 _ch_tst_send_message(ch_chirp_t* chirp);
 
 // Definitions
+// ===========
 //
 // .. code-block:: cpp
 //

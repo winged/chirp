@@ -482,7 +482,7 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
     V(
         chirp,
         conf->PORT > 1024,
-        "Config: port must be > 1042. (%d)",
+        "Config: port must be > 1024. (%d)",
         conf->PORT
     );
     V(
