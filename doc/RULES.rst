@@ -122,55 +122,6 @@ RULES
 * Provide wheels
 * Provide distro packages
 
-Mocking
--------
-
-I tried to do the mocking with the least fuss and the least chance of screw-ups.
-
-1. We only compile the mock function is we are going to mock:
-   mock_$(function_name) enables the mock function.
-
-2. The mock function is called $(function_name)_mock.
-
-3. We enable the mock for a particular code block, the define used to activate a
-   mock is $(code_block)_mock_$(function_name)
-
-
-.. code-block:: cpp
-
-   #include <stdio.h>
-
-   void ch_wr_write(void)
-   {
-       printf("write\n");
-   }
-
-   #define mock_ch_wr_write
-       void ch_wr_write_mock(void)
-       {
-           printf("mock\n");
-       }
-   #endif
-
-   #ifdef main_mock_ch_wr_write
-   #   define ch_wr_write ch_wr_write_mock
-   #endif
-
-   int
-   main(void)
-   {
-       ch_wr_write();
-       return 0;
-   }
-
-   #ifdef main_mock_ch_wr_write
-   #   undef ch_wr_write
-   #endif
-
-To enable that mock chirp is compiled with *CFLAGS=-Dmock_ch_wr_write
--Dmain_mock_ch_wr_write*. There will be a compilation stage when mocks have to
-change.
-
 Performance
 ===========
 
