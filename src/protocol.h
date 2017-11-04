@@ -65,6 +65,7 @@ struct ch_protocol_s {
     uv_tcp_t            serverv6;
     ch_remote_t*        remotes;
     ch_connection_t*    old_connections;
+    ch_connection_t*    handshake_conns;
     ch_chirp_t*         chirp;
 };
 

@@ -84,6 +84,12 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
     }
     /* Effectively we have cleared the list */
     protocol->old_connections = NULL;
+    rb_iter_decl_cx_m(ch_cn, hs_iter, hs_elem);
+    rb_for_m(ch_cn, protocol->handshake_conns, hs_iter, hs_elem) {
+        ch_cn_shutdown(hs_elem, CH_SHUTDOWN);
+    }
+    /* Effectively we have cleared the list */
+    protocol->handshake_conns = NULL;
 }
 
 // .. c:function::
@@ -139,6 +145,7 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_chirp_t* chirp = server->data;
     ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp  = chirp->_;
+    ch_protocol_t* protocol = &ichirp->protocol;
     if (status < 0) {
         L(
             chirp,
@@ -163,11 +170,13 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
         (void*) conn
     );
     memset(conn, 0, sizeof(*conn));
+    ch_cn_node_init(conn);
+    ch_cn_insert(&protocol->handshake_conns, conn);
     conn->chirp = chirp;
     conn->client.data = conn;
     uv_tcp_t* client = &conn->client;
     uv_tcp_init(server->loop, client);
-    conn->flags |= CH_CN_INIT_CLIENT;
+    conn->flags |= CH_CN_INIT_CLIENT | CH_CN_INCOMING;
 
 #   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version, in_version)
     {
@@ -228,6 +237,7 @@ ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
 {
     memset(protocol, 0, sizeof(*protocol));
     protocol->chirp = chirp;
+    ch_cn_tree_init(&protocol->handshake_conns);
 }
 
 // .. c:function::

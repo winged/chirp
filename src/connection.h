@@ -144,6 +144,7 @@
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include "qs.h"
+#include "rbtree.h"
 
 // Declarations
 // ============
@@ -218,11 +219,12 @@ typedef enum {
     CH_CN_BUF_UV_USED           = 1 <<  7,
     CH_CN_DO_CLOSE_ACCOUTING    = 1 <<  8,
     CH_CN_STOPPED               = 1 <<  9,
-    CH_CN_INIT_CLIENT           = 1 << 10,
-    CH_CN_INIT_READER_WRITER    = 1 << 11,
-    CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 12,
-    CH_CN_INIT_ENCRYPTION       = 1 << 13,
-    CH_CN_INIT_BUFFERS          = 1 << 14,
+    CH_CN_INCOMING              = 1 << 10,
+    CH_CN_INIT_CLIENT           = 1 << 11,
+    CH_CN_INIT_READER_WRITER    = 1 << 12,
+    CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 13,
+    CH_CN_INIT_ENCRYPTION       = 1 << 14,
+    CH_CN_INIT_BUFFERS          = 1 << 15,
     CH_CN_INIT                  = (
         CH_CN_INIT_CLIENT |
         CH_CN_INIT_READER_WRITER |
@@ -355,7 +357,7 @@ typedef enum {
 //       Tasks may be calling closing-callbacks for example, on a request handle
 //       or the shutdown timer handle. This acts as semaphore.
 //
-//    .. c:member:: uint8_t flags
+//    .. c:member:: uint32_t flags
 //
 //       Flags indicating the state of a connection, e.g. shutting down, write
 //       pending, TLS handshake, whether the connection is encrypted or not and
@@ -402,6 +404,21 @@ typedef enum {
 //
 //       Pointer to the next connection in a data-structure.
 //
+//    .. c:member:: char color
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* left
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* right
+//
+//       rbtree member
+//
+//    .. c:member:: ch_remote_t* parent
+//
+//       rbtree member
 //
 // .. code-block:: cpp
 //
@@ -432,7 +449,7 @@ struct ch_connection_s {
     uv_write_t       write_req;
     uv_timer_t       shutdown_timeout;
     int8_t           shutdown_tasks;
-    uint16_t         flags;
+    uint32_t         flags;
     SSL*             ssl;
     BIO*             bio_ssl;
     BIO*             bio_app;
@@ -441,6 +458,10 @@ struct ch_connection_s {
     ch_reader_t      reader;
     ch_writer_t      writer;
     ch_connection_t* next;
+    char             color;
+    ch_connection_t* parent;
+    ch_connection_t* left;
+    ch_connection_t* right;
 };
 
 // TODO: Timestamp has to be in ch_connection_t because of old connections
@@ -451,6 +472,9 @@ struct ch_connection_s {
 // .. code-block:: cpp
 
 qs_stack_bind_decl_m(ch_cn_old, ch_connection_t)
+
+#define ch_cn_cmp_m(x, y) rb_pointer_cmp_m(x, y)
+rb_bind_decl_m(ch_cn, ch_connection_t)
 
 // .. c:function::
 void

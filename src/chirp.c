@@ -998,9 +998,9 @@ ch_chirp_run(
     tmp_err = ch_run(&loop);
     *chirp_out = NULL;
     if(tmp_err != 0) {
-        EC(
-            (&chirp),
-            "uv_run returned with error: %d. ", "uv_loop_t:%p",
+        fprintf(
+            stderr,
+            "uv_run returned with error: %d. uv_loop_t:%p",
             tmp_err,
             (void*) &loop
         );

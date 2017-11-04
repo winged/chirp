@@ -27,6 +27,8 @@
 //
 qs_stack_bind_impl_m(ch_cn_old, ch_connection_t)
 
+rb_bind_impl_m(ch_cn, ch_connection_t)
+
 // Declarations
 // ============
 
@@ -778,7 +780,10 @@ ch_cn_shutdown(
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
     ch_remote_t* remote = conn->remote;
-    remote->conn = NULL;
+    /* In early handshake remote can empty, since we allocate resources after
+     * successful handshake. */
+    if(remote)
+        remote->conn = NULL;
     LC(
         chirp,
         "Shutdown connection. ", "ch_connection_t:%p",

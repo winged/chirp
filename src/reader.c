@@ -168,11 +168,19 @@ _ch_rd_handshake(
 {
     ch_remote_t search_remote;
     ch_connection_t* old_conn = NULL;
+    ch_connection_t* tmp_conn = NULL;
     ch_chirp_t* chirp         = conn->chirp;
     ch_remote_t* remote       = NULL;
     ch_chirp_int_t* ichirp    = chirp->_;
     ch_protocol_t* protocol   = &ichirp->protocol;
     ch_sr_handshake_t hs_tmp;
+    if(conn->flags & CH_CN_INCOMING) {
+        A(
+            ch_cn_delete(&protocol->handshake_conns, conn, &tmp_conn) == 0,
+            "Handshake should be tracked"
+        );
+        assert(conn == tmp_conn);
+    }
     if(read < CH_SR_HANDSHAKE_SIZE) {
         EC(
             chirp,
