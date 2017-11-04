@@ -29,10 +29,7 @@ _ch_wr_check_write_error(
 //
 //    Check if the given status is erroneous (that is, there was an error
 //    during writing) and cleanup if necessary. Cleaning up means shutting down
-//    the given connection instance, stopping the timer for the send-timeout,
-//    unlocking the writer mutex and sending a protocol error
-//    :c:member:`ch_error_t.CH_PROTOCOL_ERROR` callback over the connections
-//    load.
+//    the given connection instance, stopping the timer for the send-timeout.
 //
 //    :param ch_chirp_t* chirp:      Pointer to a chirp instance.
 //    :param ch_writer_t* writer:    Pointer to a writer instance.
@@ -55,6 +52,21 @@ _ch_wr_connect_cb(uv_connect_t* req, int status);
 //    :param uv_connect_t* req: Connect request, containing the connection.
 //    :param int status:        Status of the connection.
 //
+
+// .. c:function::
+static
+void
+_ch_wr_connect_timeout_cb(uv_timer_t* handle);
+//
+//    Callback which is called after the connection reaches its timeout for
+//    connecting. The timeout is set by the chirp configuration and is 5 seconds
+//    by default. When this callback is called, the connection is being shut
+//    :c:member:`ch_error_t.CH_TIMEOUT` is being sent over the connections
+//    load.
+//
+//    :param uv_timer_t* handle: Pointer to a timer handle to schedule
+//                               callback.
+
 
 // .. c:function::
 static
@@ -98,9 +110,7 @@ _ch_wr_write_finish(
 //    messages is disable. Does nothing if not.
 //
 //    If acknowledging is disabled (by configuration), the writers send-timeout
-//    timer is being stopped, the writers mutex is unlocked and a protocol
-//    error :c:member:`ch_error_t.CH_PROTOCOL_ERROR` callback over the
-//    connections load is being sent.
+//    timer is being stopped.
 //
 //    :param ch_chirp_t* chirp:      Pointer to a chirp instance.
 //    :param ch_writer_t* writer:    Pointer to a writer instance.
@@ -130,9 +140,7 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle);
 //    Callback which is called after the writer reaches its timeout for
 //    sending. The timeout is set by the chirp configuration and is 5 seconds
 //    by default. When this callback is called, the connection is being shut
-//    down, the writers mutex is being unlocked and a timeout error
-//    :c:member:`ch_error_t.CH_TIMEOUT` is being sent over the connections
-//    load.
+//    down.
 //
 //    :param uv_timer_t* handle: Pointer to a timer handle to schedule
 //                               callback.
@@ -210,6 +218,29 @@ _ch_wr_connect_cb(uv_connect_t* req, int status)
         );
         ch_cn_shutdown(conn, CH_CANNOT_CONNECT);
     }
+}
+
+// .. c:function::
+static
+void
+_ch_wr_connect_timeout_cb(uv_timer_t* handle)
+//    :noindex:
+//
+//    see: :c:func:`_ch_wr_connect_timeout_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = handle->data;
+    ch_chirp_t* chirp = conn->chirp;
+    ch_chirp_check_m(chirp);
+    LC(
+        chirp,
+        "Connect timed out. ", "ch_connection_t:%p",
+        (void*) conn
+    );
+    ch_cn_shutdown(conn, CH_TIMEOUT);
+    uv_timer_stop(&conn->connect_timeout);
 }
 
 // .. c:function::
@@ -562,6 +593,21 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         ch_msg_enqueue(&remote->no_rack_msg_queue, msg);
 
     conn = remote->conn;
+#   begindef ch_wr_send_check_error_m(err_msg)
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                err_msg, ": %d. ",
+                "ch_connection_t:%p",
+                tmp_err,
+                (void*) conn
+            );
+            msg->_flags &= ~CH_MSG_USED;
+            if(send_cb != NULL)
+                send_cb(chirp, msg, CH_FATAL, -1);
+            return CH_FATAL;
+        }
+#   enddef
     if(conn == NULL) {
         conn = ch_alloc(sizeof(*conn));
         if(!conn) {
@@ -584,6 +630,18 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         conn->remote       = remote;
         conn->connect_msg  = msg;
         conn->client.data  = conn;
+        tmp_err = uv_timer_init(ichirp->loop, &conn->connect_timeout);
+        ch_wr_send_check_error_m("Initializing connect timeout failed")
+        conn->connect_timeout.data = conn;
+        conn->flags |= CH_CN_INIT_CONNECT_TIMEOUT;
+        int tmp_err = uv_timer_start(
+            &conn->connect_timeout,
+            _ch_wr_connect_timeout_cb,
+            ichirp->config.TIMEOUT * 1000,
+            0
+        );
+        ch_wr_send_check_error_m("Starting connect timeout failed")
+
         ch_text_address_t taddr;
         ch_msg_get_address(msg, &taddr);
         if(!(

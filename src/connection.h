@@ -198,6 +198,10 @@
 //
 //       The shutdown timeout has been initialized.
 //
+//    .. c:member:: CH_CN_INIT_CONNECT_TIMEOUT
+//
+//       The connect timeout has been initialized.
+//
 //    .. c:member:: CH_CN_INIT_ENCRYPTION
 //
 //       The encryption has been initialized.
@@ -223,8 +227,9 @@ typedef enum {
     CH_CN_INIT_CLIENT           = 1 << 11,
     CH_CN_INIT_READER_WRITER    = 1 << 12,
     CH_CN_INIT_SHUTDOWN_TIMEOUT = 1 << 13,
-    CH_CN_INIT_ENCRYPTION       = 1 << 14,
-    CH_CN_INIT_BUFFERS          = 1 << 15,
+    CH_CN_INIT_CONNECT_TIMEOUT  = 1 << 14,
+    CH_CN_INIT_ENCRYPTION       = 1 << 15,
+    CH_CN_INIT_BUFFERS          = 1 << 16,
     CH_CN_INIT                  = (
         CH_CN_INIT_CLIENT |
         CH_CN_INIT_READER_WRITER |
@@ -344,12 +349,14 @@ typedef enum {
 //
 //       Write request objet, which is used to write data on a handle.
 //
+//    .. c:member:: uv_timer_t connect_timeout
+//
+//       Connect timeout. Used to stop connecting if there is no answer or
+//       handshake get stalled.
+//
 //    .. c:member:: uv_timer_t shutdown_timeout
 //
-//       Timer handle used when shutting down a connection. This is used to set
-//       timer which will fire a set callback on the next event loop iteration.
-//       The time is specified in milliseconds and provided by
-//       :c:type:`ch_config_t`.
+//       Shutdown timeout. Used if shutdown doesn't finished.
 //
 //    .. c:member:: int8_t shutdown_tasks
 //
@@ -447,6 +454,7 @@ struct ch_connection_s {
     ch_remote_t*     remote;
     uv_shutdown_t    shutdown_req;
     uv_write_t       write_req;
+    uv_timer_t       connect_timeout;
     uv_timer_t       shutdown_timeout;
     int8_t           shutdown_tasks;
     uint32_t         flags;

@@ -236,6 +236,11 @@ _ch_cn_closing(
             conn->flags &= ~CH_CN_INIT_SHUTDOWN_TIMEOUT;
             conn->shutdown_tasks += 1;
         }
+        if(conn->flags & CH_CN_INIT_CONNECT_TIMEOUT) {
+            uv_close((uv_handle_t*) &conn->connect_timeout, ch_cn_close_cb);
+            conn->flags &= ~CH_CN_INIT_CONNECT_TIMEOUT;
+            conn->shutdown_tasks += 1;
+        }
         LC(
             chirp,
             "Closing connection after shutdown. ",
@@ -590,18 +595,21 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     if(tmp_err != CH_SUCCESS)
         return tmp_err;
     conn->flags |= CH_CN_INIT_READER_WRITER;
+
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
     if(tmp_err != CH_SUCCESS) {
         EC(
             chirp,
-            "Initializing shutdown timeout failed: %d. ", "ch_connection_t:%p",
+            "Initializing shutdown timeout failed: %d. ",
+            "ch_connection_t:%p",
             tmp_err,
             (void*) conn
         );
         return tmp_err;
     }
-    conn->flags |= CH_CN_INIT_SHUTDOWN_TIMEOUT;
     conn->shutdown_timeout.data = conn;
+    conn->flags |= CH_CN_INIT_SHUTDOWN_TIMEOUT;
+
     if(conn->flags & CH_CN_ENCRYPTED)
         tmp_err = ch_cn_init_enc(chirp, conn);
     if(tmp_err != CH_SUCCESS)
