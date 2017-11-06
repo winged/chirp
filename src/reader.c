@@ -481,6 +481,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         &reader->pool,
                         &reader->last_handler
                     );
+                    A(reader->handler, "Acquired more handlers than available");
                 }
                 handler = reader->handler;
                 msg     = &handler->msg;
