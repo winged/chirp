@@ -2,8 +2,7 @@
 // Protocol Header
 // ===============
 //
-// Implements the chirp protocol in its children ch_reader_t/ch_writer_t, it
-// also handles low-level reading (low-level writing is in connection.h/c)
+// Handles connections (global) and low-level reading per connection.
 //
 // .. code-block:: cpp
 
@@ -111,13 +110,12 @@ ch_pr_decrypt_read(ch_connection_t* conn, int* stop);
 //    :param int *stop:             (Out) Stop the reading process.
 
 // .. c:function::
-int
-ch_pr_resume(ch_connection_t* conn);
+void
+ch_pr_restart(ch_remote_t* remote);
 //
-//    Resume partial read when the connection was stopped because the last
-//    buffer was used. Returns 1 if it ok to restart the reader.
+//    Try to restart the current stream on this connection.
 //
-//    :param ch_connection_t* conn: Pointer to a connection handle.
+//    :param ch_remote_t* conn: Remote to restart.
 
 // .. c:function::
 ch_error_t
@@ -129,21 +127,6 @@ ch_pr_start(ch_protocol_t* protocol);
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
-
-// .. c:function::
-void
-ch_pr_read_data_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
-//
-//    Callback called from libuv when data was read on a stream.
-//    Reads nread bytes on either an encrypted or an unencrypted connection
-//    coming from the given stream handle.
-//
-//    :param uv_stream_t* stream: Pointer to the stream that data was read on.
-//    :param ssize_t nread: Number of bytes that were read on the stream.
-//    :param uv_buf_t* buf: Pointer to a libuv (data-) buffer. When nread < 0,
-//                          the buf parameter might not point to a valid
-//                          buffer; in that case buf.len and buf.base are both
-//                          set to 0.
 
 // .. c:function::
 ch_error_t

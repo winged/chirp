@@ -85,6 +85,23 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status);
 
 // .. c:function::
 static
+void
+_ch_pr_read_data_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
+//
+//    Callback called from libuv when data was read on a stream.
+//    Reads nread bytes on either an encrypted or an unencrypted connection
+//    coming from the given stream handle.
+//
+//    :param uv_stream_t* stream: Pointer to the stream that data was read on.
+//    :param ssize_t nread: Number of bytes that were read on the stream.
+//    :param uv_buf_t* buf: Pointer to a libuv (data-) buffer. When nread < 0,
+//                          the buf parameter might not point to a valid
+//                          buffer; in that case buf.len and buf.base are both
+//                          set to 0.
+
+
+// .. c:function::
+static
 int
 _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume);
 //
@@ -93,6 +110,16 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume);
 //
 //    :param ch_connection_t* conn: Pointer to a connection handle.
 //    :param ch_resume_state_t* resume: Pointer to a resume state.
+
+// .. c:function::
+static
+int
+_ch_pr_resume(ch_connection_t* conn);
+//
+//    Resume partial read when the connection was stopped because the last
+//    buffer was used. Returns 1 if it ok to restart the reader.
+//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
 
 // Definitions
 // ===========
@@ -373,7 +400,7 @@ ch_pr_conn_start(
     uv_read_start(
         (uv_stream_t*) client,
         ch_cn_read_alloc_cb,
-        ch_pr_read_data_cb
+        _ch_pr_read_data_cb
     );
     if(conn->flags & CH_CN_ENCRYPTED) {
         if(accept)
@@ -493,8 +520,33 @@ ch_pr_decrypt_read(ch_connection_t* conn, int *stop)
 }
 
 // .. c:function::
+void
+ch_pr_restart(ch_remote_t* remote)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_resume`
+//
+// .. code-block:: cpp
+//
+{
+    ch_connection_t* conn = remote->conn;
+    if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
+        LC(conn->chirp, "Resume reading", "ch_connection_t:%p", conn);
+        if(_ch_pr_resume(conn))
+            conn->flags &= ~CH_CN_STOPPED;
+            LC(conn->chirp, "Restart stream", "ch_connection_t:%p", conn);
+            uv_read_start(
+                (uv_stream_t*) &conn->client,
+                ch_cn_read_alloc_cb,
+                _ch_pr_read_data_cb
+            );
+    }
+}
+
+// .. c:function::
+static
 int
-ch_pr_resume(ch_connection_t* conn)
+_ch_pr_resume(ch_connection_t* conn)
 //    :noindex:
 //
 //    see: :c:func:`ch_pr_resume`
@@ -522,8 +574,9 @@ ch_pr_resume(ch_connection_t* conn)
 }
 
 // .. c:function::
+static
 void
-ch_pr_read_data_cb(
+_ch_pr_read_data_cb(
         uv_stream_t* stream,
         ssize_t nread,
         const uv_buf_t* buf
@@ -573,7 +626,12 @@ ch_pr_read_data_cb(
         bytes_handled = ch_rd_read(conn, buf->base, nread, &stop);
     }
     if(stop)
-        _ch_pr_update_resume(&conn->read_resume, buf->base, nread, bytes_handled);
+        _ch_pr_update_resume(
+            &conn->read_resume,
+            buf->base,
+            nread,
+            bytes_handled
+        );
 }
 
 // .. c:function::

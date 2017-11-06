@@ -591,7 +591,7 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
                 reader->last_handler == 1
         ) {
             conn->flags |= CH_CN_STOPPED;
-            LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
+            LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
             uv_read_stop((uv_stream_t*) &conn->client);
             *stop = 1;
             return bytes_handled;
@@ -628,32 +628,13 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
         ch_free(msg->header);
     ch_bf_release(pool, msg->_handler);
     ch_remote_t search_remote;
-    ch_remote_t* remote = NULL;
+    ch_remote_t* remote       = NULL;
     search_remote.ip_protocol = msg->ip_protocol;
     search_remote.port        = msg->port;
-    memcpy(
-        &search_remote.address,
-        &msg->address,
-        CH_IP_ADDR_SIZE
-    );
-    ch_rm_find(
-        pool->protocol->remotes,
-        &search_remote,
-        &remote
-    );
+    memcpy(&search_remote.address, &msg->address, CH_IP_ADDR_SIZE);
+    ch_rm_find(pool->protocol->remotes, &search_remote, &remote);
     if(remote != NULL) {
-        ch_connection_t* conn = remote->conn;
-        if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
-            LC(conn->chirp, "Continue reading", "ch_connection_t:%p", conn);
-            if(ch_pr_resume(conn))
-                conn->flags &= ~CH_CN_STOPPED;
-                LC(conn->chirp, "Restart reading", "ch_connection_t:%p", conn);
-                uv_read_start(
-                    (uv_stream_t*) &conn->client,
-                    ch_cn_read_alloc_cb,
-                    ch_pr_read_data_cb
-                );
-        }
+        ch_pr_restart(remote);
     }
 }
 
