@@ -287,7 +287,7 @@ _ch_rd_handle_msg(
 
     /* If this was the last handler, we need to stop reading, or next
      * CH_RD_WAIT will have no buffer. */
-    if(reader->last_handler) {
+    if(reader->last_handler && !(conn->flags & CH_CN_STOPPED)) {
         conn->flags |= CH_CN_STOPPED;
         LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
         uv_read_stop((uv_stream_t*) &conn->client);
