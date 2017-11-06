@@ -285,13 +285,6 @@ _ch_rd_handle_msg(
     }
 #   endif
 
-    /* If this was the last handler, we need to stop reading, or next
-     * CH_RD_WAIT will have no buffer. */
-    if(reader->last_handler && !(conn->flags & CH_CN_STOPPED)) {
-        conn->flags |= CH_CN_STOPPED;
-        LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
-        uv_read_stop((uv_stream_t*) &conn->client);
-    }
     reader->state = CH_RD_WAIT;
     reader->handler = NULL;
 
@@ -375,9 +368,14 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
         ch_cn_shutdown(conn, CH_WRITE_ERROR);
         return;
     }
-    /* Check if we already have a message (just after handshake) */
-    if(conn->flags & CH_CN_ENCRYPTED)
-        ch_pr_read(conn);
+    /* Check if we already have a message (just after handshake)
+     * this is here so we have no overlapping ch_cn_write. If the read causes a
+     * ack message to be sent and the write of the handshake is not finished,
+     * chirp would assert or be in undefined state. */
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        int stop;
+        ch_pr_decrypt_read(conn, &stop);
+    }
 }
 
 // .. c:function::
@@ -412,8 +410,8 @@ ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp)
 }
 
 // .. c:function::
-void
-ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
+int
+ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_read`
@@ -421,9 +419,9 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
 // .. code-block:: cpp
 //
 {
+    *stop = 0;
     ch_message_t* msg;
     ch_bf_handler_t* handler;
-    ch_buf* buf = buffer; /* Don't do pointer arithmetics on void* */
 
     /* Bytes handled is used when multiple writes (of the remote) come in a
      * single read and the reader switches between various states as for
@@ -505,7 +503,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                     );
                     reader->bytes_read += to_read;
                     bytes_handled += to_read;
-                    return;
+                    return bytes_handled;
                 }
                 ch_sr_buf_to_msg(reader->net_msg, msg);
                 if((
@@ -519,7 +517,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         (void*) conn
                     );
                     ch_cn_shutdown(conn, CH_ENOMEM);
-                    return;
+                    return -1;
                 }
                 msg->ip_protocol   = conn->ip_protocol;
                 msg->port          = conn->port;
@@ -554,7 +552,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         CH_MSG_FREE_HEADER,
                         &bytes_handled
                 ) != CH_SUCCESS) {
-                    return;
+                    return -1; /* Shutdown */
                 }
                 /* Direct jump to next read state */
                 if(msg->data_len > 0)
@@ -578,7 +576,7 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                         CH_MSG_FREE_DATA,
                         &bytes_handled
                 ) != CH_SUCCESS) {
-                    return;
+                    return -1; /* Shutdown */
                 }
                 _ch_rd_handle_msg(conn, reader, msg);
                 break;
@@ -586,7 +584,20 @@ ch_rd_read(ch_connection_t* conn, void* buffer, size_t bytes_read)
                 A(0, "Unknown reader state");
                 break;
         }
+        /* We are out of handlers, inform upper layer to stop */
+        if(
+                reader->handler      == NULL &&
+                reader->state        == CH_RD_WAIT &&
+                reader->last_handler == 1
+        ) {
+            conn->flags |= CH_CN_STOPPED;
+            LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
+            uv_read_stop((uv_stream_t*) &conn->client);
+            *stop = 1;
+            return bytes_handled;
+        }
     } while(bytes_handled < bytes_read);
+    return bytes_handled;
 }
 
 CH_EXPORT
@@ -633,13 +644,15 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
     if(remote != NULL) {
         ch_connection_t* conn = remote->conn;
         if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
-            conn->flags &= ~CH_CN_STOPPED;
-            LC(conn->chirp, "Restart reading", "ch_connection_t:%p", conn);
-            uv_read_start(
-                (uv_stream_t*) &conn->client,
-                ch_cn_read_alloc_cb,
-                ch_pr_read_data_cb
-            );
+            LC(conn->chirp, "Continue reading", "ch_connection_t:%p", conn);
+            if(ch_pr_resume(conn))
+                conn->flags &= ~CH_CN_STOPPED;
+                LC(conn->chirp, "Restart reading", "ch_connection_t:%p", conn);
+                uv_read_start(
+                    (uv_stream_t*) &conn->client,
+                    ch_cn_read_alloc_cb,
+                    ch_pr_read_data_cb
+                );
         }
     }
 }

@@ -27,11 +27,40 @@
 // .. c:function::
 static
 void
+_ch_pr_update_resume(
+        ch_resume_state_t* resume,
+        ch_buf* buf,
+        int nread,
+        int bytes_handled
+);
+//
+//    Update the resume state.
+//
+//    :param ch_resume_state_t* resume: Pointer to resume state.
+//    :param ch_buf* buf: Pointer to buffer being checked.
+//    :param int nread: Total bytes reader
+//    :param int bytes_handled: Bytes actually handled
+
+// .. c:function::
+static
+void
 _ch_pr_close_free_connections(ch_chirp_t* chirp);
 //
 //    Close and free all remaining connections.
 //
 //    :param ch_chirpt_t* chirp: Chrip object
+
+// .. c:function::
+static
+int
+_ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t read, int* stop);
+//
+//    Feeds data into the SSL BIO.
+//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
+//    :param ch_buf* buf:           The buffer containing ``read`` bytes read.
+//    :param size_t read:           The number of bytes read.
+//    :param int *stop:             (Out) Stop the reading process.
 
 // .. c:function::
 static
@@ -54,8 +83,45 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status);
 //                                communication channel) of the server,
 //                                containig a chirp object.
 
+// .. c:function::
+static
+int
+_ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume);
+//
+//    Resumes the ch_rd_read based on a given resume state. If the connection
+//    is not encrypted we use conn->read_resume, else conn->tls_resume.
+//
+//    :param ch_connection_t* conn: Pointer to a connection handle.
+//    :param ch_resume_state_t* resume: Pointer to a resume state.
+
 // Definitions
 // ===========
+
+// .. c:function::
+static
+void
+_ch_pr_update_resume(
+        ch_resume_state_t* resume,
+        ch_buf* buf,
+        int nread,
+        int bytes_handled
+)
+//    :noindex:
+//
+//    see: :c:func:`_ch_pr_update_resume`
+//
+// .. code-block:: cpp
+//
+{
+    if(bytes_handled != -1 && bytes_handled != nread) {
+        A(
+            resume->rest_of_buffer == NULL || resume->bytes_to_read != 0,
+            "Last partial read not completed"
+        );
+        resume->rest_of_buffer = buf + bytes_handled;
+        resume->bytes_to_read = nread - bytes_handled;
+    }
+}
 
 // .. c:function::
 static
@@ -226,6 +292,32 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
 }
 
 // .. c:function::
+static
+int
+_ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
+//    :noindex:
+//
+//    see: :c:func:`_ch_pr_read_resume`
+//
+// .. code-block:: cpp
+//
+{
+    int bytes_handled;
+    ch_buf* buf = resume->rest_of_buffer;
+    int nread = resume->bytes_to_read;
+    resume->rest_of_buffer = NULL;
+    resume->bytes_to_read = 0;
+    if(buf) {
+        int stop;
+        bytes_handled = ch_rd_read(conn, buf, nread, &stop);
+        if(stop)
+            _ch_pr_update_resume(resume, buf, nread, bytes_handled);
+        return !stop;
+    }
+    return 1;
+}
+
+// .. c:function::
 void
 ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol)
 //    :noindex:
@@ -291,24 +383,71 @@ ch_pr_conn_start(
             _ch_pr_do_handshake(conn);
         }
         conn->flags |= CH_CN_TLS_HANDSHAKE;
-    } else
-        ch_rd_read(conn, NULL, 0); /* Start reader */
+    } else {
+        int stop;
+        ch_rd_read(conn, NULL, 0, &stop); /* Start reader */
+    }
     return CH_SUCCESS;
 }
 
 // .. c:function::
-void
-ch_pr_read(ch_connection_t* conn)
+static
+int
+_ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t nread, int* stop)
 //    :noindex:
 //
-//    see: :c:func:`ch_pr_read`
+//    see: :c:func:`ch_pr_decrypt_feed`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp = conn->chirp;
+    size_t bytes_handled = 0;
+    *stop = 0;
+    do {
+        int tmp_err;
+        tmp_err = BIO_write(
+            conn->bio_app,
+            buf + bytes_handled,
+            nread - bytes_handled
+        );
+        if(tmp_err < 1) {
+            if(!(conn->flags & CH_CN_STOPPED)) {
+                EC(
+                    chirp,
+                    "SSL error writing to BIO, shutting down connection. ",
+                    "ch_connection_t:%p",
+                    (void*) conn
+                );
+                ch_cn_shutdown(conn, CH_TLS_ERROR);
+                return -1;
+            }
+        } else
+            bytes_handled += tmp_err;
+        if(conn->flags & CH_CN_TLS_HANDSHAKE)
+            _ch_pr_do_handshake(conn);
+        else {
+            ch_pr_decrypt_read(conn, stop);
+            if(*stop)
+                return bytes_handled;
+        }
+    } while(bytes_handled < nread);
+    return bytes_handled;
+}
+
+// .. c:function::
+void
+ch_pr_decrypt_read(ch_connection_t* conn, int *stop)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_decrypt_read`
 //
 // .. code-block:: cpp
 //
 {
     ch_chirp_t* chirp = conn->chirp;
     int tmp_err;
-    // Handshake done, normal operation
+    *stop = 0;
     while((tmp_err = SSL_read(
             conn->ssl,
             conn->buffer_rtls,
@@ -320,7 +459,16 @@ ch_pr_read(ch_connection_t* conn)
             tmp_err,
             (void*) conn
         );
-        ch_rd_read(conn, conn->buffer_rtls, tmp_err);
+        int bytes_handled = ch_rd_read(conn, conn->buffer_rtls, tmp_err, stop);
+        if(*stop) {
+            _ch_pr_update_resume(
+                    &conn->tls_resume,
+                    conn->buffer_rtls,
+                    tmp_err,
+                    bytes_handled
+            );
+            return;
+        }
     }
     tmp_err = SSL_get_error(conn->ssl, tmp_err);
     if(tmp_err != SSL_ERROR_WANT_READ) {
@@ -345,6 +493,35 @@ ch_pr_read(ch_connection_t* conn)
 }
 
 // .. c:function::
+int
+ch_pr_resume(ch_connection_t* conn)
+//    :noindex:
+//
+//    see: :c:func:`ch_pr_resume`
+//
+// .. code-block:: cpp
+//
+{
+    if(conn->flags & CH_CN_ENCRYPTED) {
+        int stop;
+        int ret = _ch_pr_read_resume(conn, &conn->tls_resume);
+        if(!ret)
+            return ret;
+        ch_resume_state_t* resume = &conn->read_resume;
+        int bytes_handled;
+        ch_buf* buf = resume->rest_of_buffer;
+        int nread = resume->bytes_to_read;
+        resume->rest_of_buffer = NULL;
+        resume->bytes_to_read = 0;
+        bytes_handled = _ch_pr_decrypt_feed(conn, buf, nread, &stop);
+        if(stop)
+            _ch_pr_update_resume(resume, buf, nread, bytes_handled);
+        return !stop;
+    } else
+        return _ch_pr_read_resume(conn, &conn->read_resume);
+}
+
+// .. c:function::
 void
 ch_pr_read_data_cb(
         uv_stream_t* stream,
@@ -361,6 +538,7 @@ ch_pr_read_data_cb(
     ch_connection_t* conn = stream->data;
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
+    int bytes_handled = 0;
 #   ifndef NDEBUG
         conn->flags &= ~CH_CN_BUF_UV_USED;
 #   endif
@@ -388,34 +566,14 @@ ch_pr_read_data_cb(
         return;
     }
     ch_pr_log_nread_m("%d available bytes.");
-    if(conn->flags & CH_CN_ENCRYPTED) {
-        size_t bytes_decrypted = 0;
-        size_t snread = (size_t) nread;
-        do {
-            int tmp_err;
-            tmp_err = BIO_write(
-                conn->bio_app,
-                buf->base + bytes_decrypted,
-                nread - bytes_decrypted
-            );
-            if(tmp_err < 1) {
-                EC(
-                    chirp,
-                    "SSL error writing to BIO, shutting down connection. ",
-                    "ch_connection_t:%p",
-                    (void*) conn
-                );
-                ch_cn_shutdown(conn, CH_TLS_ERROR);
-                return;
-            }
-            bytes_decrypted += tmp_err;
-            if(conn->flags & CH_CN_TLS_HANDSHAKE)
-                _ch_pr_do_handshake(conn);
-            else
-                ch_pr_read(conn);
-        } while(bytes_decrypted < snread);
-    } else
-        ch_rd_read(conn, buf->base, nread);
+    int stop;
+    if(conn->flags & CH_CN_ENCRYPTED)
+        bytes_handled = _ch_pr_decrypt_feed(conn, buf->base, nread, &stop);
+    else {
+        bytes_handled = ch_rd_read(conn, buf->base, nread, &stop);
+    }
+    if(stop)
+        _ch_pr_update_resume(&conn->read_resume, buf->base, nread, bytes_handled);
 }
 
 // .. c:function::

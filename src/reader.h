@@ -121,14 +121,15 @@ ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp);
 //    :rtype: ch_error_t
 
 // .. c:function::
-void
-ch_rd_read(ch_connection_t* conn, void* buf, size_t read);
+int
+ch_rd_read(ch_connection_t* conn, ch_buf* buffer, size_t bytes_read, int *stop);
 //
-//    Implements the wire protocol reader part.
+//    Implements the wire protocol reader part. Returns bytes handled.
 //
 //    :param ch_connection_t* conn: Connection the data was read from.
-//    :param void* buf:             The buffer containing ``read`` bytes read.
-//    :param size_t read:           The number of bytes read.
+//    :param void* buffer:          The buffer containing ``read`` bytes read.
+//    :param size_t bytes_read:     The number of bytes read.
+//    :param int *stop:             (Out) Stop the reading process.
 //
 // .. code-block:: cpp
 

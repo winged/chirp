@@ -140,6 +140,7 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(status);
     (void)(load);
     _ch_tst_msg_echo_count += 1;
+    A(status == CH_SUCCESS, "Echoing failed");
     int stack_was_null = _ch_tst_msg_stack == NULL;
     if(_ch_tst_slow) {
         ch_tst_msg_stack_t* item = ch_alloc(sizeof(*item));
@@ -167,6 +168,7 @@ _ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(load);
     (void)(msg);
     ch_qc_free_mem();
+    A(status == CH_SUCCESS, "Sending failed");
     _ch_tst_msg_send_count += 1;
     if(_ch_tst_msg_send_count < _ch_tst_message_count) {
         L(

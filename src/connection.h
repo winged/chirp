@@ -211,7 +211,7 @@
 //       The buffers have been initialized.
 //
 // .. code-block:: cpp
-//
+
 typedef enum {
     CH_CN_SHUTTING_DOWN         = 1 <<  0,
     CH_CN_CONNECTED             = 1 <<  1,
@@ -238,6 +238,26 @@ typedef enum {
         CH_CN_INIT_BUFFERS
     )
 } ch_cn_flags_t;
+
+// .. c:type:: ch_resume_state_t
+//
+//    Defines the state of a reader.
+//
+//    .. c:member:: void* rest_of_buffer:
+//
+//       Buffer active before stop. Point to the rest of the data, that aren't
+//       handled yet.
+//
+//    .. c:member:: size_t bytes_to_read:
+//
+//       Bytes that still needs to be read after a stopping the reader.
+//
+// .. code-block:: cpp
+//
+typedef struct ch_resume_state_s {
+    void*            rest_of_buffer;
+    size_t           bytes_to_read;
+} ch_resume_state_t;
 
 // .. c:type:: ch_connection_t
 //
@@ -430,46 +450,48 @@ typedef enum {
 // .. code-block:: cpp
 //
 struct ch_connection_s {
-    uint8_t          ip_protocol;
-    uint8_t          address[CH_IP_ADDR_SIZE];
-    int32_t          port;
-    uint8_t          remote_identity[CH_ID_SIZE];
-    float            max_timeout;
-    uv_tcp_t         client;
-    uv_connect_t     connect;
-    ch_message_t*    connect_msg;
-    ch_buf*          buffer_uv;
-    ch_buf*          buffer_wtls;
-    ch_buf*          buffer_rtls;
-    uv_buf_t         buffer_uv_uv;
-    uv_buf_t         buffer_wtls_uv;
-    uv_buf_t         buffer_any_uv;
-    size_t           buffer_size;
-    size_t           buffer_rtls_size;
-    uv_write_cb      write_callback;
-    size_t           write_written;
-    size_t           write_size;
-    ch_buf*          write_buffer;
-    ch_chirp_t*      chirp;
-    ch_remote_t*     remote;
-    uv_shutdown_t    shutdown_req;
-    uv_write_t       write_req;
-    uv_timer_t       connect_timeout;
-    uv_timer_t       shutdown_timeout;
-    int8_t           shutdown_tasks;
-    uint32_t         flags;
-    SSL*             ssl;
-    BIO*             bio_ssl;
-    BIO*             bio_app;
-    int              tls_handshake_state;
-    float            load;
-    ch_reader_t      reader;
-    ch_writer_t      writer;
-    ch_connection_t* next;
-    char             color;
-    ch_connection_t* parent;
-    ch_connection_t* left;
-    ch_connection_t* right;
+    uint8_t            ip_protocol;
+    uint8_t            address[CH_IP_ADDR_SIZE];
+    int32_t            port;
+    uint8_t            remote_identity[CH_ID_SIZE];
+    float              max_timeout;
+    ch_chirp_t*        chirp;
+    ch_remote_t*       remote;
+    uv_tcp_t           client;
+    uv_connect_t       connect;
+    ch_message_t*      connect_msg;
+    ch_buf*            buffer_uv;
+    ch_buf*            buffer_wtls;
+    ch_buf*            buffer_rtls;
+    uv_buf_t           buffer_uv_uv;
+    uv_buf_t           buffer_wtls_uv;
+    uv_buf_t           buffer_any_uv;
+    size_t             buffer_size;
+    size_t             buffer_rtls_size;
+    uv_write_cb        write_callback;
+    size_t             write_written;
+    size_t             write_size;
+    ch_buf*            write_buffer;
+    ch_resume_state_t  read_resume;
+    ch_resume_state_t  tls_resume;
+    uv_shutdown_t      shutdown_req;
+    uv_write_t         write_req;
+    uv_timer_t         connect_timeout;
+    uv_timer_t         shutdown_timeout;
+    int8_t             shutdown_tasks;
+    uint32_t           flags;
+    SSL*               ssl;
+    BIO*               bio_ssl;
+    BIO*               bio_app;
+    int                tls_handshake_state;
+    float              load;
+    ch_reader_t        reader;
+    ch_writer_t        writer;
+    ch_connection_t*   next;
+    char               color;
+    ch_connection_t*   parent;
+    ch_connection_t*   left;
+    ch_connection_t*   right;
 };
 
 // TODO: Timestamp has to be in ch_connection_t because of old connections

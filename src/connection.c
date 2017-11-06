@@ -721,8 +721,10 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         if(!(
                 conn->flags & CH_CN_TLS_HANDSHAKE ||
                 conn->flags & CH_CN_SHUTTING_DOWN
-        ))
-            ch_rd_read(conn, NULL, 0); /* Start the reader */
+        )) {
+            int stop;
+            ch_rd_read(conn, NULL, 0, &stop); /* Start the reader */
+        }
         return;
     }
     A(!(conn->flags & CH_CN_BUF_WTLS_USED), "The wtls buffer is still used");
