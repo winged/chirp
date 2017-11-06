@@ -167,6 +167,7 @@ typedef struct ch_protocol_s ch_protocol_t;
 #define A(condition, ...) \
     if(!(condition)) { \
         fprintf(stderr, __VA_ARGS__); \
+        fprintf(stderr, "\n"); \
         assert(0); \
     }
 
