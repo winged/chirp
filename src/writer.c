@@ -338,7 +338,6 @@ _ch_wr_write_finish(
     )) {
         msg->_flags |= CH_MSG_ACK_RECEIVED; /* Emulate ACK */
     }
-    uv_timer_stop(&writer->send_timeout);
     msg->_flags |= CH_MSG_WRITE_DONE;
     writer->msg = NULL;
     ch_chirp_try_message_finish(
