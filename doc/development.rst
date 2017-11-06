@@ -67,8 +67,9 @@ Test binaries
    src/star_etest.c.rst
    src/quickcheck_etest.c.rst
    src/serializer_etest.c.rst
-   src/uv_error_etest.c
-   src/write_log_etest.c
+   src/uv_error_etest.c.rst
+   src/write_log_etest.c.rst
+   src/echo_etest.c.rst
 
 External Libs
 =============
