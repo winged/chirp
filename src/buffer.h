@@ -103,11 +103,7 @@ ch_bf_free(ch_buffer_pool_t* pool);
 
 // .. c:function::
 ch_error_t
-ch_bf_init(
-        ch_buffer_pool_t* pool,
-        ch_connection_t* conn,
-        uint8_t max_buffers
-);
+ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers);
 //
 //    Initialize the given buffer pool structure using given max. buffers.
 //

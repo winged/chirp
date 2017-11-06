@@ -41,7 +41,10 @@ ch_msg_get_address(
     if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6))
         return CH_VALUE_ERROR;
     if(uv_inet_ntop(
-            ip_protocol, message->address, address->data, sizeof(address->data)
+            ip_protocol,
+            message->address,
+            address->data,
+            sizeof(address->data)
     )) {
         return CH_PROTOCOL_ERROR;
     }
@@ -74,10 +77,7 @@ ch_msg_init(ch_message_t* message)
 //
 {
     memset(message, 0, sizeof(*message));
-    ch_random_ints_as_bytes(
-        message->identity,
-        sizeof(message->identity)
-    );
+    ch_random_ints_as_bytes(message->identity, sizeof(message->identity));
     return CH_SUCCESS;
 }
 

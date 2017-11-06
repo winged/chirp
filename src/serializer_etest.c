@@ -46,12 +46,7 @@ main(void)
         ch_sr_buf_to_msg(buf, &out);
         if(memcmp(&in, &out, sizeof(in)) != 0) {
             char id_str[CH_ID_SIZE * 2 + 1];
-            ch_bytes_to_hex(
-                in.identity,
-                CH_ID_SIZE,
-                id_str,
-                sizeof(id_str)
-            );
+            ch_bytes_to_hex(in.identity, CH_ID_SIZE, id_str, sizeof(id_str));
             printf(
                 "Serializarion failed\nIn message\n"
                 "     identity: %s\n"
@@ -65,12 +60,7 @@ main(void)
                 in.header_len,
                 in.data_len
             );
-            ch_bytes_to_hex(
-                out.identity,
-                CH_ID_SIZE,
-                id_str,
-                sizeof(id_str)
-            );
+            ch_bytes_to_hex(out.identity, CH_ID_SIZE, id_str, sizeof(id_str));
             printf(
                 "Out message\n"
                 "     identity: %s\n"

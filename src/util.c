@@ -262,8 +262,8 @@ ch_bytes_to_hex(uint8_t* bytes, size_t bytes_size, char* str, size_t str_size)
     A(bytes_size * 2 + 1 <= str_size, "Not enough space for string");
     for(i = 0; i < bytes_size; i++)
     {
-            snprintf(str, 3, "%02X", bytes[i]);
-            str += 2;
+        snprintf(str, 3, "%02X", bytes[i]);
+        str += 2;
     }
     *str = 0;
 }
@@ -364,10 +364,7 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len)
 
 // .. c:function::
 void*
-ch_realloc(
-        void*  buf,
-        size_t size
-)
+ch_realloc(void*  buf, size_t size)
 //    :noindex:
 //
 //    see: :c:func:`ch_realloc`

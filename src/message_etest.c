@@ -108,12 +108,7 @@ void
 _ch_tst_simple_msg(ch_message_t* msg)
 {
     ch_msg_init(msg);
-    ch_msg_set_address(
-        msg,
-        AF_INET,
-        "127.0.0.1",
-        PORT_ECHO
-    );
+    ch_msg_set_address(msg, AF_INET, "127.0.0.1", PORT_ECHO);
     msg->data = _ch_tst_data;
     msg->data_len = strnlen(_ch_tst_data, sizeof(_ch_tst_data));
 }
@@ -189,25 +184,13 @@ _ch_tst_recv_echo_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
     A(!(msg->type & CH_MSG_ACK), "ACK should not call callback");
     A(!(msg->_flags & CH_MSG_USED), "The message should not be used");
     if(memcmp(msg->data, "hello", ch_min_int(5, msg->data_len)) == 0) {
-        L(
-            chirp,
-            "Echo received hello",
-            CH_NO_ARG
-        );
+        L(chirp, "Echo received hello", CH_NO_ARG);
     } else {
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
-        L(
-            chirp,
-            "Echo received a message",
-            CH_NO_ARG
-        );
+        L(chirp, "Echo received a message", CH_NO_ARG);
     }
-    ch_chirp_send(
-            chirp,
-            msg,
-            _ch_tst_echo_cb
-    );
+    ch_chirp_send(chirp, msg, _ch_tst_echo_cb);
 }
 
 static
@@ -228,21 +211,13 @@ _ch_tst_send_message(ch_chirp_t* chirp)
     if(simple) {
         _ch_tst_simple_msg(&_ch_tst_msg);
         _ch_tst_msg.port = PORT_ECHO;
-        send_func(
-                chirp,
-                &_ch_tst_msg,
-                _ch_tst_sent_cb
-        );
+        send_func(chirp, &_ch_tst_msg, _ch_tst_sent_cb);
     } else {
         ch_message_t* msg = ch_tst_gen_message();
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
         msg->port = PORT_ECHO;
-        send_func(
-                chirp,
-                msg,
-                _ch_tst_sent_cb
-        );
+        send_func(chirp, msg, _ch_tst_sent_cb);
     }
 }
 

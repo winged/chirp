@@ -138,10 +138,7 @@ struct ch_message_s {
 // .. c:function::
 CH_EXPORT
 ch_error_t
-ch_msg_get_address(
-        const ch_message_t* message,
-        ch_text_address_t* address
-);
+ch_msg_get_address(const ch_message_t* message, ch_text_address_t* address);
 //
 //    Get the messages' address which is an IP-address. The port and
 //    ip_protocol can be read directly from the message. Address must be of the

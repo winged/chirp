@@ -55,11 +55,7 @@ ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(msg);
     _ch_tst_sent += 1;
     if(_ch_tst_sent < _ch_tst_msg_count)
-        ch_chirp_send(
-                chirp,
-                msg,
-                ch_tst_sent_cb
-        );
+        ch_chirp_send(chirp, msg, ch_tst_sent_cb);
     else
         uv_timer_start(&_ch_tst_sleep_timer, _ch_tst_close_cb, 1000, 0);
 }
@@ -70,12 +66,15 @@ ch_tst_start(ch_chirp_t* chirp)
 {
     ch_message_t* msgs = chirp->user_data;
     for(int i = 0; i < _ch_tst_msg_len; i++) {
-        ch_chirp_send(
-                chirp,
-                &msgs[i],
-                ch_tst_sent_cb
-        );
+        ch_chirp_send(chirp, &msgs[i], ch_tst_sent_cb);
     }
+}
+
+static
+void ch_tst_recv(ch_chirp_t* chirp, ch_message_t* msg)
+{
+    (void)(chirp);
+    ch_chirp_release_recv_handler(msg);
 }
 
 static
@@ -179,7 +178,7 @@ ch_tst_listen(
             &chirp,
             &config,
             &loop,
-            NULL,
+            ch_tst_recv,
             NULL,
             NULL,
             NULL

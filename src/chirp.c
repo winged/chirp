@@ -180,11 +180,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
     ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     A(ichirp->closing_tasks > -1, "Closing semaphore dropped below zero");
-    L(
-        chirp,
-        "Check closing semaphore (%d)",
-        ichirp->closing_tasks
-    );
+    L(chirp, "Check closing semaphore (%d)", ichirp->closing_tasks);
     /* In production we allow the semaphore to drop below zero but log it as
      * an error. */
     if(ichirp->closing_tasks < 1) {
@@ -198,11 +194,7 @@ _ch_chirp_check_closing_cb(uv_prepare_t* handle)
         uv_close((uv_handle_t*) handle, _ch_chirp_closing_down_cb);
     }
     if(ichirp->closing_tasks < 0) {
-        E(
-            chirp,
-            "Check closing semaphore dropped blow 0",
-            CH_NO_ARG
-        );
+        E(chirp, "Check closing semaphore dropped blow 0", CH_NO_ARG);
     }
 }
 
@@ -221,27 +213,15 @@ _ch_chirp_close_async_cb(uv_async_t* handle)
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
     if(chirp->_ == NULL) {
-        E(
-            chirp,
-            "Chirp closing callback called on closed",
-            CH_NO_ARG
-        );
+        E(chirp, "Chirp closing callback called on closed", CH_NO_ARG);
         return;
     }
     ch_chirp_int_t* ichirp = chirp->_;
     if(ichirp->flags & CH_CHIRP_CLOSED) {
-        E(
-            chirp,
-            "Chirp closing callback called on closed",
-            CH_NO_ARG
-        );
+        E(chirp, "Chirp closing callback called on closed", CH_NO_ARG);
         return;
     }
-    L(
-        chirp,
-        "Chirp closing callback called",
-        CH_NO_ARG
-    );
+    L(chirp, "Chirp closing callback called", CH_NO_ARG);
     tmp_err = ch_pr_stop(&ichirp->protocol);
     A(tmp_err == CH_SUCCESS, "Could not stop protocol");
     if(!ichirp->config.DISABLE_SIGNALS) {
@@ -366,11 +346,7 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
                 &_ch_chirp_sig_handler,
                 SIGINT
         )) {
-            E(
-                chirp,
-                "Unable to set SIGINT handler",
-                CH_NO_ARG
-            );
+            E(chirp, "Unable to set SIGINT handler", CH_NO_ARG);
             return;
         }
 
@@ -381,11 +357,7 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
         )) {
             uv_signal_stop(&ichirp->signals[0]);
             uv_close((uv_handle_t*) &ichirp->signals[0], NULL);
-            E(
-                chirp,
-                "Unable to set SIGTERM handler",
-                CH_NO_ARG
-            );
+            E(chirp, "Unable to set SIGTERM handler", CH_NO_ARG);
         }
 #   else
         (void)(chirp);
@@ -616,22 +588,14 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
         return CH_FATAL;
     }
     if(ichirp->flags & CH_CHIRP_CLOSING) {
-        E(
-            chirp,
-            "Close already in progress",
-            CH_NO_ARG
-        );
+        E(chirp, "Close already in progress", CH_NO_ARG);
         return CH_IN_PRORESS;
     }
     ichirp->flags |= CH_CHIRP_CLOSING;
     ichirp->close.data = chirp;
     L(chirp, "Closing chirp via callback", CH_NO_ARG);
     if(uv_async_send(&ichirp->close) < 0) {
-        E(
-            chirp,
-            "Could not call close callback",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not call close callback", CH_NO_ARG);
         return CH_UV_ERROR;
     }
     return CH_SUCCESS;
@@ -735,10 +699,8 @@ ch_chirp_init(
 
     srand((unsigned int) time(NULL));
     unsigned int i = 0;
-    while(
-            i < (sizeof(tmp_conf->IDENTITY) - 1) &&
-            tmp_conf->IDENTITY[i] == 0
-    ) i += 1;
+    while(i < (sizeof(tmp_conf->IDENTITY) - 1) && tmp_conf->IDENTITY[i] == 0)
+        i += 1;
     if(tmp_conf->IDENTITY[i] == 0)
         ch_random_ints_as_bytes(ichirp->identity, sizeof(ichirp->identity));
     else
@@ -752,22 +714,14 @@ ch_chirp_init(
     }
 
     if(uv_async_init(loop, &ichirp->close, _ch_chirp_close_async_cb) < 0) {
-        E(
-            chirp,
-            "Could not initialize close callback",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not initialize close callback", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
     if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
-        E(
-            chirp,
-            "Could not initialize done handler",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -775,11 +729,7 @@ ch_chirp_init(
     }
     chirp->_done.data = chirp;
     if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
-        E(
-            chirp,
-            "Could not initialize done handler",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -787,11 +737,7 @@ ch_chirp_init(
     }
     ichirp->start.data = chirp;
     if(uv_async_init(loop, &ichirp->send_ts, _ch_wr_send_ts_cb) < 0) {
-        E(
-            chirp,
-            "Could not initialize send_ts handler",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not initialize send_ts handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -803,11 +749,7 @@ ch_chirp_init(
     ch_pr_init(chirp, protocol);
     tmp_err = ch_pr_start(protocol);
     if(tmp_err != CH_SUCCESS) {
-        E(
-            chirp,
-            "Could not start protocol: %d",
-            tmp_err
-        );
+        E(chirp, "Could not start protocol: %d", tmp_err);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -820,11 +762,7 @@ ch_chirp_init(
 #       ifndef NDEBUG
                 ERR_print_errors_fp(stderr);
 #       endif
-            E(
-                chirp,
-                "Could not start encryption: %d",
-                tmp_err
-            );
+            E(chirp, "Could not start encryption: %d", tmp_err);
             ch_free(ichirp);
             chirp->_init = 0;
             uv_mutex_unlock(&_ch_chirp_init_lock);
@@ -979,11 +917,7 @@ ch_chirp_run(
         return tmp_err;
     }
     chirp._->flags |= CH_CHIRP_AUTO_STOP;
-    LC(
-        (&chirp),
-        "UV-Loop run by chirp. ", "uv_loop_t:%p",
-        (void*) &loop
-    );
+    LC((&chirp), "UV-Loop run by chirp. ", "uv_loop_t:%p", (void*) &loop);
     /* This works and is not TOO bad because the function blocks. */
     // cppcheck-suppress autoVariables
     *chirp_out = &chirp;

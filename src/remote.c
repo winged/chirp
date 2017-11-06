@@ -77,11 +77,7 @@ _ch_rm_init(
 
 // .. c:function::
 void
-ch_rm_init_from_msg(
-        ch_chirp_t* chirp,
-        ch_remote_t* remote,
-        ch_message_t* msg
-)
+ch_rm_init_from_msg(ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg)
 //    :noindex:
 //
 //    see: :c:func:`ch_rm_init_from_msg`
@@ -92,11 +88,7 @@ ch_rm_init_from_msg(
     _ch_rm_init(chirp, remote);
     remote->ip_protocol = msg->ip_protocol;
     remote->port        = msg->port;
-    memcpy(
-        &remote->address,
-        &msg->address,
-        CH_IP_ADDR_SIZE
-    );
+    memcpy(&remote->address, &msg->address, CH_IP_ADDR_SIZE);
     remote->conn = NULL;
 }
 
@@ -117,10 +109,6 @@ ch_rm_init_from_conn(
     _ch_rm_init(chirp, remote);
     remote->ip_protocol = conn->ip_protocol;
     remote->port        = conn->port;
-    memcpy(
-        &remote->address,
-        &conn->address,
-        CH_IP_ADDR_SIZE
-    );
+    memcpy(&remote->address, &conn->address, CH_IP_ADDR_SIZE);
     remote->conn = NULL;
 }

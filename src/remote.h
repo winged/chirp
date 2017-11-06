@@ -135,11 +135,7 @@ rb_bind_decl_m(ch_rm, ch_remote_t)
 
 // .. c:function::
 void
-ch_rm_init_from_msg(
-        ch_chirp_t* chirp,
-        ch_remote_t* remote,
-        ch_message_t* msg
-);
+ch_rm_init_from_msg(ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg);
 //
 //    Initialize the remote data-structure from a message.
 //

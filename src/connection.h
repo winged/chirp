@@ -582,12 +582,7 @@ ch_cn_send_if_pending(ch_connection_t* conn);
 //
 // .. c:function::
 void
-ch_cn_write(
-        ch_connection_t* conn,
-        void* buf,
-        size_t size,
-        uv_write_cb callback
-);
+ch_cn_write(ch_connection_t* conn, void* buf, size_t size, uv_write_cb callback);
 //
 //    Send data to remote
 //

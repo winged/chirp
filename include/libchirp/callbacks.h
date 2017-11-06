@@ -84,7 +84,7 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 //    .. c:member:: int status
 //
-//       Error code: CH_SUCCESS, CH_TIMEOUT, CH_CANNOT_CONNECT
+//       Error code: CH_SUCCESS, CH_TIMEOUT, CH_CANNOT_CONNECT TODO update
 //
 //    .. c:member:: float load
 //

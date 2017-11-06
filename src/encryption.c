@@ -284,20 +284,12 @@ ch_en_start(ch_encryption_t* enc)
         const SSL_METHOD* method = TLS_method();
 #   endif
     if(method == NULL) {
-        E(
-            chirp,
-            "Could not get the TLSv1_2_method",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not get the TLSv1_2_method", CH_NO_ARG);
         return CH_TLS_ERROR;
     }
     enc->ssl_ctx = SSL_CTX_new(method);
     if(enc->ssl_ctx == NULL) {
-        E(
-            chirp,
-            "Could create the SSL_CTX",
-            CH_NO_ARG
-        );
+        E(chirp, "Could create the SSL_CTX", CH_NO_ARG);
         return CH_TLS_ERROR;
     }
     SSL_CTX_set_mode(
@@ -312,11 +304,7 @@ ch_en_start(ch_encryption_t* enc)
         NULL
     );
 #   ifndef CH_OPENSSL_10_API // NOT DEF!
-        SSL_CTX_set_min_proto_version(
-
-            enc->ssl_ctx,
-            TLS1_2_VERSION
-        );
+        SSL_CTX_set_min_proto_version(enc->ssl_ctx, TLS1_2_VERSION);
 #   endif
     SSL_CTX_set_verify_depth(enc->ssl_ctx, 5);
     if(SSL_CTX_load_verify_locations(
@@ -358,11 +346,7 @@ ch_en_start(ch_encryption_t* enc)
         return CH_TLS_ERROR;
     }
     if(SSL_CTX_check_private_key(enc->ssl_ctx) != 1) {
-        E(
-            chirp,
-            "Private key is not valid %s",
-            ichirp->config.CERT_CHAIN_PEM
-        );
+        E(chirp, "Private key is not valid %s", ichirp->config.CERT_CHAIN_PEM);
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
@@ -407,20 +391,12 @@ ch_en_start(ch_encryption_t* enc)
             "DHE-RSA-AES256-SHA256:"
             "DHE-DSS-AES256-SHA256:"
     ) != 1) {
-        E(
-            chirp,
-            "Could not set the cipher list. ch_chirp_t: %p",
-            chirp
-        );
+        E(chirp, "Could not set the cipher list. ch_chirp_t: %p", chirp);
         DH_free(dh);
         SSL_CTX_free(enc->ssl_ctx);
         return CH_TLS_ERROR;
     }
-    L(
-        chirp,
-        "Created SSL context for chirp",
-        CH_NO_ARG
-    );
+    L(chirp, "Created SSL context for chirp", CH_NO_ARG);
     DH_free(dh);
     return CH_SUCCESS;
 }

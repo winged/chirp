@@ -143,12 +143,7 @@ char* _ch_rd_state_names[] = {
         addr.data,
         sizeof(addr)
     );
-    ch_bytes_to_hex(
-        identity,
-        sizeof(identity),
-        id,
-        sizeof(id)
-    );
+    ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
 #enddef
 
 // .. c:function::
@@ -194,11 +189,7 @@ _ch_rd_handshake(
     ch_sr_buf_to_hs(buf, &hs_tmp);
     conn->port = hs_tmp.port;
     conn->max_timeout = hs_tmp.max_timeout;
-    memcpy(
-        conn->remote_identity,
-        hs_tmp.identity,
-        CH_ID_SIZE
-    );
+    memcpy(conn->remote_identity, hs_tmp.identity, CH_ID_SIZE);
     ch_rm_init_from_conn(chirp, &search_remote, conn);
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(*remote));
@@ -224,10 +215,7 @@ _ch_rd_handshake(
                 (void*) conn,
                 (void*) old_conn
             );
-            ch_cn_old_push(
-                &protocol->old_connections,
-                old_conn
-            );
+            ch_cn_old_push(&protocol->old_connections, old_conn);
         }
     }
 #   ifndef NDEBUG
@@ -333,11 +321,7 @@ _ch_rd_handle_msg(
         if(ichirp->recv_cb != NULL) {
             ichirp->recv_cb(chirp, msg);
         } else {
-            E(
-                chirp,
-                "No receiving callback function registered",
-                CH_NO_ARG
-            );
+            E(chirp, "No receiving callback function registered", CH_NO_ARG);
             ch_chirp_release_recv_handler(msg);
         }
     } else
@@ -402,11 +386,7 @@ ch_rd_init(ch_reader_t* reader, ch_connection_t* conn, ch_chirp_int_t* ichirp)
 //
 {
     reader->state = CH_RD_START;
-    return ch_bf_init(
-        &reader->pool,
-        conn,
-        ichirp->config.MAX_HANDLERS
-    );
+    return ch_bf_init(&reader->pool, conn, ichirp->config.MAX_HANDLERS);
 }
 
 // .. c:function::
@@ -674,21 +654,13 @@ _ch_rd_read_buffer(
     if((to_read + reader->bytes_read) >= expected) {
         /* We can read everything */
         size_t reading =  expected - reader->bytes_read;
-        memcpy(
-            *assign_buf + reader->bytes_read,
-            src_buf,
-            reading
-        );
+        memcpy(*assign_buf + reader->bytes_read, src_buf, reading);
         *bytes_handled += reading;
         reader->bytes_read = 0; /* Reset partial buffer reads */
         return CH_SUCCESS;
     } else {
         /* Only partial read possible */
-        memcpy(
-            *assign_buf + reader->bytes_read,
-            src_buf,
-            to_read
-        );
+        memcpy(*assign_buf + reader->bytes_read, src_buf, to_read);
         *bytes_handled += to_read;
         reader->bytes_read += to_read;
         return CH_MORE;

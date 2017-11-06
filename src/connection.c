@@ -160,14 +160,8 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
         return CH_ENOMEM;
     }
     conn->buffer_rtls_size = size;
-    conn->buffer_uv_uv = uv_buf_init(
-        conn->buffer_uv,
-        conn->buffer_size
-    );
-    conn->buffer_wtls_uv = uv_buf_init(
-        conn->buffer_wtls,
-        conn->buffer_size
-    );
+    conn->buffer_uv_uv = uv_buf_init(conn->buffer_uv, conn->buffer_size);
+    conn->buffer_wtls_uv = uv_buf_init(conn->buffer_wtls, conn->buffer_size);
     conn->flags |= CH_CN_INIT_BUFFERS;
     A(
         (conn->flags & CH_CN_INIT) == CH_CN_INIT,
@@ -179,10 +173,7 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
 // .. c:function::
 static
 void
-_ch_cn_closing(
-        uv_shutdown_t* req,
-        int bypass
-)
+_ch_cn_closing(uv_shutdown_t* req, int bypass)
 //    :noindex:
 //
 //    see: :c:func:`_ch_cn_closing`
@@ -193,11 +184,7 @@ _ch_cn_closing(
     ch_connection_t* conn = req->handle->data;
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    LC(
-        chirp,
-        "Shutdown callback called. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "Shutdown callback called. ", "ch_connection_t:%p", (void*) conn);
     conn->flags &= ~CH_CN_CONNECTED;
     if(!bypass)
     {
@@ -664,31 +651,18 @@ ch_cn_init_enc(ch_chirp_t* chirp, ch_connection_t* conn)
     SSL_set_bio(conn->ssl, conn->bio_ssl, conn->bio_ssl);
 #   ifdef CH_CN_PRINT_CIPHERS
     STACK_OF(SSL_CIPHER)* ciphers = SSL_get_ciphers(conn->ssl);
-    while(sk_SSL_CIPHER_num(ciphers) > 0) {
-        fprintf(
-            stderr,
-            "%s\n",
-            SSL_CIPHER_get_name(sk_SSL_CIPHER_pop(ciphers))
-        );
-    }
+    while(sk_SSL_CIPHER_num(ciphers) > 0)
+        fprintf(stderr, "%s\n", SSL_CIPHER_get_name(sk_SSL_CIPHER_pop(ciphers)));
     sk_SSL_CIPHER_free(ciphers);
 
 #   endif
-    LC(
-        chirp,
-        "SSL context created. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "SSL context created. ", "ch_connection_t:%p", (void*) conn);
     return CH_SUCCESS;
 }
 
 // .. c:function::
 void
-ch_cn_read_alloc_cb(
-        uv_handle_t* handle,
-        size_t suggested_size,
-        uv_buf_t* buf
-)
+ch_cn_read_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf)
 //    :noindex:
 //
 //    see: :c:func:`ch_cn_read_alloc_cb`
@@ -739,11 +713,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         conn->flags |= CH_CN_BUF_WTLS_USED;
         conn->flags |= CH_CN_WRITE_PENDING;
 #   endif
-    int read = BIO_read(
-        conn->bio_app,
-        conn->buffer_wtls,
-        conn->buffer_size
-    );
+    int read = BIO_read(conn->bio_app, conn->buffer_wtls, conn->buffer_size);
     conn->buffer_wtls_uv.len = read;
     uv_write(
         &conn->write_req,
@@ -771,10 +741,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
 
 // .. c:function::
 ch_error_t
-ch_cn_shutdown(
-        ch_connection_t* conn,
-        int reason
-)
+ch_cn_shutdown(ch_connection_t* conn, int reason)
 //    :noindex:
 //
 //    see: :c:func:`ch_cn_shutdown`
@@ -784,11 +751,7 @@ ch_cn_shutdown(
 {
     ch_chirp_t* chirp = conn->chirp;
     if(conn->flags & CH_CN_SHUTTING_DOWN) {
-        EC(
-            chirp,
-            "Shutdown in progress. ", "ch_connection_t:%p",
-            (void*) conn
-        );
+        EC(chirp, "Shutdown in progress. ", "ch_connection_t:%p", (void*) conn);
         return CH_IN_PRORESS;
     }
     conn->flags |= CH_CN_SHUTTING_DOWN;
@@ -801,11 +764,7 @@ ch_cn_shutdown(
      * successful handshake. */
     if(remote)
         remote->conn = NULL;
-    LC(
-        chirp,
-        "Shutdown connection. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "Shutdown connection. ", "ch_connection_t:%p", (void*) conn);
     if(conn->flags & CH_CN_INIT_CLIENT)
         uv_read_stop((uv_stream_t*) &conn->client);
     if(msg != NULL) {
@@ -885,12 +844,7 @@ ch_cn_shutdown(
 
 // .. c:function::
 void
-ch_cn_write(
-        ch_connection_t* conn,
-        void* buf,
-        size_t size,
-        uv_write_cb callback
-)
+ch_cn_write(ch_connection_t* conn, void* buf, size_t size, uv_write_cb callback)
 //    :noindex:
 //
 //    see: :c:func:`ch_cn_write`

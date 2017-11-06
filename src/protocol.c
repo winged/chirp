@@ -243,28 +243,16 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     ch_chirp_int_t* ichirp  = chirp->_;
     ch_protocol_t* protocol = &ichirp->protocol;
     if (status < 0) {
-        L(
-            chirp,
-            "New connection error %s",
-            uv_strerror(status)
-        );
+        L( chirp, "New connection error %s", uv_strerror(status));
         return;
     }
 
     ch_connection_t* conn = (ch_connection_t*) ch_alloc(sizeof(*conn));
     if(!conn) {
-        E(
-            chirp,
-            "Could not allocate memory for connection",
-            CH_NO_ARG
-        );
+        E(chirp, "Could not allocate memory for connection", CH_NO_ARG);
         return;
     }
-    LC(
-        chirp,
-        "Accepted connection. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "Accepted connection. ", "ch_connection_t:%p", (void*) conn);
     memset(conn, 0, sizeof(*conn));
     ch_cn_node_init(conn);
     ch_cn_insert(&protocol->handshake_conns, conn);
@@ -332,10 +320,10 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
 // .. code-block:: cpp
 //
 {
-    ch_buf* buf = resume->rest_of_buffer;
-    int nread = resume->bytes_to_read;
+    ch_buf* buf            = resume->rest_of_buffer;
+    int nread              = resume->bytes_to_read;
     resume->rest_of_buffer = NULL;
-    resume->bytes_to_read = 0;
+    resume->bytes_to_read  = 0;
     if(buf) {
         int stop;
         int bytes_handled = ch_rd_read(conn, buf, nread, &stop);
@@ -379,11 +367,7 @@ ch_pr_conn_start(
 #   begindef ch_pr_conn_start_handle_error_m(msg)
         if(tmp_err != CH_SUCCESS)
         {
-            E(
-                chirp,
-                msg " connection (%d)",
-                tmp_err
-            );
+            E(chirp, msg " connection (%d)", tmp_err);
             ch_cn_shutdown(conn, CH_FATAL);
             return tmp_err;
         }
@@ -562,11 +546,13 @@ _ch_pr_resume(ch_connection_t* conn)
         if(!ret)
             return ret;
         ch_resume_state_t* resume = &conn->read_resume;
+
         int bytes_handled;
-        ch_buf* buf = resume->rest_of_buffer;
-        int nread = resume->bytes_to_read;
+        ch_buf* buf            = resume->rest_of_buffer;
+        int nread              = resume->bytes_to_read;
         resume->rest_of_buffer = NULL;
-        resume->bytes_to_read = 0;
+        resume->bytes_to_read  = 0;
+
         bytes_handled = _ch_pr_decrypt_feed(conn, buf, nread, &stop);
         if(stop)
             _ch_pr_update_resume(resume, buf, nread, bytes_handled);
@@ -603,12 +589,7 @@ _ch_pr_read_data_cb(
     }
 
 #   begindef ch_pr_log_nread_m(msg)
-        LC(
-            chirp,
-            msg " ", "ch_connection_t:%p",
-            (int) nread,
-            (void*) conn
-        );
+        LC(chirp, msg " ", "ch_connection_t:%p", (int) nread, (void*) conn);
 #   enddef
 
     if(nread == 0) {

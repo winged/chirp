@@ -19,10 +19,7 @@
 //
 // .. c:function::
 int
-ch_tst_check_pattern(
-        ch_buf* data,
-        size_t count
-)
+ch_tst_check_pattern(ch_buf* data, size_t count)
 //    :noindex:
 //
 //    see: :c:func:`ch_ms_gen_message`
@@ -148,18 +145,8 @@ ch_tst_gen_message(void)
     );
     int ipv6 = ch_qc_tgen_bool();
     if(ipv6)
-        ch_msg_set_address(
-            message,
-            AF_INET6,
-            "::1",
-            59732
-        );
+        ch_msg_set_address(message, AF_INET6, "::1", 59732);
     else
-        ch_msg_set_address(
-            message,
-            AF_INET,
-            "127.0.0.1",
-            59732
-        );
+        ch_msg_set_address(message, AF_INET, "127.0.0.1", 59732);
     return message;
 }

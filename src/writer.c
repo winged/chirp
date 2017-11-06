@@ -234,11 +234,7 @@ _ch_wr_connect_timeout_cb(uv_timer_t* handle)
     ch_connection_t* conn = handle->data;
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    LC(
-        chirp,
-        "Connect timed out. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "Connect timed out. ", "ch_connection_t:%p", (void*) conn);
     ch_cn_shutdown(conn, CH_TIMEOUT);
     uv_timer_stop(&conn->connect_timeout);
 }
@@ -285,12 +281,7 @@ _ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
     ch_message_t* msg = writer->msg;
     if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
     if(msg->data_len > 0)
-        ch_cn_write(
-            conn,
-            msg->data,
-            msg->data_len,
-            _ch_wr_write_data_cb
-        );
+        ch_cn_write(conn, msg->data, msg->data_len, _ch_wr_write_data_cb);
     else
         _ch_wr_write_finish(chirp, writer, conn);
 }
@@ -399,11 +390,7 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle)
     ch_writer_t* writer = &conn->writer;
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    LC(
-        chirp,
-        "Write timed out. ", "ch_connection_t:%p",
-        (void*) conn
-    );
+    LC(chirp, "Write timed out. ", "ch_connection_t:%p", (void*) conn);
     ch_cn_shutdown(conn, CH_TIMEOUT);
     uv_timer_stop(&writer->send_timeout);
 }
@@ -442,11 +429,7 @@ ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_chirp_int_t* ichirp = chirp->_;
     uv_mutex_lock(&ichirp->send_ts_queue_lock);
     if(msg->_flags & CH_MSG_USED) {
-        EC(
-            chirp,
-            "Message already used. ", "ch_message_t:%p",
-            (void*) msg
-        );
+        EC(chirp, "Message already used. ", "ch_message_t:%p", (void*) msg);
         return CH_USED;
     }
     msg->_send_cb = send_cb;

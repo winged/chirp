@@ -50,9 +50,7 @@ ch_alloc(size_t size);
 
 // .. c:function::
 void
-ch_free(
-        void* buf
-);
+ch_free(void* buf);
 //
 //    Free a memory handle.
 //
@@ -91,10 +89,7 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len);
 
 // .. c:function::
 void*
-ch_realloc(
-        void*  buf,
-        size_t size
-);
+ch_realloc(void*  buf, size_t size);
 //
 //    Resize allocated memory.
 //
