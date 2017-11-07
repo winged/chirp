@@ -87,7 +87,7 @@ main(int argc, char *argv[])
         fprintf(stderr, "port must be integer.\n");
         exit(1);
     }
-    if(port < 1025) {
+    if(port <= 1024) {
         fprintf(stderr, "port must be greater than 1024.\n");
         exit(1);
     }
