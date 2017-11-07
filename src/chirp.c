@@ -39,14 +39,6 @@
 //
 static uv_mutex_t _ch_chirp_init_lock;
 
-// .. c:var:: uv_mutex_t _ch_chirp_log_lock
-//
-//    For clean locking logs we lock when writing a line.
-//
-// .. code-block:: cpp
-//
-static uv_mutex_t _ch_chirp_log_lock;
-
 // .. c:var:: ch_config_t ch_config_defaults
 //
 //    Default config of chirp.
@@ -713,8 +705,7 @@ ch_chirp_init(
     int tmp_err;
     uv_mutex_lock(&_ch_chirp_init_lock);
     memset(chirp, 0, sizeof(*chirp));
-    chirp->_log_lock = &_ch_chirp_log_lock;
-    chirp->_done_cb = done_cb;
+    chirp->_done_cb         = done_cb;
     chirp->_init            = CH_CHIRP_MAGIC;
     chirp->_thread          = uv_thread_self();
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(*ichirp));
@@ -1088,7 +1079,6 @@ ch_libchirp_cleanup(void)
 //
 {
     uv_mutex_destroy(&_ch_chirp_init_lock);
-    uv_mutex_destroy(&_ch_chirp_log_lock);
     ch_error_t ret = ch_en_tls_cleanup();
 #   ifndef NDEBUG
         ch_at_cleanup();
@@ -1108,7 +1098,6 @@ ch_libchirp_init(void)
 //
 {
     uv_mutex_init(&_ch_chirp_init_lock);
-    uv_mutex_init(&_ch_chirp_log_lock);
 #   ifndef NDEBUG
         ch_at_init();
 #   endif
