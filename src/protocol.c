@@ -531,7 +531,7 @@ ch_pr_restart_stream(ch_connection_t* conn)
 {
     if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
         LC(conn->chirp, "Resume reading", "ch_connection_t:%p", conn);
-        if(_ch_pr_resume(conn))
+        if(_ch_pr_resume(conn)) {
             conn->flags &= ~CH_CN_STOPPED;
             LC(conn->chirp, "Restart stream", "ch_connection_t:%p", conn);
             uv_read_start(
@@ -539,6 +539,7 @@ ch_pr_restart_stream(ch_connection_t* conn)
                 ch_cn_read_alloc_cb,
                 _ch_pr_read_data_cb
             );
+        }
     }
 }
 
