@@ -586,10 +586,10 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
         }
         /* We are out of handlers, inform upper layer to stop */
         if(
-                reader->handler      == NULL &&
                 reader->state        == CH_RD_WAIT &&
                 reader->last_handler == 1
         ) {
+            A(reader->handler == NULL, "Reader should not use handler anymore");
             conn->flags |= CH_CN_STOPPED;
             LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
             uv_read_stop((uv_stream_t*) &conn->client);
