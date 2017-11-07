@@ -111,12 +111,13 @@ ch_rd_free(ch_reader_t* reader);
 
 // .. c:function::
 int
-ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp);
+ch_rd_init(ch_reader_t* reader, ch_connection_t* conn, ch_chirp_int_t* ichirp);
 //
 //    Initialize the reader structure.
 //
 //    :param ch_reader_t* reader: The reader instance whose buffer pool shall
 //                                be initialized with ``max_buffers``.
+//    :param ch_connection_t* conn: Connection that owns the reader
 //    :param ch_chirp_int_t ichirp: Internal chirp instance
 //    :rtype: ch_error_t
 

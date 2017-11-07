@@ -521,7 +521,7 @@ ch_pr_decrypt_read(ch_connection_t* conn, int *stop)
 
 // .. c:function::
 void
-ch_pr_restart(ch_remote_t* remote)
+ch_pr_restart_stream(ch_connection_t* conn)
 //    :noindex:
 //
 //    see: :c:func:`ch_pr_resume`
@@ -529,7 +529,6 @@ ch_pr_restart(ch_remote_t* remote)
 // .. code-block:: cpp
 //
 {
-    ch_connection_t* conn = remote->conn;
     if(conn != NULL && (conn->flags & CH_CN_STOPPED)) {
         LC(conn->chirp, "Resume reading", "ch_connection_t:%p", conn);
         if(_ch_pr_resume(conn))

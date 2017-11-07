@@ -393,7 +393,7 @@ ch_rd_free(ch_reader_t* reader)
 
 // .. c:function::
 int
-ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp)
+ch_rd_init(ch_reader_t* reader, ch_connection_t* conn, ch_chirp_int_t* ichirp)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_init`
@@ -403,8 +403,8 @@ ch_rd_init(ch_reader_t* reader, ch_chirp_int_t* ichirp)
 {
     reader->state = CH_RD_START;
     return ch_bf_init(
-        &ichirp->protocol,
         &reader->pool,
+        conn,
         ichirp->config.MAX_HANDLERS
     );
 }
@@ -627,15 +627,7 @@ ch_chirp_release_recv_handler(ch_message_t* msg)
     if(msg->_flags & CH_MSG_FREE_HEADER)
         ch_free(msg->header);
     ch_bf_release(pool, msg->_handler);
-    ch_remote_t search_remote;
-    ch_remote_t* remote       = NULL;
-    search_remote.ip_protocol = msg->ip_protocol;
-    search_remote.port        = msg->port;
-    memcpy(&search_remote.address, &msg->address, CH_IP_ADDR_SIZE);
-    ch_rm_find(pool->protocol->remotes, &search_remote, &remote);
-    if(remote != NULL) {
-        ch_pr_restart(remote);
-    }
+    ch_pr_restart_stream(pool->conn);
 }
 
 static

@@ -55,8 +55,8 @@ ch_bf_free(ch_buffer_pool_t* pool)
 // .. c:function::
 ch_error_t
 ch_bf_init(
-        ch_protocol_t* protocol,
         ch_buffer_pool_t* pool,
+        ch_connection_t* conn,
         uint8_t max_buffers
 )
 //    :noindex:
@@ -69,7 +69,7 @@ ch_bf_init(
     int i;
     A(max_buffers <= 32, "buffer.c can't handle more than 32 handlers");
     memset(pool, 0, sizeof(*pool));
-    pool->protocol = protocol;
+    pool->conn = conn;
     size_t pool_mem = max_buffers * sizeof(ch_bf_handler_t);
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;

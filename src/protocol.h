@@ -111,11 +111,11 @@ ch_pr_decrypt_read(ch_connection_t* conn, int* stop);
 
 // .. c:function::
 void
-ch_pr_restart(ch_remote_t* remote);
+ch_pr_restart_stream(ch_connection_t* conn);
 //
 //    Try to restart the current stream on this connection.
 //
-//    :param ch_remote_t* conn: Remote to restart.
+//    :param ch_connection_t* conn: Connection to restart.
 
 // .. c:function::
 ch_error_t

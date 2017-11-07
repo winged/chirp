@@ -42,7 +42,7 @@ ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)
         int ret;
         ch_bf_handler_t* handler;
         case func_init_e:
-            ch_bf_init(NULL, &pool, val);
+            ch_bf_init(&pool, NULL, val);
             ch_tst_return_int(writer, 0);
             break;
         case func_acquire_e:

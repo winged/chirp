@@ -60,10 +60,6 @@ typedef struct ch_bf_handler_s {
 //
 //    Contains the preallocated buffers for the chirp handlers.
 //
-//    .. c:member:: ch_protocol_t*
-//
-//       Pointer to protocol
-//
 //    .. c:member:: uint8_t max_buffers
 //
 //       Defines the maximum number of buffers.
@@ -82,14 +78,18 @@ typedef struct ch_bf_handler_s {
 //       Pointer of type ch_bf_handler_t to the actual handlers. See
 //       :c:type:`ch_bf_handler_t`.
 //
+//    .. c:member:: ch_connection_t*
+//
+//       Pointer to connection that owns the pool
+//
 // .. code-block:: cpp
 //
 typedef struct ch_buffer_pool_s {
-    ch_protocol_t* protocol;
     uint8_t  max_buffers;
     uint8_t  used_buffers;
     uint32_t free_buffers;
     ch_bf_handler_t* handlers;
+    ch_connection_t* conn;
 } ch_buffer_pool_t;
 
 // .. c:function::
@@ -104,15 +104,15 @@ ch_bf_free(ch_buffer_pool_t* pool);
 // .. c:function::
 ch_error_t
 ch_bf_init(
-        ch_protocol_t* protocol,
         ch_buffer_pool_t* pool,
+        ch_connection_t* conn,
         uint8_t max_buffers
 );
 //
 //    Initialize the given buffer pool structure using given max. buffers.
 //
-//    :param ch_protocol_t* protocol: The chirp instance
 //    :param ch_buffer_pool_t* pool: The buffer pool object
+//    :param ch_connection_t* conn: Connection that owns the pool
 //    :param uint8_t max_buffers: Buffers to allocate
 
 // .. c:function::
