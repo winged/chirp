@@ -528,8 +528,15 @@ ch_cn_close_cb(uv_handle_t* handle)
         );
     }
     if(conn->shutdown_tasks < 1) {
-        if(conn->flags & CH_CN_DO_CLOSE_ACCOUTING)
+        if(conn->flags & CH_CN_DO_CLOSE_ACCOUTING) {
             ichirp->closing_tasks -= 1;
+            LC(
+                chirp,
+                "Closing semaphore (%d). ", "uv_handle_t:%p",
+                ichirp->closing_tasks,
+                (void*) handle
+            );
+        }
         if(conn->flags & CH_CN_INIT_BUFFERS) {
             assert(conn->buffer_uv);
             ch_free(conn->buffer_uv);
