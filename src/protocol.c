@@ -34,11 +34,14 @@ _ch_pr_update_resume(
         int bytes_handled
 );
 //
-//    Update the resume state.
+//    Update the resume state. Checks if reading was partial and sets resume
+//    state that points to the remaining data. If the last buffer was used, it
+//    is possible that all that has been read and we can just stop or that
+//    there is still a message in the buffer.
 //
 //    :param ch_resume_state_t* resume: Pointer to resume state.
 //    :param ch_buf* buf: Pointer to buffer being checked.
-//    :param int nread: Total bytes reader
+//    :param int nread: Total bytes available
 //    :param int bytes_handled: Bytes actually handled
 
 // .. c:function::
