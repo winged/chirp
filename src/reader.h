@@ -130,7 +130,7 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buffer, size_t bytes_read, int *stop);
 //    :param ch_connection_t* conn: Connection the data was read from.
 //    :param void* buffer:          The buffer containing ``read`` bytes read.
 //    :param size_t bytes_read:     The number of bytes read.
-//    :param int *stop:             (Out) Stop the reading process.
+//    :param int* stop:             (Out) Stop the reading process.
 //
 // .. code-block:: cpp
 

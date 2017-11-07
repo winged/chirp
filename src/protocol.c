@@ -60,7 +60,7 @@ _ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t read, int* stop);
 //    :param ch_connection_t* conn: Pointer to a connection handle.
 //    :param ch_buf* buf:           The buffer containing ``read`` bytes read.
 //    :param size_t read:           The number of bytes read.
-//    :param int *stop:             (Out) Stop the reading process.
+//    :param int* stop:             (Out) Stop the reading process.
 
 // .. c:function::
 static

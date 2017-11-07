@@ -88,18 +88,6 @@ ch_pr_conn_start(
 //
 
 // .. c:function::
-static
-int
-_ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t read, int* stop);
-//
-//    Feeds data into the SSL BIO.
-//
-//    :param ch_connection_t* conn: Pointer to a connection handle.
-//    :param ch_buf* buf:           The buffer containing ``read`` bytes read.
-//    :param size_t read:           The number of bytes read.
-//    :param int *stop:             (Out) Stop the reading process.
-
-// .. c:function::
 void
 ch_pr_decrypt_read(ch_connection_t* conn, int* stop);
 //
@@ -107,7 +95,7 @@ ch_pr_decrypt_read(ch_connection_t* conn, int* stop);
 //    read, 0 otherwise.
 //
 //    :param ch_connection_t* conn: Pointer to a connection handle.
-//    :param int *stop:             (Out) Stop the reading process.
+//    :param int* stop:             (Out) Stop the reading process.
 
 // .. c:function::
 void
