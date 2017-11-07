@@ -77,6 +77,15 @@ _ch_lg_colors[8] = {
 // .. code-block:: cpp
 
 #ifndef NDEBUG
+
+// .. c:var:: uv_mutex_t _ch_at_lock
+//
+//    Lock for alloc tracking
+//
+// .. code-block:: cpp
+//
+    static uv_mutex_t _ch_at_lock;
+
     struct ch_alloc_track_s;
     typedef struct ch_alloc_track_s ch_alloc_track_t;
     struct ch_alloc_track_s {
@@ -117,7 +126,9 @@ _ch_lg_colors[8] = {
             return NULL;
         _ch_at_node_init(track);
         track->buf = buf;
+        uv_mutex_lock(&_ch_at_lock);
         int ret = _ch_at_insert(&_ch_alloc_tree, track);
+        uv_mutex_unlock(&_ch_at_lock);
         assert(ret == 0);
         return buf;
     }
@@ -141,6 +152,7 @@ _ch_lg_colors[8] = {
             _ch_free_cb(item);
         }
         fprintf(stderr, "\n");
+        uv_mutex_destroy(&_ch_at_lock);
     }
 
 // .. c:function::
@@ -153,6 +165,7 @@ _ch_lg_colors[8] = {
 // .. code-block:: cpp
 //
     {
+        uv_mutex_init(&_ch_at_lock);
         _ch_at_tree_init(&_ch_alloc_tree);
     }
 
@@ -171,7 +184,9 @@ _ch_lg_colors[8] = {
         ch_alloc_track_t key;
         ch_alloc_track_t* track;
         key.buf = buf;
+        uv_mutex_lock(&_ch_at_lock);
         int ret = _ch_at_delete(&_ch_alloc_tree, &key, &track);
+        uv_mutex_unlock(&_ch_at_lock);
         assert(ret == 0);
         _ch_free_cb(track);
     }
@@ -198,7 +213,9 @@ _ch_lg_colors[8] = {
         if(buf == rbuf)
             return rbuf;
         key.buf = buf;
+        uv_mutex_lock(&_ch_at_lock);
         int ret = _ch_at_delete(&_ch_alloc_tree, &key, &track);
+        uv_mutex_unlock(&_ch_at_lock);
         assert(ret == 0);
         track->buf = rbuf;
         ret = _ch_at_insert(&_ch_alloc_tree, track);
