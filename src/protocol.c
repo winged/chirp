@@ -329,14 +329,13 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
 // .. code-block:: cpp
 //
 {
-    int bytes_handled;
     ch_buf* buf = resume->rest_of_buffer;
     int nread = resume->bytes_to_read;
     resume->rest_of_buffer = NULL;
     resume->bytes_to_read = 0;
     if(buf) {
         int stop;
-        bytes_handled = ch_rd_read(conn, buf, nread, &stop);
+        int bytes_handled = ch_rd_read(conn, buf, nread, &stop);
         if(stop)
             _ch_pr_update_resume(resume, buf, nread, bytes_handled);
         return !stop;
