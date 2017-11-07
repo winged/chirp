@@ -517,7 +517,7 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
                         (void*) conn
                     );
                     ch_cn_shutdown(conn, CH_ENOMEM);
-                    return -1;
+                    return -1; /* Shutdown */
                 }
                 msg->ip_protocol   = conn->ip_protocol;
                 msg->port          = conn->port;
