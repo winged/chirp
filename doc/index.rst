@@ -9,7 +9,7 @@ First some boiler-plate (includes and declarations): We need a callback that is
 called when a message is received and a callback that is called when the
 echo-message is sent.
 
-.. code-block:: bash
+.. code-block:: cpp
 
    #include <libchirp.h>
 
@@ -28,13 +28,13 @@ echo-message is sent.
 Next we have to initialize libchirp. This will initialize the TLS library
 (LibreSSL or OpenSSL) and a mutex used during initialization of chirp-obejcts.
 
-.. code-block:: bash
+.. code-block:: cpp
 
        ch_libchirp_init();
 
 ch_chirp_config_init will initialize the config to its default values.
 
-.. code-block:: bash
+.. code-block:: cpp
 
        ch_config_t config;
        ch_chirp_config_init(&config);
@@ -42,24 +42,24 @@ ch_chirp_config_init will initialize the config to its default values.
 Next we have to set a certification chain. You can create it using the makepki
 Makefile_ on github. If you want to create it manually the chain has to contain:
 
- * The certification authority's public key
+* The certification authority's public key
 
- * The client public key (signed by CA)
+* The client public key (signed by CA)
 
- * The client private key
+* The client private key
 
 Any client-key signed by the CA will be able to connect.
 
 .. _Makefile: https://github.com/concretecloud/chirp/tree/master/mk/makepki
        
-.. code-block:: bash
+.. code-block:: cpp
 
        config.CERT_CHAIN_PEM = "./cert.pem";
        config.DH_PARAMS_PEM  = "./dh.pem";
 
 ch_chirp_run is function that initializes libuv, chirp, and runs main-loop.
 
-.. code-block:: bash
+.. code-block:: cpp
 
        ch_chirp_t chirp;
        ch_chirp_run(
@@ -73,14 +73,14 @@ ch_chirp_run is function that initializes libuv, chirp, and runs main-loop.
 
 If the user hits ctrl-c, the main-loop will close and we cleanup libchirp.
 
-.. code-block:: bash
+.. code-block:: cpp
 
        ch_libchirp_cleanup();
    }
 
 ch_chirp_send will send the received message and then call send_cb.
 
-.. code-block:: bash
+.. code-block:: cpp
 
    static
    void
@@ -93,7 +93,7 @@ The memory reserved for the message has to be retained till the message is sent
 or has failed, so we release the receive handler after message is successfully
 send.
 
-.. code-block:: bash
+.. code-block:: cpp
 
    static
    void
