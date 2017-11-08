@@ -834,7 +834,7 @@ ch_chirp_try_message_finish(
                 LC(
                     chirp,
                     "%s: sending ACK message id: %s\n"
-                    "                            "
+                    "                             "
                     "serial: %u. ", "ch_message_t:%p",
                     action,
                     id,
@@ -845,7 +845,7 @@ ch_chirp_try_message_finish(
                 LC(
                     chirp,
                     "%s: finishing message id: %s\n"
-                    "                            "
+                    "                             "
                     "serial: %u. ", "ch_message_t:%p",
                     action,
                     id,

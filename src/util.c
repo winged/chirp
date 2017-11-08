@@ -459,7 +459,7 @@ ch_write_log(
         snprintf(
             buf1,
             1024,
-            "%s:%d %s %s",
+            "%s:%5d %s %s",
             file,
             line,
             message,
@@ -473,11 +473,11 @@ ch_write_log(
         char* first;
         char* second;
         if(error) {
-            tmpl = "%s%02X%02X%s %17s:%4d Error: %s%s %s%s\n";
+            tmpl = "%s%02X%02X%s %17s:%5d Error: %s%s %s%s\n";
             first = _ch_lg_err;
             second = _ch_lg_err;
         } else {
-            tmpl = "%s%02X%02X%s %17s:%4d %s%s %s%s\n";
+            tmpl = "%s%02X%02X%s %17s:%5d %s%s %s%s\n";
             first  = _ch_lg_colors[log_id];
             second = _ch_lg_reset;
         }

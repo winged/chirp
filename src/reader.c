@@ -258,9 +258,9 @@ _ch_rd_handle_msg(
         LC(
             chirp,
             "Read message with id: %s\n"
-            "                            "
+            "                             "
             "serial:%u\n"
-            "                            "
+            "                             "
             "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
             id,
             msg->serial,
