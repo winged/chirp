@@ -25,14 +25,15 @@ echo-message is sent.
    main(int argc, char *argv[])
    {
 
-Next we have to initialize libchirp. This will initialize the TLS library
-(LibreSSL or OpenSSL) and a mutex used during initialization of chirp-obejcts.
+Next we have to initialize libchirp using :c:func:`ch_libchirp_init`. This will
+initialize the TLS library (LibreSSL or OpenSSL) and a mutex used during
+initialization of chirp-obejcts.
 
 .. code-block:: cpp
 
        ch_libchirp_init();
 
-ch_chirp_config_init will initialize the config to its default values.
+:c:func:`ch_chirp_config_init` will initialize the config to its default values.
 
 .. code-block:: cpp
 
@@ -57,7 +58,7 @@ Any client-key signed by the CA will be able to connect.
        config.CERT_CHAIN_PEM = "./cert.pem";
        config.DH_PARAMS_PEM  = "./dh.pem";
 
-ch_chirp_run is function that initializes libuv, chirp, and runs main-loop.
+:c:func:`ch_chirp_run` initializes libuv, chirp, and runs main-loop.
 
 .. code-block:: cpp
 
@@ -71,14 +72,15 @@ ch_chirp_run is function that initializes libuv, chirp, and runs main-loop.
            NULL
        );
 
-If the user hits ctrl-c, the main-loop will close and we cleanup libchirp.
+If the user hits ctrl-c, the main-loop will close and we cleanup libchirp using
+:c:func:`ch_libchirp_cleanup`.
 
 .. code-block:: cpp
 
        ch_libchirp_cleanup();
    }
 
-ch_chirp_send will send the received message and then call send_cb.
+:c:func:`ch_chirp_send` will send the received message and then call send_cb.
 
 .. code-block:: cpp
 
@@ -91,7 +93,7 @@ ch_chirp_send will send the received message and then call send_cb.
 
 The memory reserved for the message has to be retained till the message is sent
 or has failed, so we release the receive handler after message is successfully
-send.
+send. :c:func:`ch_chirp_release_recv_handler`
 
 .. code-block:: cpp
 
