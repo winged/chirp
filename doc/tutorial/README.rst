@@ -7,9 +7,9 @@ How to build
 
 Copy:
 
- * libchirp.h
- * libchirp.c
- * libchirp-config.h
+* libchirp.h
+* libchirp.c
+* libchirp-config.h
 
 into this directory.
 
