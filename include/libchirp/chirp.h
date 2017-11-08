@@ -45,7 +45,8 @@
 //
 //    .. c:member:: uint8_t RETRIES
 //
-//       Count of retries till error is reported, by default 1.
+//       Count of retries till error is reported, by default 1. (Currently not
+//       implemented, defined for ABI compatibility)
 //
 //    .. c:member:: uint8_t MAX_HANDLERS
 //
@@ -62,7 +63,7 @@
 //    .. c:member:: char FLOW_CONTROL
 //
 //       Flow control prevents overloading of a node in a chain for workers.
-//       Default: 1.
+//       Default: 1. (Currently not implemented, defined for ABI compatibility)
 //
 //    .. c:member:: char DISABLE_SIGNALS
 //
