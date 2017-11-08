@@ -10,7 +10,7 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 
 .. _pychirp: https://github.com/concretecloud/pychirp
 
-|travis| [1]_ |rtd|
+|travis| |rtd|
 
 .. |travis|  image:: https://travis-ci.org/concretecloud/chirp.svg?branch=master
    :target: https://travis-ci.org/concretecloud/chirp
@@ -20,10 +20,6 @@ It is part of Concreteclouds_ and the C99 implementation of pychirp_.
 `Read the Docs`_
 
 .. _`Read the Docs`: http://1042.ch/chirp/
-
-.. [1] Python/hypothesis based test-suite in external project seecc_.
-
-.. _seecc: https://github.com/concretecloud
 
 WORK IN PROGRESS
 ================
