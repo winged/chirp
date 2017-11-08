@@ -1,8 +1,8 @@
-// .. image:: https://travis-ci.org/ganwell/rbtree.svg?branch=master
-//    :target: https://travis-ci.org/ganwell/rbtree/
+// .. image:: https://travis-ci.org/concretecloud/rbtree.svg?branch=master
+//    :target: https://travis-ci.org/concretecloud/rbtree/
 //
 // ==================
-// Red-Black Tree 0.5
+// Red-Black Tree 0.6
 // ==================
 //
 // * Bonus: `qs.h`_ (Queue / Stack), mpipe_ (message-pack over pipe)
@@ -22,10 +22,10 @@
 // * Code review by Oliver Sauder @sliverc
 // * Thanks a lot to both
 //
-// .. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
+// .. [1] My rgc preprocessor and make MACRO_DEBUG=True are very helpful.
 //
-// .. _`qs.h`: https://github.com/ganwell/rbtree/blob/master/qs.rst
-// .. _mpipe: https://github.com/ganwell/rbtree/blob/master/mpipe.rst
+// .. _`qs.h`: https://github.com/concretecloud/rbtree/blob/master/qs.rst
+// .. _mpipe: https://github.com/concretecloud/rbtree/blob/master/mpipe.rst
 //
 // Installation
 // ============
@@ -48,12 +48,18 @@
 // * Remove static from functions (its a bad habit)
 // * Typos
 //
+// 0.5 -> 0.6
+// ----------
+//
+// * Use same code-guidelines as libchirp
+// * Allow msgpack or umsgpack in mpipe.py
+//
 // Development
 // ===========
 //
 // Developed on github_
 //
-// .. _github: https://github.com/ganwell/rbtree
+// .. _github: https://github.com/concretecloud/rbtree
 //
 // Requirements
 // ------------
@@ -89,8 +95,8 @@
 //
 // The example is on github: example_h_, example_c_
 //
-// .. _example_h: https://github.com/ganwell/rbtree/blob/master/src/example.h
-// .. _example_c: https://github.com/ganwell/rbtree/blob/master/src/example.c
+// .. _example_h: https://github.com/concretecloud/rbtree/blob/master/src/example.h
+// .. _example_c: https://github.com/concretecloud/rbtree/blob/master/src/example.c
 //
 // First we have to define the struct we use in the red-black tree
 // (example.h).
@@ -423,12 +429,12 @@
 //
 // .. _sglib: http://sglib.sourceforge.net/
 //
-// .. image:: https://github.com/ganwell/rbtree/raw/master/perf_insert.png
+// .. image:: https://github.com/concretecloud/rbtree/raw/master/perf_insert.png
 //    :width: 90%
 //    :align: center
 //    :alt: insert
 //
-// .. image:: https://github.com/ganwell/rbtree/raw/master/perf_delete.png
+// .. image:: https://github.com/concretecloud/rbtree/raw/master/perf_delete.png
 //    :width: 90%
 //    :align: center
 //    :alt: delete
@@ -437,7 +443,7 @@
 // replace_node function is handy, since the application already has the right
 // node to delete or replace.
 //
-// .. image:: https://github.com/ganwell/rbtree/raw/master/perf_replace.png
+// .. image:: https://github.com/concretecloud/rbtree/raw/master/perf_replace.png
 //    :width: 90%
 //    :align: center
 //    :alt: replace

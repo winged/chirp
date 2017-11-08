@@ -1,6 +1,6 @@
 "" # noqa
 """
-mpipe 0.5
+mpipe 0.6
 =========
 
 Send message-pack messages to subprocess.

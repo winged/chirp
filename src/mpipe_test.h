@@ -1,5 +1,5 @@
 // =========
-// mpipe 0.5
+// mpipe 0.6
 // =========
 //
 // Send message-packs over a pipe. Meant as a very simple RPC. It is compatible
@@ -51,7 +51,7 @@
 //
 // See `README.rst`_
 //
-// .. _`README.rst`: https://github.com/ganwell/rbtree
+// .. _`README.rst`: https://github.com/concretecloud/rbtree
 //
 // API
 // ===
@@ -101,7 +101,7 @@
 // converting the document, all the temporary strings can be freed, so you add
 // them to a stack_ and after the document is converted you free them all.
 //
-// .. _stack: https://github.com/ganwell/rbtree/blob/master/qs.rst
+// .. _stack: https://github.com/concretecloud/rbtree/blob/master/qs.rst
 //
 // Declarations
 // ============

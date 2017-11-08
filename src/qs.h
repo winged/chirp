@@ -1,5 +1,5 @@
 // =================
-// Queue / Stack 0.5
+// Queue / Stack 0.6
 // =================
 //
 // Queue and stack with a rbtree-style interface. Both queue and stack use one
@@ -16,7 +16,7 @@
 //
 // See `README.rst`_
 //
-// .. _`README.rst`: https://github.com/ganwell/rbtree
+// .. _`README.rst`: https://github.com/concretecloud/rbtree
 //
 // API
 // ===
