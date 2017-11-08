@@ -152,9 +152,9 @@ amalg: $(AMALB).c  ## Create amalgamation
 
 $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 	$(V_E) GEN header.h
-	$(V_M)echo // ============================ > $(BUILD)/header.h
-	$(V_M)echo // libchirp $(VERSION) amalgamation >> $(BUILD)/header.h
-	$(V_M)echo // ============================ >> $(BUILD)/header.h
+	$(V_M)echo // ================================ > $(BUILD)/header.h
+	$(V_M)echo // libchirp $(VERSION_LONG) amalgamation >> $(BUILD)/header.h
+	$(V_M)echo // ================================ >> $(BUILD)/header.h
 	$(V_M)echo >> $(BUILD)/header.h
 	$(V_E) RGC common.h
 	$(V_M)$(BASE)/mk/rgc $(AMALS)/common.h $(BUILD)/common.rg.h
@@ -242,7 +242,7 @@ $(DISTR): $(AMALB).c
 	$(V_M)cat $(BASE)/mk/rel.mk >> $(DISTM)
 	$(V_M)cat $(BASE)/mk/dist.mk >> $(DISTM)
 	$(V_M)echo =================== > $(DISTR)
-	$(V_M)echo libchirp $(VERSION) >> $(DISTR)
+	$(V_M)echo libchirp $(VERSION_LONG) >> $(DISTR)
 	$(V_M)echo =================== >> $(DISTR)
 	$(V_M)cat $(BASE)/mk/DIST-README.rst >> $(DISTR)
 	$(V_E) KEYS

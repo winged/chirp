@@ -19,7 +19,8 @@ import shutil
 import stat
 
 _project = "libchirp"
-_version = "0.1.0"
+_version_long = "0.2.0-beta"
+_version = _version_long.split('-')[0]
 
 _base = path.dirname(path.realpath(__file__))
 _baselen = len(_base)
@@ -358,7 +359,9 @@ def write_config():
         with codecs.open("libchirp-config.h", "w", "UTF-8") as outfile:
             for line in infile:
                 if line.startswith('#define CH_VERSION "XVERSIONX"'):
-                    outfile.write('#define CH_VERSION "%s"\n' % _version)
+                    outfile.write(
+                        '#define CH_VERSION "%s"\n' % _version_long
+                    )
                 else:
                     outfile.write(line)
     print("Created libchirp-config.h. It contains sensible defaults.")
@@ -383,6 +386,7 @@ def write_makefile(args):
         f.write("PREFIX := %s\n" % prefix)
         f.write("PROJECT := %s\n" % _project)
         f.write("VERSION := %s\n" % _version)
+        f.write("VERSION_LONG := %s\n" % _version_long)
         f.write("MAJOR := %s\n\n" % _version.split('.')[0])
         if args.verbose:
             f.write("VERBOSE := True\n")
