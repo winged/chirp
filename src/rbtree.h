@@ -2,7 +2,7 @@
 //    :target: https://travis-ci.org/ganwell/rbtree/
 //
 // ==================
-// Red-Black Tree 0.4
+// Red-Black Tree 0.5
 // ==================
 //
 // * Bonus: `qs.h`_ (Queue / Stack), mpipe_ (message-pack over pipe)
@@ -41,6 +41,12 @@
 // * Correctly enable cppcheck
 // * Fix style errors reported by cppcheck
 // * Fix bad asserts in performance tests
+//
+// 0.4 -> 0.5
+// ----------
+//
+// * Remove static from functions (its a bad habit)
+// * Typos
 //
 // Development
 // ===========
@@ -769,15 +775,16 @@
 //
 #begindef rb_iter_init_m(nil, left, tree, elem)
 {
-    if(tree == nil)
+    if(tree == nil) {
         elem = NULL;
-    else {
+    } else {
         elem = tree;
         while(left(elem) != nil)
             elem = left(elem);
     }
-    if(elem == nil)
+    if(elem == nil) {
         elem = NULL;
+    }
 }
 #enddef
 
@@ -911,23 +918,26 @@ do {
     while(c != nil) {
         /* The node is already in the rbtree, we break. */
         r = cmp((c), (node));
-        if(r == 0)
+        if(r == 0) {
             break;
+        }
         p = c;
         /* Lesser on the left, greater on the right. */
         c = r > 0 ? left(c) : right(c);
     }
     /* The node is already in the rbtree, we break. */
-    if(c != nil)
+    if(c != nil) {
         break;
+    }
 
     parent(node) = p;
     rb_make_red_m(color(node));
 
-    if(r > 0)
+    if(r > 0) {
         left(p) = node;
-    else
+    } else {
         right(p) = node;
+    }
 
     _rb_insert_fix_m(
             type,
@@ -1013,32 +1023,36 @@ do {
         right(node) != nil ||
         rb_is_black_m(color(node))
     ) && "Node is not in a tree");
-    if(left(node) == nil || right(node) == nil)
+    if(left(node) == nil || right(node) == nil) {
         /* This node has at least one nil node, delete is simple. */
         y = node;
-    else {
+    } else {
         /* We need to find another node for deletion that has only one child.
          * This is tree-next. */
         y = right(node);
-        while(left(y) != nil)
+        while(left(y) != nil) {
             y = left(y);
+        }
     }
 
     /* If y has a child we have to attach it to the parent. */
-    if(left(y) != nil)
+    if(left(y) != nil) {
         x = left(y);
-    else
+    } else {
         x = right(y);
+    }
 
     /* Remove y from the tree. */
     parent(x) = parent(y);
     if(parent(y) != nil) {
-        if(y == left(parent(y)))
+        if(y == left(parent(y))) {
             left(parent(y)) = x;
-        else
+        } else {
             right(parent(y)) = x;
-    } else
+        }
+    } else {
         tree = x;
+    }
 
     /* A black node was removed, to fix the problem we pretend to have pushed the
      * blackness onto x. Therefore x is double black and violates property 1. */
@@ -1061,15 +1075,18 @@ do {
             tree = y;
             parent(y) = nil;
         } else {
-            if(node == left(parent(node)))
+            if(node == left(parent(node))) {
                 left(parent(node)) = y;
-            else if(node == right(parent(node)))
+            } else if(node == right(parent(node))) {
                 right(parent(node)) = y;
+            }
         }
-        if(left(node) != nil)
+        if(left(node) != nil) {
             parent(left(node)) = y;
-        if(right(node) != nil)
+        }
+        if(right(node) != nil) {
             parent(right(node)) = y;
+        }
         parent(y) = parent(node);
         left(y) = left(node);
         right(y) = right(node);
@@ -1150,15 +1167,16 @@ do {
 {
     assert(tree != NULL && "Tree was not initialized");
     assert(key != nil && "Do not use nil as search key");
-    if(tree == nil)
+    if(tree == nil) {
         node = nil;
-    else {
+    } else {
         node = tree;
         int __rb_find_result_ = 1;
         while(__rb_find_result_ && node != nil) {
             __rb_find_result_  = cmp((node), (key));
-            if(__rb_find_result_ == 0)
+            if(__rb_find_result_ == 0) {
                 break;
+            }
             node = __rb_find_result_ > 0 ? left(node) : right(node);
         }
     }
@@ -1208,18 +1226,21 @@ do {
     assert(new != nil && "The new node can't be nil");
     assert(new != old && "The old and new node must differ");
     if(cmp((old), (new)) == 0) {
-        if(old == tree)
+        if(old == tree) {
             tree = new;
-        else {
-            if(old == left(parent(old)))
+        } else {
+            if(old == left(parent(old))) {
                 left(parent(old)) = new;
-            else
+            } else {
                 right(parent(old)) = new;
+            }
         }
-        if(left(old) != nil)
+        if(left(old) != nil) {
             parent(left(old)) = new;
-        if(right(old) != nil)
+        }
+        if(right(old) != nil) {
             parent(right(old)) = new;
+        }
         parent(new) = parent(old);
         left(new) = left(old);
         right(new) = right(old);
@@ -1530,13 +1551,14 @@ do {
             type* tree
     )
     {
-        if(tree == cx##_nil_ptr)
+        if(tree == cx##_nil_ptr) {
             return 0;
-        else
+        } else {
             return (
                 cx##_size(left(tree)) +
                 cx##_size(right(tree)) + 1
             );
+        }
     }
     _rb_bind_impl_debug_tr_m(
             cx,
@@ -1660,10 +1682,11 @@ do {
 {
     type* nil = cx##_nil_ptr;
     if(node == nil) {
-        if(pathdepth < 0)
+        if(pathdepth < 0) {
             pathdepth = depth;
-        else
+        } else {
             assert(pathdepth == depth);
+        }
     } else {
         tmp = left(node);
         if(tmp != nil) {
@@ -1677,11 +1700,13 @@ do {
         }
         if(rb_is_red_m(color(node))) {
             tmp = left(node);
-            if(tmp != nil)
+            if(tmp != nil) {
                 assert(rb_is_black_m(color(tmp)));
+            }
             tmp = right(node);
-            if(tmp != nil)
+            if(tmp != nil) {
                 assert(rb_is_black_m(color(tmp)));
+            }
             cx##_check_tree_rec(left(node), depth, &pathdepth);
             cx##_check_tree_rec(right(node), depth, &pathdepth);
         } else {
@@ -1777,21 +1802,23 @@ do {
 
     /* Turn y's left sub-tree into x's right sub-tree. */
     right(x) = left(y);
-    if(left(y) != nil)
+    if(left(y) != nil) {
         parent(left(y)) = x;
+    }
     /* y's new parent was x's parent. */
     parent(y) = parent(x);
-    if(parent(x) == nil)
+    if(parent(x) == nil) {
         /* If x is root y becomes the new root. */
         tree = y;
-    else {
+    } else {
         /* Set the parent to point to y instead of x. */
-        if(x == left(parent(x)))
+        if(x == left(parent(x))) {
             /* x was on the left of its parent. */
             left(parent(x)) = y;
-        else
+        } else {
             /* x must have been on the right. */
             right(parent(x)) = y;
+        }
     }
     /* Finally, put x on y's left. */
     left(y) = x;

@@ -8,8 +8,9 @@ writeall(int fd, void *buf, size_t n)
     char *buffer = buf;
     while(n) {
         ssize_t r = write(fd, buffer, n);
-        if(r < 0)
+        if(r < 0) {
             return -1;
+        }
         buffer += (size_t)r;
         n -= (size_t)r;
     }
@@ -23,10 +24,12 @@ readall(int fd, void *buf, size_t n)
     size_t ptr = 0;
     for(;;) {
         ssize_t r = read(fd, buffer + ptr, n - ptr);
-        if(r < 0)
+        if(r < 0) {
             return -1;
-        if(r == 0)
+        }
+        if(r == 0) {
             break;
+        }
         ptr += (size_t)r;
     }
     return ptr;
@@ -64,12 +67,14 @@ mpp_fdread_message(int fd, mpp_context_t* context)
     ssize_t read_size;
     size_t msg_size;
     read_size = readall(fd, &msg_size, sizeof(size_t));
-    if(read_size != sizeof(size_t))
+    if(read_size != sizeof(size_t)) {
         return NULL;
+    }
     read_ctx->data = malloc(msg_size);
     read_size = readall(fd, read_ctx->data, msg_size);
-    if(read_size != (ssize_t) msg_size)
+    if(read_size != (ssize_t) msg_size) {
         return NULL;
+    }
     mpack_tree_init(&read_ctx->tree, read_ctx->data, msg_size);
     read_ctx->node = mpack_tree_root(&read_ctx->tree);
     return &read_ctx->node;
@@ -108,22 +113,25 @@ mpp_write_message_fin(mpp_context_t* context)
     mpp_write_ctx_t* write_ctx = &context->write;
     int ret;
     mpack_error_t err = mpack_writer_destroy(&write_ctx->writer);
-    if(err != mpack_ok)
+    if(err != mpack_ok) {
         return err;
+    }
     ret = writeall(
         write_ctx->fd,
         &write_ctx->size,
         sizeof(size_t)
     );
-    if(ret != 0)
+    if(ret != 0) {
         return -1;
+    }
     ret = writeall(
         write_ctx->fd,
         write_ctx->data,
         write_ctx->size
     );
-    if(ret != 0)
+    if(ret != 0) {
         return -1;
+    }
     free(write_ctx->data);
     context->current = mpp_none;
     return 0;
@@ -137,21 +145,23 @@ mpp_runner(mpp_handler_cb_t func)
     mpp_init_context(&context);
     for(;;) {
         mpack_node_t* node = mpp_read_message(&context);
-        if(node == NULL)
+        if(node == NULL) {
             return 9;
+        }
         int function = mpack_node_int(
             mpack_node_array_at(*node, 0)
         );
-        if(function == 0)
+        if(function == 0) {
             return 0;
-        else {
+        } else {
             writer = mpp_write_message(&context);
             func(*node, writer);
             if(mpp_write_message_fin(&context) != 0)
                 return 9;
         }
-        if(mpp_read_message_fin(&context) != 0)
+        if(mpp_read_message_fin(&context) != 0) {
             return 9;
+        }
     }
     return 0;
 }

@@ -164,9 +164,9 @@
 )
 {
     assert(next(item) == NULL && "Item already in use");
-    if(queue == NULL)
+    if(queue == NULL) {
         next(item) = item;
-    else {
+    } else {
         next(item) = next(queue);
         next(queue) = item;
     }
@@ -198,13 +198,15 @@
 {
     if(queue != NULL) {
         item = next(queue);
-        if(next(queue) == queue)
+        if(next(queue) == queue) {
             queue = NULL;
-        else
+        } else {
             next(queue) = next(item);
+        }
         next(item) = NULL;
-    } else
+    } else {
         item = NULL;
+    }
 }
 #enddef
 
@@ -333,10 +335,11 @@
             type* queue,
             type** item
     ) {
-        if(queue != NULL)
+        if(queue != NULL) {
             *item = next(queue);
-        else
+        } else {
             *item = NULL;
+        }
     }
     void
     cx##_tail(
@@ -413,10 +416,11 @@
 #begindef qs_queue_iter_init_m(next, queue, iter, elem)
 {
     iter = queue;
-    if(queue == NULL)
+    if(queue == NULL) {
         elem = NULL;
-    else
+    } else {
         elem = next(queue);
+    }
 }
 #enddef
 
@@ -442,10 +446,11 @@
         elem
 )
 {
-    if(elem == queue)
+    if(elem == queue) {
         elem = NULL;
-    else
+    } else {
         elem = next(elem);
+    }
 }
 #enddef
 
