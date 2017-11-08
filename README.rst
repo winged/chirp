@@ -4,12 +4,6 @@ Chirp
 
 Message-passing for everyone
 
-It is part of Concreteclouds_ and the C99 implementation of pychirp_.
-
-.. _Concreteclouds: https://concretecloud.github.io/
-
-.. _pychirp: https://github.com/concretecloud/pychirp
-
 |travis| |rtd|
 
 .. |travis|  image:: https://travis-ci.org/concretecloud/chirp.svg?branch=master
