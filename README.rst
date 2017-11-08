@@ -1,6 +1,6 @@
-=====
-Chirp
-=====
+========
+libchirp
+========
 
 Message-passing for everyone
 
@@ -291,4 +291,4 @@ Contributing
 
 Please open an issue first. Contributions of missing features are very welcome, but
 we want to keep to scope of libchirp minimal, so additional features should
-probably be implemented in a upper layer.
+probably be implemented in an upper layer.

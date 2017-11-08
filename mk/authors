@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git shortlog -e -s | sort -r -n > AUTHORS

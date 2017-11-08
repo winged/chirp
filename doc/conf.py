@@ -69,9 +69,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Chirp'
+project = 'libchirp'
 copyright = (
-    '%s, Jean-Louis Fuchs, Sven Osterwalder, '
+    '%s, Jean-Louis Fuchs, Sven Osterwalder, David Vogt'
     'Adfinis SyGroup' % datetime.datetime.now().year
 )
 
