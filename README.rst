@@ -286,7 +286,7 @@ License
 
 LGPL 3.0
 
-Contribution
+Contributing
 ============
 
 Please open an issue first. Contributions of missing features are very welcome, but
