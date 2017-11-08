@@ -142,8 +142,16 @@ Install to prefix /usr, but copy to package dir. (Package creation)
    make check
    make install DEST=pkgdir
 
-.. [3] Script-headers can be patched to work with python2. It also possible to generate
-   the makefile on a different system (for example in a embedded scenario)
+How to create a source distribution
+
+.. code-block:: bash
+
+   cd build
+   ../configure --dest --doc
+   make dist
+   ls dist
+
+.. [3] Script-headers can be patched to work with python2.
 
 Windows
 -------

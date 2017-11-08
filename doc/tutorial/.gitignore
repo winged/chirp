@@ -1,0 +1,8 @@
+/libchirp.c
+/libchirp.h
+/libchirp-config.h
+/*.o
+/*.a
+/*.so
+/agent
+/monitoring

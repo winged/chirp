@@ -1,6 +1,3 @@
-# Conditional flags
-# =================
-
 # Release flags (see base.mk for standard flags)
 # ==============================================
 CFLAGS += \
