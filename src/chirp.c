@@ -90,20 +90,23 @@ static
 void
 _ch_chirp_closing_down_cb(uv_handle_t* handle);
 //
-//    Close chirp after the check callback has been closed and stops the libuv
-//    loop.
+//    Close chirp after the check callback has been closed, calls
+//    done-callback in next uv-loop iteration. To make sure that any open
+//    requests are handled, before informing the user.
 //
-//    :param uv_handle_t* handle: Base libuv handle which contains chirp (as
-//                                data)
+//    :param uv_handle_t* handle: Handle just closed
 //
 
 // .. c:function::
 static
 void
-_ch_chirp_done(uv_async_t* handle);
+_ch_chirp_done_cb(uv_async_t* handle);
 //
-//    Done callback calls the user supplied done callback when chirp is
-//    finished.
+//    The done async-callback calls the user supplied done callback when chirp is
+//    finished. Then closes itself, which calls _ch_chirp_stop_cb, which finally
+//    frees chirp.
+//
+//    :param uv_async_t* handle: Async handle
 //
 
 // .. c:function::
@@ -136,7 +139,17 @@ _ch_chirp_start(uv_async_t* handle);
 //
 //    Start callback calls the user supplied done callback.
 //
-//    :param uv_handle_t* handle: Async handler.
+//    :param uv_async_t* handle: Async handler.
+//
+
+// .. c:function::
+static
+void
+_ch_chirp_stop_cb(uv_handle_t* handle);
+//
+//    Last close callback when stopping chirp. Frees chirp.
+//
+//    :param uv_handle_t* handle: handle just closed
 //
 
 // .. c:function::
@@ -286,8 +299,22 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 {
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
-    ch_chirp_int_t* ichirp = chirp->_;
     uv_async_send(&chirp->_done);
+}
+// .. c:function::
+static
+void
+_ch_chirp_stop_cb(uv_handle_t* handle)
+//    :noindex:
+//
+//    see: :c:func:`_ch_chirp_stop_cb`
+//
+// .. code-block:: cpp
+//
+{
+    ch_chirp_t* chirp     = handle->data;
+    ch_chirp_int_t* ichirp = chirp->_;
+    ch_chirp_check_m(chirp);
     if(ichirp->flags & CH_CHIRP_AUTO_STOP) {
         uv_stop(ichirp->loop);
         LC(
@@ -305,17 +332,17 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 // .. c:function::
 static
 void
-_ch_chirp_done(uv_async_t* handle)
+_ch_chirp_done_cb(uv_async_t* handle)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_done`
+//    see: :c:func:`_ch_chirp_done_cb`
 //
 // .. code-block:: cpp
 //
 {
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
-    uv_close((uv_handle_t*) handle, NULL);
+    uv_close((uv_handle_t*) handle, _ch_chirp_stop_cb);
     if(chirp->_done_cb != NULL) {
         chirp->_done_cb(chirp);
     }
@@ -728,7 +755,7 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
-    if(uv_async_init(loop, &chirp->_done, _ch_chirp_done) < 0) {
+    if(uv_async_init(loop, &chirp->_done, _ch_chirp_done_cb) < 0) {
         E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
@@ -1105,17 +1132,14 @@ ch_run(uv_loop_t* loop)
 {
     int tmp_err = uv_run(loop, UV_RUN_DEFAULT);
     if(tmp_err != 0) {
-        /* On Windows uv_run returns non-zero, which I expect, since we
-         * uv_stop() inside a handler that just closed all kinds of resources,
-         * which may cause new requests/handlers.
-         *
-         * I didn't find any documents assuring that my solution is good,
-         * though.
-         */
+        /* uv_stop() was called and there are still active handles or requests.
+         * This is clearly a bug in chirp or user code, we try to recover with
+         * a warning. */
+        fprintf(stderr, "WARNING: Cannot close all uv-handles/requests.\n");
         tmp_err = uv_run(loop, UV_RUN_ONCE);
-        /* Now we clearly have a problem */
+        /* Now we have serious a problem */
         if(tmp_err != 0) {
-            fprintf(stderr, "FATAL: Cannot close all uv-handles.\n");
+            fprintf(stderr, "FATAL: Cannot close all uv-handles/requests.\n");
         }
     }
     return tmp_err;
