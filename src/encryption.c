@@ -106,19 +106,21 @@ ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc)
         (void)(file);
         (void)(line);
         if(mode & CRYPTO_LOCK) {
-            if(!(mode & CRYPTO_READ))  /* The user requested write */
+            if(!(mode & CRYPTO_READ)) {  /* The user requested write */
                 uv_rwlock_wrlock(&_ch_en_lock_list[n]);
-            else if(!(mode & CRYPTO_WRITE)) /* The user requested read */
+            } else if(!(mode & CRYPTO_WRITE)) { /* The user requested read */
                 uv_rwlock_rdlock(&_ch_en_lock_list[n]);
-            else  /* The user requested something bad, do a wrlock for safety */
+            } else {  /* The user request is bad, do a wrlock for safety */
                 uv_rwlock_wrlock(&_ch_en_lock_list[n]);
+            }
         } else {
-            if(!(mode & CRYPTO_READ))
+            if(!(mode & CRYPTO_READ)) {
                 uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
-            else if(!(mode & CRYPTO_WRITE))
+            } else if(!(mode & CRYPTO_WRITE)) {
                 uv_rwlock_rdunlock(&_ch_en_lock_list[n]);
-            else
+            } else {
                 uv_rwlock_wrunlock(&_ch_en_lock_list[n]);
+            }
         }
     }
 #endif //CH_OPENSSL_10_API

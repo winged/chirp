@@ -142,10 +142,12 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
         item->next = NULL;
         item->msg = msg;
         ch_tst_msg_push(&_ch_tst_msg_stack, item);
-        if(stack_was_null)
+        if(stack_was_null) {
             uv_timer_start(&_ch_tst_sleep_timer, _ch_tst_delay_release, 300, 0);
-    } else
+        }
+    } else {
         ch_chirp_release_recv_handler(msg);
+    }
     if(_ch_tst_msg_echo_count == _ch_tst_message_count) {
         uv_timer_stop(&_ch_tst_sleep_timer);
         _ch_tst_delay_release(&_ch_tst_sleep_timer);
@@ -203,10 +205,11 @@ _ch_tst_send_message(ch_chirp_t* chirp)
     int use_ts = ch_qc_tgen_bool();
 
     ch_tst_chirp_send_t send_func;
-    if(use_ts)
+    if(use_ts) {
         send_func = ch_chirp_send_ts;
-    else
+    } else {
         send_func = ch_chirp_send;
+    }
 
     if(simple) {
         _ch_tst_simple_msg(&_ch_tst_msg);
@@ -287,10 +290,11 @@ print_help(struct option long_options[])
     printf("Usage:\n\n");
     while(long_options->name != NULL) {
         printf("    --%s ", long_options->name);
-        if(long_options->has_arg == required_argument)
+        if(long_options->has_arg == required_argument) {
             printf("arg");
-        else if(long_options->has_arg == optional_argument)
+        } else if(long_options->has_arg == optional_argument) {
             printf("[arg]");
+        }
         printf("\n");
         long_options++;
     }
@@ -318,8 +322,9 @@ main(int argc, char *argv[])
             long_options,
             &option_index
         );
-        if(c == -1)
+        if(c == -1) {
             break;
+        }
         switch(c) {
             case CH_TST_HELP:
                 print_help(long_options);

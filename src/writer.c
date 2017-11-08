@@ -279,11 +279,14 @@ _ch_wr_write_chirp_header_cb(uv_write_t* req, int status)
     ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->data_len > 0)
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) {
+        return;
+    }
+    if(msg->data_len > 0) {
         ch_cn_write(conn, msg->data, msg->data_len, _ch_wr_write_data_cb);
-    else
+    } else {
         _ch_wr_write_finish(chirp, writer, conn);
+    }
 }
 
 // .. c:function::
@@ -301,7 +304,9 @@ _ch_wr_write_data_cb(uv_write_t* req, int status)
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
-    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) {
+        return;
+    }
     _ch_wr_write_finish(chirp, writer, conn);
 }
 
@@ -356,23 +361,26 @@ _ch_wr_write_msg_header_cb(uv_write_t* req, int status)
     ch_chirp_check_m(chirp);
     ch_writer_t* writer = &conn->writer;
     ch_message_t* msg = writer->msg;
-    if(_ch_wr_check_write_error(chirp, writer, conn, status)) return;
-    if(msg->header_len > 0)
+    if(_ch_wr_check_write_error(chirp, writer, conn, status)) {
+        return;
+    }
+    if(msg->header_len > 0) {
         ch_cn_write(
             conn,
             msg->header,
             msg->header_len,
             _ch_wr_write_chirp_header_cb
         );
-    else if(msg->data_len > 0)
+    } else if(msg->data_len > 0) {
         ch_cn_write(
             conn,
             msg->data,
             msg->data_len,
             _ch_wr_write_data_cb
         );
-    else
+    } else {
         _ch_wr_write_finish(chirp, writer, conn);
+    }
 }
 
 // .. c:function::
@@ -407,10 +415,11 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //
 {
     ch_chirp_check_m(chirp);
-    if(chirp->_->config.ACKNOWLEDGE != 0)
+    if(chirp->_->config.ACKNOWLEDGE != 0) {
         msg->type = CH_MSG_REQ_ACK;
-    else
+    } else {
         msg->type = 0;
+    }
     return ch_wr_send(chirp, msg, send_cb);
 }
 
@@ -497,10 +506,12 @@ ch_wr_process_queues(ch_remote_t* remote)
     ch_connection_t* conn = remote->conn;
     A(conn != NULL, "The connection must be set");
     ch_message_t* msg = NULL;
-    if(!(conn->flags & CH_CN_CONNECTED))
+    if(!(conn->flags & CH_CN_CONNECTED)) {
         return CH_BUSY;
-    if(conn->writer.msg != NULL)
+    }
+    if(conn->writer.msg != NULL) {
         return CH_BUSY;
+    }
     if(remote->flags & CH_RM_RETRY_WAITING_MSG) {
         A(
             remote->wait_ack_message,
@@ -519,8 +530,9 @@ ch_wr_process_queues(ch_remote_t* remote)
             remote->wait_ack_message = msg;
             ch_wr_write(conn, msg);
             return CH_SUCCESS;
-        } else
+        } else {
             return CH_BUSY;
+        }
     }
     return CH_EMPTY;
 }
@@ -537,8 +549,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 {
     ch_chirp_int_t* ichirp  = chirp->_;
     if(ichirp->flags & CH_CHIRP_CLOSING || ichirp->flags & CH_CHIRP_CLOSED) {
-        if(send_cb != NULL)
+        if(send_cb != NULL) {
             send_cb(chirp, msg, CH_SHUTDOWN, -1);
+        }
         return CH_SHUTDOWN;
     }
     int tmp_err;
@@ -558,8 +571,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(*remote));
         if(remote == NULL) {
-            if(send_cb != NULL)
+            if(send_cb != NULL) {
                 send_cb(chirp, msg, CH_ENOMEM, -1);
+            }
             return CH_ENOMEM;
         }
         *remote = search_remote;
@@ -569,10 +583,11 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     remote->serial += 1;
     msg->serial = remote->serial;
 
-    if(msg->type & CH_MSG_REQ_ACK)
+    if(msg->type & CH_MSG_REQ_ACK) {
         ch_msg_enqueue(&remote->rack_msg_queue, msg);
-    else
+    } else {
         ch_msg_enqueue(&remote->no_rack_msg_queue, msg);
+    }
 
     conn = remote->conn;
 #   begindef ch_wr_send_check_error_m(err_msg)
@@ -585,8 +600,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 (void*) conn
             );
             msg->_flags &= ~CH_MSG_USED;
-            if(send_cb != NULL)
+            if(send_cb != NULL) {
                 send_cb(chirp, msg, CH_FATAL, -1);
+            }
             return CH_FATAL;
         }
 #   enddef
@@ -599,8 +615,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 CH_NO_ARG
             );
             msg->_flags &= ~CH_MSG_USED;
-            if(send_cb != NULL)
+            if(send_cb != NULL) {
                 send_cb(chirp, msg, CH_ENOMEM, -1);
+            }
             return CH_ENOMEM;
         }
         remote->conn = conn;
@@ -675,8 +692,9 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 tmp_err
             );
         }
-    } else
+    } else {
         ch_wr_process_queues(remote);
+    }
     return CH_SUCCESS;
 }
 

@@ -38,8 +38,9 @@ ch_msg_get_address(
 //
 {
     int ip_protocol = message->ip_protocol;
-    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6))
+    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
         return CH_VALUE_ERROR;
+    }
     if(uv_inet_ntop(
             ip_protocol,
             message->address,
@@ -98,8 +99,9 @@ ch_msg_set_address(
 //
 {
     message->ip_protocol = ip_protocol;
-    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6))
+    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
         return CH_VALUE_ERROR;
+    }
     if(uv_inet_pton(ip_protocol, address, message->address)) {
         return CH_VALUE_ERROR;
     }

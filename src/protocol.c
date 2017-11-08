@@ -169,8 +169,9 @@ _ch_pr_close_free_connections(ch_chirp_t* chirp)
     /* We may not change the data-structure during iteration */
     while(protocol->remotes != ch_rm_nil_ptr) {
         ch_remote_t* remote = protocol->remotes;
-        if(remote->conn != NULL)
+        if(remote->conn != NULL) {
             ch_cn_shutdown(remote->conn, CH_SHUTDOWN);
+        }
         ch_rm_delete_node(&protocol->remotes, remote);
         ch_free(remote);
     }
@@ -293,10 +294,11 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             ch_cn_shutdown(conn, CH_FATAL);
             return;
         };
-        if(addr.ss_family == AF_INET6)
+        if(addr.ss_family == AF_INET6) {
             ch_pr_parse_ip_addr_m(6, INET6, in6)
-        else
+        } else {
             ch_pr_parse_ip_addr_m(4, INET, in)
+        }
         if(!(
                 ichirp->config.DISABLE_ENCRYPTION  ||
                 ch_is_local_addr(&taddr)
@@ -304,9 +306,9 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             conn->flags |= CH_CN_ENCRYPTED;
         }
         ch_pr_conn_start(chirp, conn, client, 1);
-    }
-    else
+    } else {
         ch_cn_shutdown(conn, CH_FATAL);
+    }
 }
 
 // .. c:function::
@@ -327,8 +329,9 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
     if(buf) {
         int stop;
         int bytes_handled = ch_rd_read(conn, buf, nread, &stop);
-        if(stop)
+        if(stop) {
             _ch_pr_update_resume(resume, buf, nread, bytes_handled);
+        }
         return !stop;
     }
     return 1;
@@ -365,8 +368,7 @@ ch_pr_conn_start(
 //
 {
 #   begindef ch_pr_conn_start_handle_error_m(msg)
-        if(tmp_err != CH_SUCCESS)
-        {
+        if(tmp_err != CH_SUCCESS) {
             E(chirp, msg " connection (%d)", tmp_err);
             ch_cn_shutdown(conn, CH_FATAL);
             return tmp_err;
@@ -389,9 +391,9 @@ ch_pr_conn_start(
         _ch_pr_read_data_cb
     );
     if(conn->flags & CH_CN_ENCRYPTED) {
-        if(accept)
+        if(accept) {
             SSL_set_accept_state(conn->ssl);
-        else {
+        } else {
             SSL_set_connect_state(conn->ssl);
             _ch_pr_do_handshake(conn);
         }
@@ -435,14 +437,16 @@ _ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t nread, int* stop)
                 ch_cn_shutdown(conn, CH_TLS_ERROR);
                 return -1;
             }
-        } else
+        } else {
             bytes_handled += tmp_err;
-        if(conn->flags & CH_CN_TLS_HANDSHAKE)
+        }
+        if(conn->flags & CH_CN_TLS_HANDSHAKE) {
             _ch_pr_do_handshake(conn);
-        else {
+        } else {
             ch_pr_decrypt_read(conn, stop);
-            if(*stop)
+            if(*stop) {
                 return bytes_handled;
+            }
         }
     } while(bytes_handled < nread);
     return bytes_handled;
@@ -543,8 +547,9 @@ _ch_pr_resume(ch_connection_t* conn)
     if(conn->flags & CH_CN_ENCRYPTED) {
         int stop;
         int ret = _ch_pr_read_resume(conn, &conn->tls_resume);
-        if(!ret)
+        if(!ret) {
             return ret;
+        }
         ch_resume_state_t* resume = &conn->read_resume;
 
         int bytes_handled;
@@ -554,11 +559,13 @@ _ch_pr_resume(ch_connection_t* conn)
         resume->bytes_to_read  = 0;
 
         bytes_handled = _ch_pr_decrypt_feed(conn, buf, nread, &stop);
-        if(stop)
+        if(stop) {
             _ch_pr_update_resume(resume, buf, nread, bytes_handled);
+        }
         return !stop;
-    } else
+    } else {
         return _ch_pr_read_resume(conn, &conn->read_resume);
+    }
 }
 
 // .. c:function::
@@ -603,18 +610,19 @@ _ch_pr_read_data_cb(
     }
     ch_pr_log_nread_m("%d available bytes.");
     int stop;
-    if(conn->flags & CH_CN_ENCRYPTED)
+    if(conn->flags & CH_CN_ENCRYPTED) {
         bytes_handled = _ch_pr_decrypt_feed(conn, buf->base, nread, &stop);
-    else {
+    } else {
         bytes_handled = ch_rd_read(conn, buf->base, nread, &stop);
     }
-    if(stop)
+    if(stop) {
         _ch_pr_update_resume(
             &conn->read_resume,
             buf->base,
             nread,
             bytes_handled
         );
+    }
 }
 
 // .. c:function::

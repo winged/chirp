@@ -316,8 +316,9 @@ _ch_chirp_done(uv_async_t* handle)
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
     uv_close((uv_handle_t*) handle, NULL);
-    if(chirp->_done_cb != NULL)
+    if(chirp->_done_cb != NULL) {
         chirp->_done_cb(chirp);
+    }
 }
 
 // .. c:function::
@@ -333,8 +334,9 @@ _ch_chirp_init_signals(ch_chirp_t* chirp)
 {
 #   ifndef CH_DISABLE_SIGNALS
         ch_chirp_int_t* ichirp = chirp->_;
-        if(ichirp->config.DISABLE_SIGNALS)
+        if(ichirp->config.DISABLE_SIGNALS) {
             return;
+        }
         uv_signal_init(ichirp->loop, &ichirp->signals[0]);
         uv_signal_init(ichirp->loop, &ichirp->signals[1]);
 
@@ -379,8 +381,9 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
 
-    if(signo != SIGINT && signo != SIGTERM)
+    if(signo != SIGINT && signo != SIGTERM) {
         return;
+    }
 
     ch_chirp_close_ts(chirp);
 }
@@ -401,8 +404,9 @@ _ch_chirp_start(uv_async_t* handle)
     ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     uv_close((uv_handle_t*) handle, NULL);
-    if(ichirp->start_cb != NULL)
+    if(ichirp->start_cb != NULL) {
         ichirp->start_cb(chirp);
+    }
 }
 
 // .. c:function::
@@ -573,10 +577,12 @@ ch_chirp_close_ts(ch_chirp_t* chirp)
     A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");
     if(chirp->_ != NULL) {
         ichirp = chirp->_;
-        if(ichirp->flags & CH_CHIRP_CLOSED)
+        if(ichirp->flags & CH_CHIRP_CLOSED) {
             chirp_closed = 1;
-    } else
+        }
+    } else {
         chirp_closed = 1;
+    }
     if(chirp_closed) {
         fprintf(
             stderr,
@@ -694,17 +700,19 @@ ch_chirp_init(
     ch_protocol_t* protocol = &ichirp->protocol;
     ch_encryption_t* enc    = &ichirp->encryption;
     chirp->_                = ichirp;
-    if(log_cb != NULL)
+    if(log_cb != NULL) {
         ch_chirp_set_log_callback(chirp, log_cb);
+    }
 
     srand((unsigned int) time(NULL));
     unsigned int i = 0;
     while(i < (sizeof(tmp_conf->IDENTITY) - 1) && tmp_conf->IDENTITY[i] == 0)
         i += 1;
-    if(tmp_conf->IDENTITY[i] == 0)
+    if(tmp_conf->IDENTITY[i] == 0) {
         ch_random_ints_as_bytes(ichirp->identity, sizeof(ichirp->identity));
-    else
+    } else {
         *ichirp->identity = *tmp_conf->IDENTITY;
+    }
 
     tmp_err = _ch_chirp_verify_cfg(chirp);
     if(tmp_err != CH_SUCCESS) {
@@ -813,8 +821,9 @@ ch_chirp_try_message_finish(
         {
             char id[CH_ID_SIZE * 2 + 1];
             char* action = "Success";
-            if(status != CH_SUCCESS)
+            if(status != CH_SUCCESS) {
                 action = "Failure:";
+            }
             ch_bytes_to_hex(
                 msg->identity,
                 sizeof(msg->identity),

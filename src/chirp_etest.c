@@ -54,7 +54,8 @@ main()
     ch_run(&loop);
     int tmp_err = ch_loop_close(&loop);
     ch_libchirp_cleanup();
-    if(tmp_err == CH_SUCCESS)
+    if(tmp_err == CH_SUCCESS) {
         printf("Basic check successful\n");
+    }
     return tmp_err;
 }

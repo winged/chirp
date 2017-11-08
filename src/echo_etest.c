@@ -39,8 +39,9 @@ _ch_tst_start(ch_chirp_t* chirp)
 {
     ch_chirp_check_m(chirp);
     L(chirp, "Echo server started", CH_NO_ARG);
-    if(always_encrypt)
+    if(always_encrypt) {
         ch_chirp_set_always_encrypt(chirp);
+    }
 }
 
 static

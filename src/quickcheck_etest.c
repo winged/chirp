@@ -19,8 +19,9 @@ ch_is_ascii_string(ch_qc_mem_track_t* item, char* string)
 {
     int i;
     for(i = 0; i < item->count; i++) {
-        if(string[i] < 0)
+        if(string[i] < 0) {
             return 0;
+        }
     }
     return item->data[item->count - 1] == 0;
 }
@@ -46,8 +47,9 @@ main()
             break;
         }
     }
-    if(ret == 0)
+    if(ret == 0) {
         printf("Test sucessful\n");
+    }
     ch_qc_free_mem();
     ch_libchirp_cleanup();
     return ret;

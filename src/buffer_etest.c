@@ -49,10 +49,11 @@ ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)
             handler = ch_bf_acquire(&pool, &ret);
             mpack_start_array(writer, 2);
             mpack_write_int(writer, ret);
-            if(handler == NULL)
+            if(handler == NULL) {
                 mpack_write_int(writer, -1);
-            else
+            } else {
                 mpack_write_int(writer, handler->id);
+            }
             mpack_finish_array(writer);
             break;
         case func_release_e:

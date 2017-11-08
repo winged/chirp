@@ -115,15 +115,17 @@ _ch_lg_colors[8] = {
 //
     {
         /* We do not track failed allocations */
-        if(buf == NULL)
+        if(buf == NULL) {
             return buf;
+        }
         ch_alloc_track_t* track = _ch_alloc_cb(sizeof(*track));
         assert(track);
         /* We treat a failure to track as an alloc failure. This code is here
          * if we ever need to use this in release mode (or just for
          * correctness). */
-        if(track == NULL)
+        if(track == NULL) {
             return NULL;
+        }
         _ch_at_node_init(track);
         track->buf = buf;
         uv_mutex_lock(&_ch_at_lock);
@@ -205,13 +207,15 @@ _ch_lg_colors[8] = {
 //
     {
         /* We do not track failed reallocations */
-        if(rbuf == NULL)
+        if(rbuf == NULL) {
             return rbuf;
+        }
         ch_alloc_track_t key;
         ch_alloc_track_t* track;
         /* Shortcut if the allocator was able to extend the allocation */
-        if(buf == rbuf)
+        if(buf == rbuf) {
             return rbuf;
+        }
         key.buf = buf;
         uv_mutex_lock(&_ch_at_lock);
         int ret = _ch_at_delete(&_ch_alloc_tree, &key, &track);
@@ -307,9 +311,9 @@ ch_is_local_addr(ch_text_address_t* addr)
 // .. code-block:: cpp
 //
 {
-    if(_ch_always_encrypt)
+    if(_ch_always_encrypt) {
         return 0;
-    else {
+    } else {
         return (
             strncmp("::1", addr->data, sizeof(addr->data)) == 0 ||
             strncmp("127.0.0.1", addr->data, sizeof(addr->data)) == 0
@@ -446,8 +450,9 @@ ch_write_log(
     va_list args;
     va_start(args, error);
     char* tfile = strrchr(file, '/');
-    if(tfile != NULL)
+    if(tfile != NULL) {
         file = tfile + 1;
+    }
     char buf1[1024];
     if(chirp->_log != NULL) {
         char buf2[1024];

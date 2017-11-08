@@ -27,23 +27,27 @@ ch_tst_check_pattern(ch_buf* data, size_t count)
 // .. code-block:: cpp
 //
 {
-    if(count == 0)
+    if(count == 0) {
         return 1;
+    }
     size_t pos = 7;
-    if(memcmp(data, "pattern", pos) != 0)
+    if(memcmp(data, "pattern", pos) != 0) {
         return 0;
+    }
     for(;;) {
         uint8_t pat_len = data[pos];
         uint8_t i = 0;
         pos += 1;
         while(i < pat_len  && pos < count) {
-            if(((uint8_t) data[pos]) != i)
+            if(((uint8_t) data[pos]) != i) {
                 return 0;
+            }
             pos += 1;
             i += 1;
         }
-        if(pos >= count)
+        if(pos >= count) {
             return 1;
+        }
     }
     return 1;
 }
@@ -74,16 +78,17 @@ _ch_tst_gen_data_field(
     double draw = ch_qc_tgen_double();
     size_t count = 0;
     if(draw > zero_probability) {
-        if(draw < max_probability)
+        if(draw < max_probability) {
             count = max_count;
-        else {
+        } else {
             count = ch_qc_tgen_double() * max_count;
         }
     }
-    if(count == 0)
+    if(count == 0) {
         return count;
-    else
+    } else {
         count += pos;
+    }
     track = ch_qc_track_alloc(count);
     *data = track->data;
     strncpy(track->data, "pattern", 7);
@@ -122,10 +127,11 @@ ch_tst_gen_message(void)
     int big = ch_qc_tgen_bool();
     if(big) {
         int very = ch_qc_tgen_bool();
-        if(very)
+        if(very) {
             data_count = 1024 * 1024;
-        else
+        } else {
             data_count = 1024 * 256;
+        }
     }
     ch_qc_mem_track_t* track;
     track = ch_qc_track_alloc(sizeof(*message));
@@ -144,9 +150,10 @@ ch_tst_gen_message(void)
         &message->data
     );
     int ipv6 = ch_qc_tgen_bool();
-    if(ipv6)
+    if(ipv6) {
         ch_msg_set_address(message, AF_INET6, "::1", 59732);
-    else
+    } else {
         ch_msg_set_address(message, AF_INET, "127.0.0.1", 59732);
+    }
     return message;
 }

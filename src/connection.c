@@ -132,8 +132,9 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
     ch_chirp_check_m(chirp);
     ch_chirp_int_t* ichirp = chirp->_;
     size_t size = ichirp->config.BUFFER_SIZE;
-    if(size == 0)
+    if(size == 0) {
         size = CH_BUFFER_SIZE;
+    }
     conn->buffer_uv   = ch_alloc(size);
     conn->buffer_size = size;
     if(conn->flags & CH_CN_ENCRYPTED) {
@@ -142,14 +143,15 @@ _ch_cn_allocate_buffers(ch_connection_t* conn)
         conn->buffer_rtls  = ch_alloc(size);
     }
     int alloc_nok = 0;
-    if(conn->flags & CH_CN_ENCRYPTED)
+    if(conn->flags & CH_CN_ENCRYPTED) {
         alloc_nok = !(
             conn->buffer_uv &&
             conn->buffer_wtls &&
             conn->buffer_rtls
         );
-    else
+    } else {
         alloc_nok = !conn->buffer_uv;
+    }
     if(alloc_nok) {
         EC(
             chirp,
@@ -186,8 +188,7 @@ _ch_cn_closing(uv_shutdown_t* req, int bypass)
     ch_chirp_check_m(chirp);
     LC(chirp, "Shutdown callback called. ", "ch_connection_t:%p", (void*) conn);
     conn->flags &= ~CH_CN_CONNECTED;
-    if(!bypass)
-    {
+    if(!bypass) {
         int tmp_err = uv_timer_stop(&conn->shutdown_timeout);
         if(tmp_err != CH_SUCCESS) {
             EC(
@@ -288,8 +289,9 @@ _ch_cn_partial_write(ch_connection_t* conn)
             can_write_more = is_write_size_valid && is_buffer_size_valid;
             pending = BIO_pending(conn->bio_app);
         }
-        if(!can_write_more)
+        if(!can_write_more) {
             break;
+        }
         int tmp_err = SSL_write(
             conn->ssl,
             conn->write_buffer + bytes_encrypted + conn->write_written,
@@ -583,11 +585,13 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->flags          |= flags;
     conn->write_req.data  = conn;
     tmp_err = ch_rd_init(&conn->reader, conn, ichirp);
-    if(tmp_err != CH_SUCCESS)
+    if(tmp_err != CH_SUCCESS) {
         return tmp_err;
+    }
     tmp_err = ch_wr_init(&conn->writer, conn);
-    if(tmp_err != CH_SUCCESS)
+    if(tmp_err != CH_SUCCESS) {
         return tmp_err;
+    }
     conn->flags |= CH_CN_INIT_READER_WRITER;
 
     tmp_err = uv_timer_init(ichirp->loop, &conn->shutdown_timeout);
@@ -604,10 +608,12 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     conn->shutdown_timeout.data = conn;
     conn->flags |= CH_CN_INIT_SHUTDOWN_TIMEOUT;
 
-    if(conn->flags & CH_CN_ENCRYPTED)
+    if(conn->flags & CH_CN_ENCRYPTED) {
         tmp_err = ch_cn_init_enc(chirp, conn);
-    if(tmp_err != CH_SUCCESS)
+    }
+    if(tmp_err != CH_SUCCESS) {
         return tmp_err;
+    }
     /* An unencrypted connection also has CH_CN_INIT_ENCRYPTION */
     conn->flags |= CH_CN_INIT_ENCRYPTION;
     return _ch_cn_allocate_buffers(conn);
@@ -762,11 +768,13 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
     ch_remote_t* remote = conn->remote;
     /* In early handshake remote can empty, since we allocate resources after
      * successful handshake. */
-    if(remote)
+    if(remote) {
         remote->conn = NULL;
+    }
     LC(chirp, "Shutdown connection. ", "ch_connection_t:%p", (void*) conn);
-    if(conn->flags & CH_CN_INIT_CLIENT)
+    if(conn->flags & CH_CN_INIT_CLIENT) {
         uv_read_stop((uv_stream_t*) &conn->client);
+    }
     if(msg != NULL) {
         msg->_flags = CH_MSG_FAILURE;
         ch_chirp_try_message_finish(
@@ -797,16 +805,16 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
                     "ch_connection_t:%p",
                     (void*) conn
                 );
-            } else
+            } else {
                 ch_cn_send_if_pending(conn);
+            }
         }
     }
     if(ichirp->flags & CH_CHIRP_CLOSING) {
         conn->flags |= CH_CN_DO_CLOSE_ACCOUTING;
         chirp->_->closing_tasks += 1;
     }
-    if(conn->flags & CH_CN_CONNECTED)
-    {
+    if(conn->flags & CH_CN_CONNECTED) {
         tmp_err = uv_timer_start(
             &conn->shutdown_timeout,
             _ch_cn_shutdown_timeout_cb,

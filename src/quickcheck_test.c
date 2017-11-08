@@ -165,10 +165,12 @@ ch_qc_pgen_uint8_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
+    if(prop < 0.1) {
         return 0;
-    if(prop < 0.2)
+    }
+    if(prop < 0.2) {
         return 0xFF;
+    }
     return rand();
 }
 
@@ -183,10 +185,12 @@ ch_qc_pgen_uint16_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
+    if(prop < 0.1) {
         return 0;
-    if(prop < 0.2)
+    }
+    if(prop < 0.2) {
         return 0xFFFF;
+    }
     return rand();
 }
 
@@ -201,10 +205,12 @@ ch_qc_pgen_uint32_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1)
+    if(prop < 0.1) {
         return 0;
-    if(prop < 0.2)
+    }
+    if(prop < 0.2) {
         return 0xFFFFFFFF;
+    }
     return rand();
 }
 

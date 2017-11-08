@@ -54,10 +54,11 @@ ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(load);
     (void)(msg);
     _ch_tst_sent += 1;
-    if(_ch_tst_sent < _ch_tst_msg_count)
+    if(_ch_tst_sent < _ch_tst_msg_count) {
         ch_chirp_send(chirp, msg, ch_tst_sent_cb);
-    else
+    } else {
         uv_timer_start(&_ch_tst_sleep_timer, _ch_tst_close_cb, 1000, 0);
+    }
 }
 
 static
@@ -205,8 +206,9 @@ main(
             "[nmsgs] [ipv4:port]+ : send mode\n"
         );
         return 1;
-    } else if(argc == 2)
+    } else if(argc == 2) {
         ch_tst_listen(argv[1]);
-    else
+    } else {
         ch_tst_send(argc, argv);
+    }
 }
