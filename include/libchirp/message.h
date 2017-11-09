@@ -112,6 +112,7 @@ struct ch_message_s {
     int32_t        port;
     void*          user_data;
     uint8_t        _flags;
+    uint8_t        _retries;
     ch_send_cb_t   _send_cb;
     int            _handler;
     void*          _pool;
