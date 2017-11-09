@@ -299,7 +299,7 @@ _ch_chirp_closing_down_cb(uv_handle_t* handle)
 {
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
-    uv_async_send(&chirp->_done);
+    uv_async_send(&chirp->_->done);
 }
 // .. c:function::
 static
@@ -343,8 +343,9 @@ _ch_chirp_done_cb(uv_async_t* handle)
     ch_chirp_t* chirp = handle->data;
     ch_chirp_check_m(chirp);
     uv_close((uv_handle_t*) handle, _ch_chirp_stop_cb);
-    if(chirp->_done_cb != NULL) {
-        chirp->_done_cb(chirp);
+    ch_chirp_int_t* ichirp = chirp->_;
+    if(ichirp->done_cb != NULL) {
+        ichirp->done_cb(chirp);
     }
 }
 
@@ -702,7 +703,6 @@ ch_chirp_init(
     int tmp_err;
     uv_mutex_lock(&_ch_chirp_init_lock);
     memset(chirp, 0, sizeof(*chirp));
-    chirp->_done_cb         = done_cb;
     chirp->_init            = CH_CHIRP_MAGIC;
     chirp->_thread          = uv_thread_self();
     ch_chirp_int_t* ichirp  = ch_alloc(sizeof(*ichirp));
@@ -718,6 +718,7 @@ ch_chirp_init(
         return CH_ENOMEM;
     }
     memset(ichirp, 0, sizeof(*ichirp));
+    ichirp->done_cb         = done_cb;
     ichirp->config          = *config;
     ichirp->public_port     = config->PORT;
     ichirp->loop            = loop;
@@ -755,14 +756,14 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
-    if(uv_async_init(loop, &chirp->_done, _ch_chirp_done_cb) < 0) {
+    if(uv_async_init(loop, &ichirp->done, _ch_chirp_done_cb) < 0) {
         E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
-    chirp->_done.data = chirp;
+    ichirp->done.data = chirp;
     if(uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
         E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);

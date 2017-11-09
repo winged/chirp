@@ -134,8 +134,8 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 
 // .. c:type:: ch_chirp_t
 //
-//    Chirp object. It has no public members and uses an opaque pointer to its
-//    internal data structures.
+//    Chirp object. It has no public members except user_data and uses an
+//    opaque pointer to its internal data structures.
 //
 //    .. c:member:: void* user_data;
 //
@@ -146,13 +146,11 @@ typedef struct ch_chirp_int_s ch_chirp_int_t;
 // .. code-block:: cpp
 //
 struct ch_chirp_s {
-    void*        user_data;
+    void*           user_data;
     ch_chirp_int_t* _;
-    uv_thread_t  _thread;
-    ch_log_cb_t  _log;
-    int          _init;
-    uv_async_t   _done;
-    ch_done_cb_t _done_cb;
+    uv_thread_t     _thread;
+    ch_log_cb_t     _log;
+    int             _init;
 };
 
 // .. c:type:: ch_identity_t

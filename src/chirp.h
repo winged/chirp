@@ -208,6 +208,8 @@ struct ch_chirp_int_s {
     uv_async_t          send_ts;
     uv_mutex_t          send_ts_queue_lock;
     ch_recv_cb_t        recv_cb;
+    uv_async_t          done;
+    ch_done_cb_t        done_cb;
 };
 
 // .. c:function::
