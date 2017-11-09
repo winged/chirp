@@ -114,7 +114,7 @@ struct ch_message_s {
     uint8_t        _flags;
     uint8_t        _retries;
     ch_send_cb_t   _send_cb;
-    int            _handler;
+    uint8_t        _handler;
     void*          _pool;
     ch_message_t*  _next;
 };
