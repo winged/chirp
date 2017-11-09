@@ -57,9 +57,9 @@ Consequences
 
 * Load is not reported
 
-We want to keep the interfaces, so the versions implementing these feature won't
-break the ABI. Please also leave retry and flow-control on their defaults, they
-will integrate seemingless.
+We want to keep the interfaces, so the versions implementing these features
+won't break the ABI. Please also leave retry and flow-control on their defaults,
+they will integrate seemingless.
 
 Example
 =======

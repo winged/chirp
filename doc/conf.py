@@ -71,7 +71,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'libchirp'
 copyright = (
-    '%s, Jean-Louis Fuchs, Sven Osterwalder, David Vogt'
+    '%s, Jean-Louis Fuchs, Sven Osterwalder, David Vogt '
     'Adfinis SyGroup' % datetime.datetime.now().year
 )
 
