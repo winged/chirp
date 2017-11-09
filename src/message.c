@@ -108,3 +108,18 @@ ch_msg_set_address(
     message->port = port;
     return CH_SUCCESS;
 }
+
+// .. c:function::
+CH_EXPORT
+void
+ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data)
+//    :noindex:
+//
+//    see: :c:func:`ch_msg_set_data`
+//
+// .. code-block:: cpp
+//
+{
+    message->data_len = len;
+    message->data     = data;
+}

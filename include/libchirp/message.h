@@ -64,11 +64,15 @@
 //
 //    .. c:member:: ch_buf* header
 //
-//       Header of the message defined as (char-) buffer.
+//       Header of the message defined as (char-) buffer. Used by upper-layer
+//       protocols. Users should not use it, except you know what you are
+//       doing.
 //
 //    .. c:member:: ch_buf* data
 //
-//       The data of the message as pointer to a buffer.
+//       The data of the message as pointer to a buffer. ch_buf* is an alias
+//       for char* and denotes to binary buffer: the length has to be supplied
+//       (data_len). Please use :c:func:`ch_msg_set_data` to set this.
 //
 //    .. c:member:: uint8_t ip_protocol
 //
@@ -175,7 +179,7 @@ ch_msg_init(ch_message_t* message);
 //    :rtype:  ch_error_t
 
 // .. c:function::
-extern
+CH_EXPORT
 ch_error_t
 ch_msg_set_address(
         ch_message_t* message,
@@ -190,6 +194,23 @@ ch_msg_set_address(
 //    :param ch_ip_protocol_t ip_protocol: IP-protocol of the address
 //    :param char* address: Textual representation of IP
 //    :param int32_t port: Port of the remote
+//
+//    :return: A chirp error. see: :c:type:`ch_error_t`
+//    :rtype:  ch_error_t
+
+// .. c:function::
+CH_EXPORT
+void
+ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data);
+//
+//    Set the messages' data. ch_buf* is an alias for char* and denotes to a
+//    binary buffer: the length has to be supplied. The data pointer has to be
+//    valid until the :c:type:`ch_send_cb_t` supplied in
+//    :c:func:`ch_chirp_send` has been called.
+//
+//    :param ch_message_t* message: Pointer to the message
+//    :param uint32_t len: The length of the data
+//    :param ch_buf* data: Pointer to the data
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
