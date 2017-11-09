@@ -583,9 +583,12 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     remote->serial += 1;
     msg->serial = remote->serial;
 
+    int queued = 0;
     if(msg->type & CH_MSG_REQ_ACK) {
+        queued = remote->rack_msg_queue != NULL;
         ch_msg_enqueue(&remote->rack_msg_queue, msg);
     } else {
+        queued = remote->no_rack_msg_queue != NULL;
         ch_msg_enqueue(&remote->no_rack_msg_queue, msg);
     }
 
@@ -695,7 +698,10 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     } else {
         ch_wr_process_queues(remote);
     }
-    return CH_SUCCESS;
+    if(queued)
+        return CH_QUEUED;
+    else
+        return CH_SUCCESS;
 }
 
 

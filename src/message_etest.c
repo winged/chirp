@@ -211,17 +211,20 @@ _ch_tst_send_message(ch_chirp_t* chirp)
         send_func = ch_chirp_send;
     }
 
+    int ret;
     if(simple) {
         _ch_tst_simple_msg(&_ch_tst_msg);
         _ch_tst_msg.port = PORT_ECHO;
-        send_func(chirp, &_ch_tst_msg, _ch_tst_sent_cb);
+        ret = send_func(chirp, &_ch_tst_msg, _ch_tst_sent_cb);
     } else {
         ch_message_t* msg = ch_tst_gen_message();
         assert(ch_tst_check_pattern(msg->header, msg->header_len));
         assert(ch_tst_check_pattern(msg->data, msg->data_len));
         msg->port = PORT_ECHO;
-        send_func(chirp, msg, _ch_tst_sent_cb);
+        ret =send_func(chirp, msg, _ch_tst_sent_cb);
     }
+    (void)(ret);
+    assert(ret == CH_SUCCESS);
 }
 
 static
