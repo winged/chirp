@@ -1,4 +1,4 @@
-.PHONY += install uninstall testlibuv testopenssl clean
+.PHONY += install uninstall testlibuv testopenssl clean tutorial_files tutorial_code
 
 # Verbose mode
 # ============
@@ -84,7 +84,7 @@ check: all  ## Check basic functionality
 # Doc target
 # ==========
 ifeq ($(DOC),True)
-doc: doc_files  ## Generate documentation
+doc: doc_files  tutorial_files tutorial_code ## Generate documentation
 	$(V_E) DOC
 	$(V_M)mkdir -p $(BUILD)/doc
 	$(V_M)mkdir -p $(BUILD)/doc/html
@@ -108,6 +108,18 @@ else # DOC
 doc:
 	@echo Please reconfigure with ./configure --doc.; false
 endif
+
+# Tutorial code - extract docs
+# ============================
+tutorial_code: $(BUILD)/doc/tutorial/agent.c.rst $(BUILD)/doc/tutorial/monitor.c.rst $(BUILD)/doc/tutorial/collector.c.rst $(BUILD)/doc/tutorial/common.h.rst
+
+# Copy tutorial doc files
+# =======================
+tutorial_files: $(wildcard $(BASE)/doc/tutorial/*.rst)
+	$(V_E) CP tutorial
+	$(V_M)mkdir -p $(BUILD)/doc
+	$(V_M)cp -r $(BASE)/doc/tutorial/ $(BUILD)/doc/
+
 
 # Install target
 # ==============
