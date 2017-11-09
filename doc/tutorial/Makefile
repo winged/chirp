@@ -78,17 +78,23 @@ ifeq (,$(findstring -O,$(CFLAGS)))
 	OPTFLAG := -O0
 endif
 
-all: monitoring agent
+all: monitor agent collector
 
 # Binaries
 # ========
-monitoring: libchirp.a
+monitor: libchirp.a monitor.c common.h
 	$(CC) -o $@ $@.c $< $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 
-agent: libchirp.a
+agent: libchirp.a agent.c common.h
+	$(CC) -o $@ $@.c $< $(LDFLAGS)
+ifeq ($(STRIP),True)
+	$(STRPCMD) $@
+endif
+
+collector: libchirp.a collector.c common.h
 	$(CC) -o $@ $@.c $< $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
@@ -105,4 +111,4 @@ endif
 # Util
 # ====
 clean:
-	rm -f libchirp.o libchirp.a monitoring agent
+	rm -f libchirp.o libchirp.a monitor agent collector

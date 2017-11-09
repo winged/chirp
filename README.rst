@@ -108,7 +108,14 @@ Install to prefix /usr, but copy to package dir. (Package creation)
    make check
    make install DEST=pkgdir
 
+.. _source_dist:
+
 How to create a source distribution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Building a source distribution is useful when you need to include libchirp in
+your project, but don't want to use it's build system. A source distribution can
+easily be compiled with just a ``make`` call.
 
 .. code-block:: bash
 

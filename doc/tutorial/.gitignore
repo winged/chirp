@@ -5,4 +5,5 @@
 /*.a
 /*.so
 /agent
-/monitoring
+/monitor
+/collector

@@ -29,18 +29,18 @@ $(BUILD)/%.h: $(BASE)/%.h
 	$(V_E) RGC $<
 	$(V_M)$(BASE)/mk/rgc $< $@
 
-# Make doc (c.rst) from .c files
-# ==============================
-$(BUILD)/%.c.rst: $(BASE)/%.c
+# Make doc (.rst) from source files
+# =================================
+$(BUILD)/%.rst: $(BASE)/%
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
 
-# Make doc (h.rst) from .h files
-# ==============================
-$(BUILD)/%.h.rst: $(BASE)/%.h
+# Make doc (.rst) from source files
+# =================================
+$(BUILD)/%.rst: $(BASE)/%
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<
