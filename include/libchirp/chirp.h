@@ -308,7 +308,8 @@ int
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
-//    Messages to the same node will block if you don't wait for the callback.
+//    Messages to the same remote node will be queued if you don't wait for the
+//    callback.
 //
 //    If you don't want to allocate messages on sending, we recommend to use a
 //    pool of messages.
@@ -316,6 +317,21 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //    Returns CH_SUCCESS when has being sent and CH_QUEUED when the message has
 //    been placed in the send queue. CH_USED if the message is already used
 //    elsewhere, the message will not be sent.
+//
+//    The send message queue is not bounded, the user has to pause sending.
+//
+//    Sending only one message at the same time while having multiple peers
+//    would prevent parallelism, but since chirp is quite fast, it is a valid
+//    solution.
+//
+//    A simple pattern is counting the open :c:type:`ch_send_cb_t` and stop
+//    sending at a certain threshold. We recommend a maximum threshold of 16 *
+//    $peer_count. Of course this depends on the size of the messages and the
+//    peer count.
+//
+//    The optimal pattern would be sending a message at the time per remote. A
+//    remote is defined by the (ip_protocol, address, port) tuple.  This is
+//    more complex to implement.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_message_t* msg: The message to send. The memory of the message
@@ -329,17 +345,18 @@ int
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
-//    Messages to the same node will block if you don't wait for the callback.
+//    Messages to the same remote node will be queued if you don't wait for the
+//    callback.
 //
-//    If you don't want to allocate messages on sending, we recommend to use a
-//    pool of messages.
+//    See :c:func:`ch_chirp_send`
 //
 //    This function is thread-safe. ATTENTION: Callback will be called by the
 //    uv-loop-thread.
 //
 //    Returns CH_SUCCESS when the message has been successfully queue and
 //    CH_USED if the message is already used elsewhere, the message will not be
-//    sent.
+//    sent. This differs from ch_chirp_send, since the message is always
+//    queued to be passed to the uv-loop-thread.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
 //    :param ch_message_t msg: The message to send. The memory of the message
