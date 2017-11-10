@@ -126,7 +126,7 @@ _ch_chirp_sig_handler(uv_signal_t*, int);
 
 // .. c:function::
 static void
-_ch_chirp_start(uv_async_t* handle);
+_ch_chirp_start_cb(uv_async_t* handle);
 //
 //    Start callback calls the user supplied done callback.
 //
@@ -386,10 +386,10 @@ _ch_chirp_sig_handler(uv_signal_t* handle, int signo)
 
 // .. c:function::
 static void
-_ch_chirp_start(uv_async_t* handle)
+_ch_chirp_start_cb(uv_async_t* handle)
 //    :noindex:
 //
-//    see: :c:func:`_ch_chirp_start`
+//    see: :c:func:`_ch_chirp_start_cb`
 //
 // .. code-block:: cpp
 //
@@ -677,8 +677,8 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
-    ichirp->done.data = chirp;
-    if (uv_async_init(loop, &ichirp->start, _ch_chirp_start) < 0) {
+    chirp->_done.data = chirp;
+    if (uv_async_init(loop, &ichirp->start, _ch_chirp_start_cb) < 0) {
         E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
         chirp->_init = 0;

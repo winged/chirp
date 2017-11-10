@@ -26,7 +26,7 @@
 // .. code-block:: cpp
 
 static ch_chirp_t* _ch_tst_chirp;
-static int         always_encrypt = 0;
+static int         _ch_tst_always_encrypt = 0;
 
 // Definitions
 // ============
@@ -39,7 +39,7 @@ _ch_tst_start(ch_chirp_t* chirp)
 {
     ch_chirp_check_m(chirp);
     L(chirp, "Echo server started", CH_NO_ARG);
-    if (always_encrypt) {
+    if (_ch_tst_always_encrypt) {
         ch_chirp_set_always_encrypt(chirp);
     }
 }
@@ -84,12 +84,12 @@ main(int argc, char* argv[])
         fprintf(stderr, "port must be lesser than %d.\n", 0xFFFF);
         exit(1);
     }
-    always_encrypt = strtol(argv[2], NULL, 10);
+    _ch_tst_always_encrypt = strtol(argv[2], NULL, 10);
     if (errno) {
         fprintf(stderr, "always_encrypt must be integer.\n");
         exit(1);
     }
-    if (!(always_encrypt == 0 || always_encrypt == 1)) {
+    if (!(_ch_tst_always_encrypt == 0 || _ch_tst_always_encrypt == 1)) {
         fprintf(stderr, "always_encrypt must be boolean (0/1).\n");
         exit(1);
     }

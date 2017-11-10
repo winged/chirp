@@ -224,8 +224,7 @@ ch_chirp_init(
         ch_log_cb_t        log_cb);
 //
 //    Initialiaze a chirp object. Memory is provided by the caller. You must
-//    call
-//    :c:func:`ch_chirp_close` to cleanup the chirp object.
+//    call :c:func:`ch_chirp_close_ts` to cleanup the chirp object.
 //
 //    You can free **chirp**, **config** and **loop** either after the **done**
 //    callback has been called or if chirp is set to auto-stop, after the loop
