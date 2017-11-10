@@ -132,7 +132,11 @@ $(BUILD)/abi_dumps/chirp/$(VERSION)/ABI.dump: libchirp.so
 # =============
 pytest:  ## Run pytests
 	pytest $(BASE)/src
-	MPP_MC=True pytest $(BASE)/src
+ifneq ($(TLS),openssl)
+ifeq ($(CI_DISTRO),alpine)
+	MPP_MC="$(BASE)/ci/memcheck-musl.supp" pytest $(BASE)/src
+endif
+endif
 
 # cppcheck target
 # ===============

@@ -447,9 +447,10 @@ ch_wr_process_queues(ch_remote_t* remote)
     ch_chirp_t* chirp = remote->chirp;
     ch_chirp_check_m(chirp);
     ch_connection_t* conn = remote->conn;
-    A(conn != NULL, "The connection must be set");
-    ch_message_t* msg = NULL;
-    if (!(conn->flags & CH_CN_CONNECTED)) {
+    ch_message_t*    msg  = NULL;
+    if (conn == NULL) {
+        return CH_BUSY;
+    } else if (!(conn->flags & CH_CN_CONNECTED)) {
         return CH_BUSY;
     } else if (conn->writer.msg != NULL) {
         return CH_BUSY;

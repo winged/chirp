@@ -36,7 +36,7 @@ class GenBuffer(GenericStateMachine):
             mpipe.write(self.proc, (func_cleanup_e, 0))
             assert mpipe.read(self.proc) == [0]
         mpipe.close(self.proc)
-        del self.proc  # Hypothesis seems to keep GSM objects
+        self.proc = None  # Hypothesis seems to keep GSM objects
 
     def steps(self):
         if not self.initialized:

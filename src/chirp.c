@@ -39,6 +39,14 @@
 //
 static uv_mutex_t _ch_chirp_init_lock;
 
+// .. c:var:: int _ch_libchirp_initialized
+//
+//    Variable to check if libchirp is already initialized.
+//
+// .. code-block:: cpp
+//
+static int _ch_libchirp_initialized = 0;
+
 // .. c:var:: ch_config_t ch_config_defaults
 //
 //    Default config of chirp.
@@ -677,7 +685,7 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return CH_UV_ERROR;
     }
-    chirp->_done.data = chirp;
+    ichirp->done.data = chirp;
     if (uv_async_init(loop, &ichirp->start, _ch_chirp_start_cb) < 0) {
         E(chirp, "Could not initialize done handler", CH_NO_ARG);
         ch_free(ichirp);
@@ -935,6 +943,15 @@ ch_libchirp_cleanup(void)
 // .. code-block:: cpp
 //
 {
+    A(_ch_libchirp_initialized, "Libchirp is not initialized");
+    if (!_ch_libchirp_initialized) {
+        fprintf(stderr,
+                "%s:%d Fatal: Libchirp is not initialized.\n",
+                __FILE__,
+                __LINE__);
+        return CH_VALUE_ERROR;
+    }
+    _ch_libchirp_initialized = 1;
     uv_mutex_destroy(&_ch_chirp_init_lock);
     ch_error_t ret = ch_en_tls_cleanup();
 #ifndef NDEBUG
@@ -954,6 +971,15 @@ ch_libchirp_init(void)
 // .. code-block:: cpp
 //
 {
+    A(!_ch_libchirp_initialized, "Libchirp is already initialized");
+    if (_ch_libchirp_initialized) {
+        fprintf(stderr,
+                "%s:%d Fatal: Libchirp is already initialized.\n",
+                __FILE__,
+                __LINE__);
+        return CH_VALUE_ERROR;
+    }
+    _ch_libchirp_initialized = 1;
     uv_mutex_init(&_ch_chirp_init_lock);
 #ifndef NDEBUG
     ch_at_init();
@@ -974,13 +1000,15 @@ ch_loop_close(uv_loop_t* loop)
 {
     int tmp_err;
     tmp_err = uv_loop_close(loop);
-#if defined(CH_LOG_TO_STDERR) && !defined(NDEBUG)
-    fprintf(stderr,
-            "%s:%d Closing loop exitcode:%d. uv_loop_t:%p\n",
-            __FILE__,
-            __LINE__,
-            tmp_err,
-            (void*) loop);
+#ifndef NDEBUG
+    if (tmp_err != CH_SUCCESS) {
+        fprintf(stderr,
+                "%s:%d WARNING: Closing loop exitcode:%d. uv_loop_t:%p\n",
+                __FILE__,
+                __LINE__,
+                tmp_err,
+                (void*) loop);
+    }
 #endif
     return tmp_err;
 }

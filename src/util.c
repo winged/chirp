@@ -131,6 +131,7 @@ ch_at_cleanup(void)
 //
 {
     fprintf(stderr, "Leaked allocations: \n");
+    int no_leak = _ch_alloc_tree == _ch_at_nil_ptr;
     while (_ch_alloc_tree != _ch_at_nil_ptr) {
         ch_alloc_track_t* item;
         item = _ch_alloc_tree;
@@ -139,6 +140,7 @@ ch_at_cleanup(void)
         _ch_free_cb(item);
     }
     fprintf(stderr, "\n");
+    A(no_leak, "There is a memory leak")
     uv_mutex_destroy(&_ch_at_lock);
 }
 

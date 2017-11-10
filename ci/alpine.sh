@@ -1,8 +1,8 @@
 #!/bin/sh
 
+curl https://www.adfinis-sygroup.ch/adsy-logo.txt
 set -e
 
-curl https://www.adfinis-sygroup.ch/adsy-logo.txt
 SCRIPT="$(pwd -P)/$0"
 BASE="${SCRIPT%/*}"
 echo Running alpine docker test at $BASE

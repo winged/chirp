@@ -33,15 +33,10 @@ def open_and_close(args : list):
 
 def open(args : list) -> Popen:
     """Open a subprocess for sending message-pack messages."""
-    if os.environ.get("MPP_GDB") == "True":
-        proc = Popen(args, stdin=PIPE, stdout=PIPE)
-        argv = ["gdb", "-p", str(proc.pid)]
-        if os.fork():
-            os.execlp(argv[0], *argv)
-        time.sleep(2)
-    elif os.environ.get("MPP_RR") == "True":
+    mc = os.environ.get("MPP_MC")
+    if os.environ.get("MPP_RR") == "True":
         proc = Popen(["rr"] + args, stdin=PIPE, stdout=PIPE)
-    elif os.environ.get("MPP_MC") == "True":
+    elif mc:
         proc = Popen(
             [
                 "valgrind",
@@ -50,6 +45,7 @@ def open(args : list) -> Popen:
                 "--show-leak-kinds=all",
                 "--errors-for-leak-kinds=all",
                 "--error-exitcode=1",
+                "--suppressions=%s" % mc,
             ] + args,
             stdin=PIPE,
             stdout=PIPE

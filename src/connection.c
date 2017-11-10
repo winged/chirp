@@ -720,7 +720,7 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
     }
 #endif
     if (msg != NULL) {
-        msg->_flags = CH_MSG_FAILURE;
+        msg->_flags |= CH_MSG_FAILURE;
         ch_chirp_finish_message(chirp, conn, msg, reason);
     }
     if (conn->flags & CH_CN_ENCRYPTED && conn->flags & CH_CN_INIT_ENCRYPTION) {

@@ -195,6 +195,7 @@ ch_en_tls_threading_cleanup(void)
 //
 {
 #ifdef CH_OPENSSL_10_API
+    A(_ch_en_lock_list, "Threading not setup");
     if (!_ch_en_lock_list) {
         fprintf(stderr,
                 "%s:%d Fatal: Threading not setup.\n",
@@ -226,6 +227,14 @@ ch_en_tls_threading_setup(void)
 //
 {
 #ifdef CH_OPENSSL_10_API
+    A(!_ch_en_lock_list, "Threading already setup");
+    if (_ch_en_lock_list) {
+        fprintf(stderr,
+                "%s:%d Fatal: Threading already setup.\n",
+                __FILE__,
+                __LINE__);
+        return CH_VALUE_ERROR;
+    }
     int lock_count   = CRYPTO_num_locks();
     _ch_en_lock_list = ch_alloc(lock_count * sizeof(uv_rwlock_t));
     if (!_ch_en_lock_list) {

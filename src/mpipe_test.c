@@ -152,6 +152,9 @@ mpp_runner(mpp_handler_cb_t func)
             mpack_node_array_at(*node, 0)
         );
         if(function == 0) {
+            if(mpp_read_message_fin(&context) != 0) {
+                return 9;
+            }
             return 0;
         } else {
             writer = mpp_write_message(&context);
