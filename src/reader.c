@@ -170,6 +170,7 @@ _ch_rd_handshake(
     ch_protocol_t* protocol   = &ichirp->protocol;
     ch_sr_handshake_t hs_tmp;
     uv_timer_stop(&conn->connect_timeout);
+    conn->flags  |= CH_CN_CONNECTED;
     if(conn->flags & CH_CN_INCOMING) {
         A(
             ch_cn_delete(&protocol->handshake_conns, conn, &tmp_conn) == 0,

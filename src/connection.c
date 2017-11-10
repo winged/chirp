@@ -768,6 +768,10 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
     ch_remote_t* remote = conn->remote;
     /* In early handshake remote can empty, since we allocate resources after
      * successful handshake. */
+    if(!(conn->flags & CH_CN_CONNECTED)) {
+        ch_connection_t* out;
+        ch_cn_delete(&ichirp->protocol.handshake_conns, conn, &out);
+    }
     if(remote) {
         remote->conn = NULL;
     }

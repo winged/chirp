@@ -375,7 +375,6 @@ ch_pr_conn_start(
         }
 #   enddef
 
-    conn->flags  |= CH_CN_CONNECTED;
     int tmp_err = ch_cn_init(chirp, conn, conn->flags);
     ch_pr_conn_start_handle_error_m("Could not initialize")
 
