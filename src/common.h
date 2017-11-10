@@ -232,10 +232,7 @@ typedef struct ch_protocol_s ch_protocol_t;
 #   error Validate macro not defined
 #endif
 
-
 #define CH_CHIRP_MAGIC 42429
-
-#define CH_NO_ARG 1
 
 // Generic functions
 // =================

@@ -96,4 +96,6 @@ typedef struct ch_message_s ch_message_t;
 #define CH_WRITE_LOG(chirp, message, ...) \
     CH_WRITE_LOGC(chirp, message, "",  __VA_ARGS__)
 
+#define CH_NO_ARG 1
+
 #endif //ch_libchirp_common_h
