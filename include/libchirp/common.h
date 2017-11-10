@@ -56,6 +56,19 @@ typedef struct ch_text_address_s {
     char data[INET6_ADDRSTRLEN];
 } ch_text_address_t;
 
+// .. c:type:: ch_identity_t
+//
+//    Struct containing the chirp identity.
+//
+//    .. c:member:: unsigned uint8_t[16] data
+//
+//       The chirp identity is uint8_t array of length 16.
+//
+// .. code-block:: cpp
+//
+typedef struct ch_identity_s {
+    uint8_t data[CH_ID_SIZE];
+} ch_identity_t;
 
 // Forward declarations
 // =====================

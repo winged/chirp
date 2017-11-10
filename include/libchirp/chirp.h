@@ -153,20 +153,6 @@ struct ch_chirp_s {
     int             _init;
 };
 
-// .. c:type:: ch_identity_t
-//
-//    Struct containing the chirp identity.
-//
-//    .. c:member:: unsigned uint8_t[16] data
-//
-//       The chrip identity is uint8_t array of length 16.
-//
-// .. code-block:: cpp
-//
-typedef struct ch_identity_s {
-    uint8_t data[CH_ID_SIZE];
-} ch_identity_t;
-
 // .. c:function::
 CH_EXPORT
 ch_error_t

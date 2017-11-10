@@ -54,6 +54,38 @@ ch_msg_get_address(
 
 // .. c:function::
 CH_EXPORT
+ch_identity_t
+ch_msg_get_identity(ch_message_t* message)
+//    :noindex:
+//
+//    see: :c:func:`ch_msg_get_identity`
+//
+// .. code-block:: cpp
+//
+{
+    ch_identity_t id;
+    memcpy(id.data, message->identity, sizeof(id.data));
+    return id;
+}
+
+// .. c:function::
+CH_EXPORT
+ch_identity_t
+ch_msg_get_remote_identity(ch_message_t* message)
+//    :noindex:
+//
+//    see: :c:func:`ch_msg_get_remote_identity`
+//
+// .. code-block:: cpp
+//
+{
+    ch_identity_t id;
+    memcpy(id.data, message->remote_identity, sizeof(id.data));
+    return id;
+}
+
+// .. c:function::
+CH_EXPORT
 int
 ch_msg_has_recv_handler(ch_message_t* message)
 //    :noindex:

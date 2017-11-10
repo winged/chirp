@@ -134,9 +134,16 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
     (void)(chirp);
     (void)(status);
     (void)(load);
-    _ch_tst_msg_echo_count += 1;
     A(status == CH_SUCCESS, "Echoing failed");
-    int stack_was_null = _ch_tst_msg_stack == NULL;
+    _ch_tst_msg_echo_count += 1;
+    int stack_was_null      = _ch_tst_msg_stack == NULL;
+    ch_chirp_t* other       = ch_tr_other_chirp(chirp);
+    ch_identity_t other_id  = ch_chirp_get_identity(other);
+    ch_identity_t id        = ch_msg_get_remote_identity(msg);
+    A(
+        memcmp(&other_id, &id, sizeof(id)) == 0,
+        "Wrong remote identity set"
+    );
     if(_ch_tst_slow) {
         ch_tst_msg_stack_t* item = ch_alloc(sizeof(*item));
         item->next = NULL;

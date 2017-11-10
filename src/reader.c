@@ -502,6 +502,7 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
             }
             msg->ip_protocol   = conn->ip_protocol;
             msg->port          = conn->port;
+            memcpy(msg->remote_identity, conn->remote_identity, CH_ID_SIZE);
             memcpy(
                 msg->address,
                 conn->address,

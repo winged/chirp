@@ -16,6 +16,7 @@
 //
 #include "common.h"
 #include "callbacks.h"
+#include "chirp.h"
 
 // Declarations
 // ============
@@ -89,6 +90,13 @@
 //       The port that the will be used reading/writing a message over a
 //       connection.
 //
+//    .. c:member:: uint8_t remote_identity[CH_ID_SIZE]
+//
+//       Used to detect the remote instance. By default the remote_identity
+//       will change on each start of chirp. If multiple peers share state,
+//       a change in the remote_identity should trigger a reset of the state.
+//       Simply use the remote_identity as key in a dictionary of shared state.
+//
 //    .. c:member:: ch_chirp_t* chirp
 //
 //       Pointer to chirp instance of the message pool.
@@ -110,6 +118,7 @@ struct ch_message_s {
     uint8_t        ip_protocol;
     uint8_t        address[CH_IP_ADDR_SIZE];  // 16
     int32_t        port;
+    uint8_t        remote_identity[CH_ID_SIZE];
     void*          user_data;
     uint8_t        _flags;
     uint8_t        _retries;
@@ -154,7 +163,34 @@ ch_msg_get_address(const ch_message_t* message, ch_text_address_t* address);
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t
+
+// .. c:function::
+CH_EXPORT
+ch_identity_t
+ch_msg_get_identity(ch_message_t* message);
 //
+//    Get the identity of the message.
+//
+//    :param ch_message_t* message: Pointer to the message
+//
+//    :rtype:  ch_identity_t
+
+// .. c:function::
+CH_EXPORT
+ch_identity_t
+ch_msg_get_remote_identity(ch_message_t* message);
+//
+//    Get the identity of the remote chirp instance.
+//
+//    By default the remote_identity will change on each start of chirp. If
+//    multiple peers share state, a change in the remote_identity should
+//    trigger a reset of the state. Simply use the remote_identity as key in a
+//    dictionary of shared state.
+//
+//    :param ch_message_t* message: Pointer to the message
+//
+//    :rtype:  ch_identity_t
+
 // .. c:function::
 CH_EXPORT
 int
