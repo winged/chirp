@@ -134,21 +134,24 @@ typedef struct ch_protocol_s ch_protocol_t;
 //    Logs the given message including arbitrary arguments to a custom callback
 //    in debug-/development-mode.
 //
-//    The logging macro L(chirp, message, ...) behaves like printf and allows
-//    to log to a custom callback. Usually used to log into pythons logging
-//    facility.
+//    The logging macro L(chirp, message, ...) behaves like printf
+//    and allows to log to a custom callback. Usually used to log into pythons
+//    logging facility.
 //
-//    :param chirp: Pointer to a chirp object.
+//    The logging macro LC(chirp, message, clear, ...) behaves like
+//    L except you can add part that isn't highlighted.
+//
+//    :param chirp:   Pointer to a chirp object.
 //    :param message: The highlighted message to report.
-//    :param clear:   The clear message to report.
-//    :param ...: Variadic arguments for xprintf
+//    :param clear:   The clear message (not highlighted) to report.
+//    :param ...:     Variadic arguments for xprintf
 //
 // .. code-block:: cpp
 //
 #define LC(chirp, message, clear, ...) \
-    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
-#define L(chirp, message, ...) LC(chirp, message, "",  __VA_ARGS__)
-
+    CH_WRITE_LOGC(chirp, message, clear, __VA_ARGS__)
+#define L(chirp, message, ...)  \
+    CH_WRITE_LOG(chirp, message, __VA_ARGS__)
 // .. c:macro:: A
 //
 //    Validates the given condition and reports arbitrary arguments when the

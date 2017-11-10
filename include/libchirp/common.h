@@ -69,4 +69,31 @@ typedef struct ch_config_s ch_config_t;
 struct ch_message_s;
 typedef struct ch_message_s ch_message_t;
 
+// Logging
+// =======
+
+// .. c:macro:: CH_WRITE_LOG
+//
+//    Logs the given message including arbitrary arguments to a custom callback
+//    in debug-/development-mode.
+//
+//    The logging macro CH_WRITE_LOG(chirp, message, ...) behaves like printf
+//    and allows to log to a custom callback. Usually used to log into pythons
+//    logging facility.
+//
+//    The logging macro CH_WRITE_LOGC(chirp, message, clear, ...) behaves like
+//    CH_WRITE_LOG except you can add part that isn't highlighted.
+//
+//    :param chirp:   Pointer to a chirp object.
+//    :param message: The highlighted message to report.
+//    :param clear:   The clear message (not highlighted to report.
+//    :param ...:     Variadic arguments for xprintf
+//
+// .. code-block:: cpp
+//
+#define CH_WRITE_LOGC(chirp, message, clear, ...) \
+    ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
+#define CH_WRITE_LOG(chirp, message, ...) \
+    CH_WRITE_LOGC(chirp, message, "",  __VA_ARGS__)
+
 #endif //ch_libchirp_common_h
