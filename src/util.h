@@ -107,25 +107,4 @@ ch_uv_error_map(int error);
 //    :return:           a chirp error.
 //    :rtype:            ch_error_t
 
-// .. c:function::
-void
-ch_write_log(
-    ch_chirp_t* chirp,
-    char* file,
-    int   line,
-    char* message,
-    char* clear,
-    int   error,
-    ...
-);
-//
-//    Write log message, either to logging callback (if defined) or to stderr.
-//
-//    :param char* file: file to log
-//    :param int line: line to log
-//    :param char* message: message to log
-//    :param char* clear: clear message to log
-//    :param int error: message is an error
-//    :param ...: variable args passed to vsnprintf
-
 #endif // ch_util_h

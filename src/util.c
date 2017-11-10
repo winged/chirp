@@ -430,6 +430,7 @@ ch_uv_error_map(int error)
 }
 
 // .. c:function::
+CH_EXPORT
 void
 ch_write_log(
     ch_chirp_t* chirp,
