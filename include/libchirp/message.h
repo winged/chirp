@@ -201,7 +201,7 @@ ch_msg_set_address(
 // .. c:function::
 CH_EXPORT
 void
-ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data);
+ch_msg_set_data(ch_message_t* message, ch_buf* data, uint32_t len);
 //
 //    Set the messages' data. ch_buf* is an alias for char* and denotes to a
 //    binary buffer: the length has to be supplied. The data pointer has to be
@@ -209,8 +209,8 @@ ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data);
 //    :c:func:`ch_chirp_send` has been called.
 //
 //    :param ch_message_t* message: Pointer to the message
-//    :param uint32_t len: The length of the data
 //    :param ch_buf* data: Pointer to the data
+//    :param uint32_t len: The length of the data
 //
 //    :return: A chirp error. see: :c:type:`ch_error_t`
 //    :rtype:  ch_error_t

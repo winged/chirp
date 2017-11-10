@@ -112,7 +112,7 @@ ch_msg_set_address(
 // .. c:function::
 CH_EXPORT
 void
-ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data)
+ch_msg_set_data(ch_message_t* message,ch_buf* data, uint32_t len)
 //    :noindex:
 //
 //    see: :c:func:`ch_msg_set_data`
@@ -120,6 +120,6 @@ ch_msg_set_data(ch_message_t* message, uint32_t len, ch_buf* data)
 // .. code-block:: cpp
 //
 {
-    message->data_len = len;
     message->data     = data;
+    message->data_len = len;
 }
