@@ -21,17 +21,20 @@
 // Declarations
 // ============
 
-// .. c:macro:: CH_WIRE_MESSAGE
+// .. c:type:: ch_message_t
 //
-//    Defines a chirp-wire message.
+//    Represents a message. Although many members are not marked as private.
+//    Use the APIs to access the message. Never change the identity of a
+//    message.
 //
 //    .. c:member:: uint8_t[16] identity
 //
-//       The identity of the message.
+//       The identity of the message. Never change the identity of message.
 //
 //    .. c:member:: uint32_t serial
 //
-//       The serial number of the message.
+//       The serial number of the message. Represents to order they are sent.
+//       Be aware of overflows.
 //
 //    .. c:member:: uint8_t type
 //
@@ -44,24 +47,6 @@
 //    .. c:member:: uint32_t data_len
 //
 //       Length of the data the message contains.
-//
-// .. code-block:: cpp
-//
-#define CH_WIRE_MESSAGE \
-    uint8_t  identity[CH_ID_SIZE]; \
-    uint32_t serial; \
-    uint8_t  type; \
-    uint16_t header_len; \
-    uint32_t data_len \
-
-// .. c:type:: ch_message_t
-//
-//    Represents a message.
-//
-//    .. c:member:: CH_WIRE_MESSAGE
-//
-//       Wire-specific details about the message, such as identity, serial, type
-//       and data length. See :c:macro:`CH_WIRE_MESSAGE`.
 //
 //    .. c:member:: ch_buf* header
 //
@@ -110,7 +95,11 @@
 //
 struct ch_message_s {
     // Network data, has to be sent in network order
-    CH_WIRE_MESSAGE;
+    uint8_t        identity[CH_ID_SIZE];
+    uint32_t       serial;
+    uint8_t        type;
+    uint16_t       header_len;
+    uint32_t       data_len;
     // These fields follow the message in this order (see *_len above)
     ch_buf*        header;
     ch_buf*        data;
@@ -197,7 +186,7 @@ int
 ch_msg_has_recv_handler(ch_message_t* message);
 //
 //    Returns 1 if the message has a recv handler and therefore you have to
-//    call ch_chirp_release_recv_handler.
+//    call ch_chirp_release_message.
 //
 //    :param ch_message_t* message: Pointer to the message
 //

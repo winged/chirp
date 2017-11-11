@@ -43,11 +43,6 @@
 //
 //       TCP-listen socket backlog.
 //
-//    .. c:member:: uint8_t RETRIES
-//
-//       Count of retries till error is reported, by default 1. (Currently not
-//       implemented, defined for ABI compatibility)
-//
 //    .. c:member:: uint8_t MAX_HANDLERS
 //
 //       Count of handlers used. Allowed values are values between 1 and 32.
@@ -55,10 +50,12 @@
 //
 //    .. c:member:: char ACKNOWLEDGE
 //
-//       Acknowledge messages. Is needed for retry and flow-control. Disabling
-//       acknowledge can improve performance on long delay connections, but at
-//       the risk of overloading the remote and the local machine. You have to
-//       set RETRIES and FLOW_CONTROL to 0 or chirp won't accept the config.
+//       Acknowledge messages. Is needed for flow-control and robustness.
+//       Disabling acknowledge can improve performance on long delay
+//       connections, but at the risk of loosing messages or overloading the
+//       remote and the local machine. Flow-control needs acknowledge, so as
+//       long as flow-control is on, your can't turn acknowledge off, or chirp
+//       won't accept the config.
 //
 //    .. c:member:: char FLOW_CONTROL
 //
@@ -107,7 +104,6 @@ struct ch_config_s {
     float           TIMEOUT;
     uint16_t        PORT;
     uint8_t         BACKLOG;
-    uint8_t         RETRIES;
     uint8_t         MAX_HANDLERS;
     char            ACKNOWLEDGE;
     char            FLOW_CONTROL;
@@ -242,11 +238,12 @@ ch_chirp_init(
 // .. c:function::
 CH_EXPORT
 void
-ch_chirp_release_recv_handler(ch_message_t* msg);
+ch_chirp_release_message(ch_message_t* msg);
 //
-//    Release the internal receive handler. Must be called when the message
-//    isn't needed anymore. IMPORTANT: Neglecting to release the handler will
-//    lockup chirp.
+//    Release the internal receive handler and acknowledge the message. Must be
+//    called when the message isn't needed anymore. IMPORTANT: Neglecting to
+//    release the handler will lockup chirp. Never ever change a messages
+//    identity.
 //
 //    :param ch_message_t* msg: The message representing the handler.
 //
@@ -288,7 +285,7 @@ ch_chirp_run(
 
 // .. c:function::
 CH_EXPORT
-int
+ch_error_t
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.
@@ -325,7 +322,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 
 // .. c:function::
 CH_EXPORT
-int
+ch_error_t
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
 //    Send a message. Messages can be sent in parallel to different nodes.

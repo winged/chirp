@@ -2,8 +2,6 @@
 // Message etest
 // =============
 //
-// Testing sending/receiving messages
-//
 // Project includes
 // ================
 //
@@ -37,11 +35,12 @@ typedef enum {
     CH_TST_BUFFER_SIZE    = 1002,
     CH_TST_TIMEOUT        = 1003,
     CH_TST_NO_ACK         = 1004,
-    CH_TST_SLOW           = 1005,
-    CH_TST_HELP           = 1006,
+    CH_TST_MIN_HANDLERS   = 1005,
+    CH_TST_SLOW           = 1006,
+    CH_TST_HELP           = 1007,
 } ch_tst_args_t;
 
-typedef int (*ch_tst_chirp_send_t)(
+typedef ch_error_t (*ch_tst_chirp_send_t)(
         ch_chirp_t* chirp,
         ch_message_t* msg,
         ch_send_cb_t send_cb
@@ -101,6 +100,7 @@ static int _ch_tst_message_count = 20;
 static uv_timer_t _ch_tst_sleep_timer;
 static int _ch_tst_ack = 1;
 static int _ch_tst_slow = 0;
+static int _ch_tst_min_handlers = 0;
 static ch_tst_msg_stack_t* _ch_tst_msg_stack = NULL;
 
 static
@@ -121,7 +121,7 @@ _ch_tst_delay_release(uv_timer_t* handle)
     ch_tst_msg_stack_t* cur;
     ch_tst_msg_pop(&_ch_tst_msg_stack, &cur);
     while(cur != NULL) {
-        ch_chirp_release_recv_handler(cur->msg);
+        ch_chirp_release_message(cur->msg);
         ch_free(cur);
         ch_tst_msg_pop(&_ch_tst_msg_stack, &cur);
     }
@@ -153,7 +153,7 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
             uv_timer_start(&_ch_tst_sleep_timer, _ch_tst_delay_release, 300, 0);
         }
     } else {
-        ch_chirp_release_recv_handler(msg);
+        ch_chirp_release_message(msg);
     }
     if(_ch_tst_msg_echo_count == _ch_tst_message_count) {
         uv_timer_stop(&_ch_tst_sleep_timer);
@@ -267,6 +267,13 @@ _ch_tst_run_chirp(void* arg)
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM  = "./dh.pem";
     config.ACKNOWLEDGE    = _ch_tst_ack;
+    if(!_ch_tst_ack) {
+        config.FLOW_CONTROL = 0;
+    }
+    if(_ch_tst_min_handlers) {
+        config.FLOW_CONTROL = 0;
+        config.MAX_HANDLERS = 1;
+    }
     ch_loop_init(&loop);
     if(ch_chirp_init(
             &chirp,
@@ -320,6 +327,7 @@ main(int argc, char *argv[])
         {"timeout",        required_argument, 0, CH_TST_TIMEOUT },
         {"buffer-size",    required_argument, 0, CH_TST_BUFFER_SIZE },
         {"no-ack",         no_argument,       0, CH_TST_NO_ACK },
+        {"min-handlers",   no_argument,       0, CH_TST_MIN_HANDLERS },
         {"slow",           no_argument,       0, CH_TST_SLOW },
         {"help",           no_argument,       0, CH_TST_HELP },
         {NULL,             0,                 0, 0 }
@@ -368,6 +376,10 @@ main(int argc, char *argv[])
             case CH_TST_NO_ACK:
                 printf("Set no-ack\n");
                 _ch_tst_ack = 0;
+                break;
+            case CH_TST_MIN_HANDLERS:
+                printf("Set min-handlers\n");
+                _ch_tst_min_handlers = 1;
                 break;
             case CH_TST_SLOW:
                 printf("Set slow\n");

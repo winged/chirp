@@ -75,7 +75,7 @@ static
 void ch_tst_recv(ch_chirp_t* chirp, ch_message_t* msg)
 {
     (void)(chirp);
-    ch_chirp_release_recv_handler(msg);
+    ch_chirp_release_message(msg);
 }
 
 static

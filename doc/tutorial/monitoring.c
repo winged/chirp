@@ -49,7 +49,7 @@ _ch_tst_sent_cb(
     (void)(chirp);
     (void)(status);
     (void)(load);
-    ch_chirp_release_recv_handler(msg);
+    ch_chirp_release_message(msg);
 }
 static
 void

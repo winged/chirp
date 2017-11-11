@@ -42,8 +42,6 @@ Planned features
     >2.5s adjust the timeout
   * Peer-load is reported so you can implement load-balancing easily
 
-* Retry
-
 Consequences
 ------------
 
@@ -51,18 +49,10 @@ Consequences
   send a completed-message and wait for it. If you overload your peer you will
   get timeout errors. It also means that chirp is not yet routing friendly.
 
-* Retry: There is a very rare edge-case: if a connections is
-  garbage-collected just when the peer sends a message, you will get a
-  disconnected error. With retry these errors will not appear.
-
 * Load is not reported
 
-We want to keep the interfaces, so the versions implementing these features
-won't break the ABI. Please also leave retry and flow-control on their defaults,
-they will integrate seemingless.
-
-Example
-=======
+Example echo-server
+===================
 
 First includes and declarations: We need a callback that is
 called when a message is received and a callback that is called when the
@@ -152,7 +142,7 @@ If the user hits ctrl-c, the main-loop will close and we cleanup libchirp using
 
 The memory reserved for the message has to be retained till the message is sent
 or has failed, so we release the receive handler after message is successfully
-send. :c:func:`ch_chirp_release_recv_handler`
+send. :c:func:`ch_chirp_release_message`
 
 .. code-block:: cpp
 
@@ -160,7 +150,7 @@ send. :c:func:`ch_chirp_release_recv_handler`
    void
    sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
    {
-       ch_chirp_release_recv_handler(msg);
+       ch_chirp_release_message(msg);
    }
 
 

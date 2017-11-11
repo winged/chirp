@@ -93,7 +93,7 @@ ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers)
 
 // .. c:function::
 ch_bf_handler_t*
-ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
+ch_bf_acquire(ch_buffer_pool_t* pool)
 //    :noindex:
 //
 //    See: :c:func:`ch_bf_acquire`
@@ -105,11 +105,6 @@ ch_bf_acquire(ch_buffer_pool_t* pool, int* last)
     if(pool->used_buffers < pool->max_buffers) {
         int free;
         pool->used_buffers += 1;
-        if(pool->used_buffers == pool->max_buffers) {
-            *last = 1;
-        } else {
-            *last = 0;
-        }
         free = ch_msb32(pool->free_buffers);
         /* Reserve the buffer. */
         pool->free_buffers &= ~(1 << (free - 1));

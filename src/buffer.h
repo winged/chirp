@@ -93,6 +93,22 @@ typedef struct ch_buffer_pool_s {
 } ch_buffer_pool_t;
 
 // .. c:function::
+static
+inline
+int
+_ch_bf_available(ch_buffer_pool_t* pool)
+//
+//    Check if there are still buffers avilable.
+//
+//    :param ch_buffer_pool_t* pool: The buffer pool to check
+//
+//    :rtype: boolean
+//
+{
+    return pool->used_buffers < pool->max_buffers;
+}
+
+// .. c:function::
 void
 ch_bf_free(ch_buffer_pool_t* pool);
 //
@@ -113,18 +129,17 @@ ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers);
 
 // .. c:function::
 ch_bf_handler_t*
-ch_bf_acquire(ch_buffer_pool_t* pool, int* last);
+ch_bf_acquire(ch_buffer_pool_t* pool);
 //
 //    Acquire and return a new handler buffer from the pool. If no handler can
 //    be reserved NULL is returned.
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure which the
 //                                   reservation shall be made from.
-//    :param int* last: Out param: This is the last handler buffer.
-//
 //   :return: a pointer to a reserved handler buffer from the given buffer
 //            pool. See :c:type:`ch_bf_handler_t`
 //   :rtype:  ch_bf_handler_t
+//
 
 // .. c:function::
 void

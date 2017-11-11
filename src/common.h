@@ -40,8 +40,6 @@ struct ch_remote_s;
 typedef struct ch_remote_s ch_remote_t;
 struct ch_connection_s;
 typedef struct ch_connection_s ch_connection_t;
-struct ch_receipt_s;
-typedef struct ch_receipt_s ch_receipt_t;
 struct ch_protocol_s;
 typedef struct ch_protocol_s ch_protocol_t;
 

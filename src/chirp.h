@@ -11,18 +11,11 @@
 //
 //   * Connections to 127.0.0.1 and ::1 aren't encrypted
 //
-// * Flow control
-//
-//   * Chirp won't overload peers out-of-the box, if you work with long
-//     requests >2.5s adjust the timeout
-//   * Peer-load is reported so you can implement load-balancing easily
-//
 // * Easy message routing
 //
 // * Robust
 //
 //   * No message can be lost without an error (or it is a bug)
-//   * Due to retry it takes a very bad network for messages to be lost
 //
 // * Very thin API
 //
@@ -36,6 +29,16 @@
 //
 //     * Which shows that chirp is highly optimized, but still if the network
 //       delay is bigger star-topology is the way to go.
+//
+//  Planned features
+//  ----------------
+//
+// * Flow control
+//
+//   * Chirp won't overload peers out-of-the box, if you work with long
+//     requests >2.5s adjust the timeout
+//   * Peer-load is reported so you can implement load-balancing easily
+//
 //
 // .. code-block:: cpp
 //
@@ -223,7 +226,7 @@ ch_chirp_close_cb(uv_handle_t* handle);
 
 // .. c:function::
 void
-ch_chirp_try_message_finish(
+ch_chirp_finish_message(
         ch_chirp_t* chirp,
         ch_connection_t* conn,
         ch_message_t* msg,

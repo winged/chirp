@@ -50,7 +50,6 @@ static ch_config_t _ch_config_defaults = {
     .TIMEOUT            = 5.0,
     .PORT               = 2998,
     .BACKLOG            = 100,
-    .RETRIES            = 1,
     .MAX_HANDLERS       = 16,
     .FLOW_CONTROL       = 1,
     .ACKNOWLEDGE        = 1,
@@ -536,13 +535,7 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
     if(conf->ACKNOWLEDGE == 0) {
         V(
             chirp,
-            conf->RETRIES != 0,
-            "Config: if acknowledge is disabled retries has to be 0.",
-            CH_NO_ARG
-        );
-        V(
-            chirp,
-            conf->FLOW_CONTROL != 0,
+            conf->FLOW_CONTROL == 0,
             "Config: if acknowledge is disabled flow-control has to be 0.",
             CH_NO_ARG
         );
@@ -828,7 +821,7 @@ ch_chirp_init(
 
 // .. c:function::
 void
-ch_chirp_try_message_finish(
+ch_chirp_finish_message(
         ch_chirp_t* chirp,
         ch_connection_t* conn,
         ch_message_t* msg,
@@ -837,7 +830,7 @@ ch_chirp_try_message_finish(
 )
 //    :noindex:
 //
-//    see: :c:func:`ch_chirp_try_message_finish`
+//    see: :c:func:`ch_chirp_finish_message`
 //
 // .. code-block:: cpp
 //

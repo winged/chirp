@@ -70,7 +70,6 @@ ch_sr_buf_to_hs(ch_buf* buf, ch_sr_handshake_t* hs)
     CH_SR_HANDSHAKE_LAYOUT;
 
     hs->port = ntohs(*port);
-    hs->max_timeout = ntohs(*max_timeout);
     memcpy(hs->identity, identity, CH_ID_SIZE);
 
     return CH_SR_HANDSHAKE_SIZE;
@@ -90,7 +89,6 @@ ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf)
     CH_SR_HANDSHAKE_LAYOUT;
 
     *port = htons(hs->port);
-    *max_timeout = ntohs(hs->max_timeout);
     memcpy(identity, hs->identity, CH_ID_SIZE);
 
     return CH_SR_HANDSHAKE_SIZE;

@@ -56,8 +56,6 @@ Planned features
     >2.5s adjust the timeout
   * Peer-load is reported so you can implement load-balancing easily
 
-* Retry
-
 Consequences
 ------------
 
@@ -65,15 +63,7 @@ Consequences
   send a completed-message and wait for it. If you overload your peer you will
   get timeout errors. It also means that chirp is not yet routing friendly.
 
-* Retry: There is a very rare edge-case: if a connections is
-  garbage-collected just when the peer sends a message, you will get a
-  disconnected error. With retry these errors will not appear.
-
 * Load is not reported
-
-We want to keep the interfaces, so the versions implementing these features
-won't break the ABI. Please also leave retry and flow-control on their defaults,
-they will integrate seemingless.
 
 Install
 =======

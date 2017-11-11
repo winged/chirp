@@ -46,19 +46,7 @@
 //
 //    .. c:member:: ch_msg_message_t net_msg
 //
-//       The net version of the ``msg``. The net message structure is of type
-//       :c:type:`ch_msg_message_t`, which is actually
-//       :c:macro:`CH_WIRE_MESSAGE`.
-//
-//       The difference between ``msg`` and ``net_msg`` is, that ``msg`` is of
-//       type :c:type:`ch_message_t` and ``net_msg`` of type
-//       :c:macro:`CH_WIRE_MESSAGE`. That means ``net_msg`` is stripped down to
-//       essentially only the identity, the serial number, the message type and
-//       the lengths of the header and the data.
-//
-//    .. c:member:: ch_message_t* msg
-//
-//       Pointer to the message that should be sent after handshake.
+//       Used to serialize the wire message to.
 //
 // .. code-block:: cpp
 //
@@ -88,7 +76,7 @@ ch_wr_free(ch_writer_t* writer);
 //
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //
 //    Initialize the writer data structure.
@@ -101,22 +89,20 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn);
 //    :param ch_connection_t* conn:  Pointer to a connection instance.
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_process_queues(ch_remote_t* remote);
 //
 //    Sends queued message according to the following priorities:
 //
 //    1. Do nothing if the writer still has an active message
 //    2. Send messages that don't require an ack (which might be acks)
-//    3. If CH_RM_RETRY_WAITING_MSG is set, resend the message currently
-//       waiting for an ack
-//    4. Send messages that require an ack
-//    5. Do nothing
+//    3. Send messages that require an ack
+//    4. Do nothing
 //
 //    :param ch_remote_t* remote: The remote to process queues
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //    Same as ch_chirp_send just for internal use.
 //

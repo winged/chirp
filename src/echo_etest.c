@@ -58,7 +58,7 @@ _ch_tst_sent_cb(
     (void)(load);
     ch_chirp_check_m(chirp);
     L(chirp, "Release message ch_message_t:%p", msg);
-    ch_chirp_release_recv_handler(msg);
+    ch_chirp_release_message(msg);
 }
 static
 void

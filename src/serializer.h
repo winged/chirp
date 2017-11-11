@@ -2,10 +2,11 @@
 // Serializer header
 // =================
 //
-// * Convert the CH_WIRE_MESSAGE to a buffer in network order
-// * Convert a buffer in network order to CH_WIRE_MESSAGE
+// * Convert the wire message to a buffer in network order
+// * Convert a buffer in network order to the wire message
 //
-// CH_WIRE_MESSAGE refers to a part of ch_message_t
+// Wire message refers to a part of ch_message_t before the ch_buf* header
+// member.
 //
 // * Convert ch_sr_handshake_t to a buffer in network order
 // * Convert a buffer in network order to ch_sr_handshake_t
@@ -34,13 +35,6 @@
 //
 //       Public port which is passed to a connection on a successful handshake.
 //
-//    .. c:member:: uint16_t max_timeout
-//
-//       The maximum number of seconds to wait when connecting until a timeout
-//       gets triggered. This is passed to a connection upon a successful
-//       handshake. The value gets computed by the configured number of retries
-//       incremented by two times the configured timeout value.
-//
 //    .. c:member:: uint8_t[16] identity
 //
 //       The identity of the remote target which is passed to a connection upon
@@ -51,7 +45,6 @@
 
 typedef struct ch_sr_handshake_s {
     uint16_t port;
-    uint16_t max_timeout;
     uint8_t  identity[CH_ID_SIZE];
 } ch_sr_handshake_t;
 
@@ -71,7 +64,7 @@ typedef struct ch_sr_handshake_s {
     uint8_t* identity    = (void*) &buf[pos];
     pos += CH_ID_SIZE;
 
-    uint32_t* serial      = (void*) &buf[pos];
+    uint32_t* serial     = (void*) &buf[pos];
     pos += 4;
 
     uint8_t* type        = (void*) &buf[pos];
@@ -88,7 +81,7 @@ typedef struct ch_sr_handshake_s {
 int
 ch_sr_buf_to_msg(ch_buf* buf, ch_message_t* msg);
 //
-//    Convert a buffer containing the packed data of CH_WIRE_MESSAGE in network
+//    Convert a buffer containing the packed data of the wire message in network
 //    order to an ch_message_t.
 //
 //    :param ch_buf* buf: Pointer to the packed buffer of at least
@@ -100,7 +93,7 @@ int
 ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf);
 //
 //    Convert a ch_message_t to a buffer containing the packed data of
-//    CH_WIRE_MESSAGE in network order.
+//    the wire message in network order.
 //
 //    :param ch_message_t* msg: Pointer to the message
 //    :param ch_buf* buf: Pointer to the packed buffer of at least
@@ -108,7 +101,7 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf);
 //
 // .. code-block:: cpp
 
-#define CH_SR_HANDSHAKE_SIZE 20
+#define CH_SR_HANDSHAKE_SIZE 18
 
 #ifndef NDEBUG
 #   begindef CH_SR_HANDSHAKE_CHECK
@@ -122,9 +115,6 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf);
 #begindef CH_SR_HANDSHAKE_LAYOUT
     size_t pos = 0;
     uint16_t* port        = (void*) &buf[pos];
-    pos += 2;
-
-    uint16_t* max_timeout = (void*) &buf[pos];
     pos += 2;
 
     uint8_t* identity     = (void*) &buf[pos];

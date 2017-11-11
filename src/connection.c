@@ -264,7 +264,7 @@ _ch_cn_partial_write(ch_connection_t* conn)
         int can_write_more = 1;
         int pending = BIO_pending(conn->bio_app);
         while(pending && can_write_more) {
-            int read = BIO_read(
+            ssize_t read = BIO_read(
                 conn->bio_app,
                 conn->buffer_wtls + bytes_read,
                 conn->buffer_size - bytes_read
@@ -719,7 +719,7 @@ ch_cn_send_if_pending(ch_connection_t* conn)
         conn->flags |= CH_CN_BUF_WTLS_USED;
         conn->flags |= CH_CN_WRITE_PENDING;
 #   endif
-    int read = BIO_read(conn->bio_app, conn->buffer_wtls, conn->buffer_size);
+    ssize_t read = BIO_read(conn->bio_app, conn->buffer_wtls, conn->buffer_size);
     conn->buffer_wtls_uv.len = read;
     uv_write(
         &conn->write_req,
@@ -781,7 +781,7 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
     }
     if(msg != NULL) {
         msg->_flags = CH_MSG_FAILURE;
-        ch_chirp_try_message_finish(
+        ch_chirp_finish_message(
             chirp,
             conn,
             msg,

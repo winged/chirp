@@ -336,7 +336,7 @@ _ch_wr_write_finish(
     }
     msg->_flags |= CH_MSG_WRITE_DONE;
     writer->msg = NULL;
-    ch_chirp_try_message_finish(
+    ch_chirp_finish_message(
         chirp,
         conn,
         msg,
@@ -405,7 +405,7 @@ _ch_wr_write_timeout_cb(uv_timer_t* handle)
 
 // .. c:function::
 CH_EXPORT
-int
+ch_error_t
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
@@ -425,7 +425,7 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 
 // .. c:function::
 CH_EXPORT
-int
+ch_error_t
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //
@@ -464,7 +464,7 @@ ch_wr_free(ch_writer_t* writer)
 }
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
 //    :noindex:
 //
@@ -492,7 +492,7 @@ ch_wr_init(ch_writer_t* writer, ch_connection_t* conn)
 }
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_process_queues(ch_remote_t* remote)
 //    :noindex:
 //
@@ -508,23 +508,14 @@ ch_wr_process_queues(ch_remote_t* remote)
     ch_message_t* msg = NULL;
     if(!(conn->flags & CH_CN_CONNECTED)) {
         return CH_BUSY;
-    }
-    if(conn->writer.msg != NULL) {
+    } else if(conn->writer.msg != NULL) {
         return CH_BUSY;
-    }
-    if(remote->flags & CH_RM_RETRY_WAITING_MSG) {
-        A(
-            remote->wait_ack_message,
-            "When retrying the wait_ack_message should be set"
-        );
-        remote->flags  &= ~CH_RM_RETRY_WAITING_MSG;
-        ch_wr_write(conn, remote->wait_ack_message);
-        return CH_SUCCESS;
     } else if(remote->no_rack_msg_queue != NULL) {
         ch_msg_dequeue(&remote->no_rack_msg_queue, &msg);
         ch_wr_write(conn, msg);
         return CH_SUCCESS;
     } else if(remote->rack_msg_queue != NULL) {
+        /* The chirp protocol has to be synchronous or we get deadlocks! */
         if(remote->wait_ack_message == NULL) {
             ch_msg_dequeue(&remote->rack_msg_queue, &msg);
             remote->wait_ack_message = msg;
@@ -538,7 +529,7 @@ ch_wr_process_queues(ch_remote_t* remote)
 }
 
 // .. c:function::
-int
+ch_error_t
 ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
 //    :noindex:
 //

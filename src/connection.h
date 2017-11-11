@@ -281,11 +281,6 @@ typedef struct ch_resume_state_s {
 //       The identity of the remote target. This is used for getting the remote
 //       address.
 //
-//    .. c:member:: float max_timeout
-//
-//       The maximum amount of time in seconds that making a connection is
-//       being tried.
-//
 //    .. c:member:: uv_tcp_t client
 //
 //       The TCP handle (TCP stream) of the client, which is used to get the
@@ -454,7 +449,6 @@ struct ch_connection_s {
     uint8_t            address[CH_IP_ADDR_SIZE];
     int32_t            port;
     uint8_t            remote_identity[CH_ID_SIZE];
-    float              max_timeout;
     ch_chirp_t*        chirp;
     ch_remote_t*       remote;
     uv_tcp_t           client;

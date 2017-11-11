@@ -30,8 +30,8 @@ void
 _ch_pr_update_resume(
         ch_resume_state_t* resume,
         ch_buf* buf,
-        int nread,
-        int bytes_handled
+        size_t nread,
+        ssize_t bytes_handled
 );
 //
 //    Update the resume state. Checks if reading was partial and sets resume
@@ -41,8 +41,8 @@ _ch_pr_update_resume(
 //
 //    :param ch_resume_state_t* resume: Pointer to resume state.
 //    :param ch_buf* buf: Pointer to buffer being checked.
-//    :param int nread: Total bytes available
-//    :param int bytes_handled: Bytes actually handled
+//    :param size_t nread: Total bytes available
+//    :param ssize_t bytes_handled: Bytes actually handled
 
 // .. c:function::
 static
@@ -133,8 +133,8 @@ void
 _ch_pr_update_resume(
         ch_resume_state_t* resume,
         ch_buf* buf,
-        int nread,
-        int bytes_handled
+        size_t nread,
+        ssize_t bytes_handled
 )
 //    :noindex:
 //
@@ -143,7 +143,7 @@ _ch_pr_update_resume(
 // .. code-block:: cpp
 //
 {
-    if(bytes_handled != -1 && bytes_handled != nread) {
+    if(bytes_handled != -1 && bytes_handled != (ssize_t) nread) {
         A(
             resume->rest_of_buffer == NULL || resume->bytes_to_read != 0,
             "Last partial read not completed"
@@ -323,12 +323,12 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
 //
 {
     ch_buf* buf            = resume->rest_of_buffer;
-    int nread              = resume->bytes_to_read;
+    size_t nread           = resume->bytes_to_read;
     resume->rest_of_buffer = NULL;
     resume->bytes_to_read  = 0;
     if(buf) {
         int stop;
-        int bytes_handled = ch_rd_read(conn, buf, nread, &stop);
+        ssize_t bytes_handled = ch_rd_read(conn, buf, nread, &stop);
         if(stop) {
             _ch_pr_update_resume(resume, buf, nread, bytes_handled);
         }
@@ -419,7 +419,7 @@ _ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t nread, int* stop)
     size_t bytes_handled = 0;
     *stop = 0;
     do {
-        int tmp_err;
+        ssize_t tmp_err;
         tmp_err = BIO_write(
             conn->bio_app,
             buf + bytes_handled,
@@ -462,7 +462,7 @@ ch_pr_decrypt_read(ch_connection_t* conn, int *stop)
 //
 {
     ch_chirp_t* chirp = conn->chirp;
-    int tmp_err;
+    ssize_t tmp_err;
     *stop = 0;
     while((tmp_err = SSL_read(
             conn->ssl,
@@ -475,7 +475,12 @@ ch_pr_decrypt_read(ch_connection_t* conn, int *stop)
             tmp_err,
             (void*) conn
         );
-        int bytes_handled = ch_rd_read(conn, conn->buffer_rtls, tmp_err, stop);
+        ssize_t bytes_handled = ch_rd_read(
+            conn,
+            conn->buffer_rtls,
+            tmp_err,
+            stop
+        );
         if(*stop) {
             _ch_pr_update_resume(
                     &conn->tls_resume,
@@ -551,9 +556,9 @@ _ch_pr_resume(ch_connection_t* conn)
         }
         ch_resume_state_t* resume = &conn->read_resume;
 
-        int bytes_handled;
+        ssize_t bytes_handled;
         ch_buf* buf            = resume->rest_of_buffer;
-        int nread              = resume->bytes_to_read;
+        size_t nread           = resume->bytes_to_read;
         resume->rest_of_buffer = NULL;
         resume->bytes_to_read  = 0;
 
@@ -585,7 +590,7 @@ _ch_pr_read_data_cb(
     ch_connection_t* conn = stream->data;
     ch_chirp_t* chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    int bytes_handled = 0;
+    ssize_t bytes_handled = 0;
 #   ifndef NDEBUG
         conn->flags &= ~CH_CN_BUF_UV_USED;
 #   endif
