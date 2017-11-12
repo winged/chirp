@@ -60,9 +60,7 @@ _ch_wr_connect_timeout_cb(uv_timer_t* handle);
 //
 //    Callback which is called after the connection reaches its timeout for
 //    connecting. The timeout is set by the chirp configuration and is 5 seconds
-//    by default. When this callback is called, the connection is being shut
-//    :c:member:`ch_error_t.CH_TIMEOUT` is being sent over the connections
-//    load.
+//    by default. When this callback is called, the connection is shutdown.
 //
 //    :param uv_timer_t* handle: Pointer to a timer handle to schedule
 //                               callback.
@@ -92,8 +90,6 @@ _ch_wr_write_data_cb(uv_write_t* req, int status);
 //
 //    Callback which is called after data was written.
 //
-//    Cancels (void) if the writing was erroneous, finishes sending otherwise.
-//
 //    :param uv_write_t* req:  Write request.
 //    :param int status:       Write status.
 
@@ -106,11 +102,8 @@ _ch_wr_write_finish(
         ch_connection_t* conn
 );
 //
-//    Sends a protocol error over the connections load when acknowledging of
-//    messages is disable. Does nothing if not.
-//
-//    If acknowledging is disabled (by configuration), the writers send-timeout
-//    timer is being stopped.
+//    Finishes the current write operation, the message store on the writer is
+//    set to NULL and :c:func:`ch_chirp_finish_message` is called.
 //
 //    :param ch_chirp_t* chirp:      Pointer to a chirp instance.
 //    :param ch_writer_t* writer:    Pointer to a writer instance.
@@ -121,13 +114,7 @@ static
 void
 _ch_wr_write_msg_header_cb(uv_write_t* req, int status);
 //
-//    Callback which is called after the messages was successfully written.
-//
-//    Cancels (void) if the writing was erroneous, finishes sending otherwise.
-//    If the message (coming from the writer) has a header set, the header is
-//    written. Otherwise, if the message has data attached, that data is being
-//    written. In all other cases the sending is being finished using
-//    :c:func:`_ch_wr_write_finish`.
+//    Callback which is called after the messages header was written.
 //
 //    :param uv_write_t* req:  Write request.
 //    :param int status:       Write status.
@@ -340,8 +327,7 @@ _ch_wr_write_finish(
         chirp,
         conn,
         msg,
-        CH_SUCCESS,
-        conn->load
+        CH_SUCCESS
     );
 }
 
@@ -541,7 +527,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     ch_chirp_int_t* ichirp  = chirp->_;
     if(ichirp->flags & CH_CHIRP_CLOSING || ichirp->flags & CH_CHIRP_CLOSED) {
         if(send_cb != NULL) {
-            send_cb(chirp, msg, CH_SHUTDOWN, -1);
+            send_cb(chirp, msg, CH_SHUTDOWN);
         }
         return CH_SHUTDOWN;
     }
@@ -563,7 +549,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         remote = ch_alloc(sizeof(*remote));
         if(remote == NULL) {
             if(send_cb != NULL) {
-                send_cb(chirp, msg, CH_ENOMEM, -1);
+                send_cb(chirp, msg, CH_ENOMEM);
             }
             return CH_ENOMEM;
         }
@@ -595,7 +581,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
             msg->_flags &= ~CH_MSG_USED;
             if(send_cb != NULL) {
-                send_cb(chirp, msg, CH_FATAL, -1);
+                send_cb(chirp, msg, CH_FATAL);
             }
             return CH_FATAL;
         }
@@ -610,7 +596,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             );
             msg->_flags &= ~CH_MSG_USED;
             if(send_cb != NULL) {
-                send_cb(chirp, msg, CH_ENOMEM, -1);
+                send_cb(chirp, msg, CH_ENOMEM);
             }
             return CH_ENOMEM;
         }

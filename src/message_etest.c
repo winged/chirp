@@ -129,11 +129,11 @@ _ch_tst_delay_release(uv_timer_t* handle)
 
 static
 void
-_ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
+_ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 {
     (void)(chirp);
     (void)(status);
-    (void)(load);
+    _ch_tst_msg_echo_count += 1;
     A(status == CH_SUCCESS, "Echoing failed");
     _ch_tst_msg_echo_count += 1;
     int stack_was_null      = _ch_tst_msg_stack == NULL;
@@ -166,10 +166,9 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
 
 static
 void
-_ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
+_ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 {
     (void)(status);
-    (void)(load);
     (void)(msg);
     ch_qc_free_mem();
     A(status == CH_SUCCESS, "Sending failed");
@@ -267,11 +266,7 @@ _ch_tst_run_chirp(void* arg)
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM  = "./dh.pem";
     config.ACKNOWLEDGE    = _ch_tst_ack;
-    if(!_ch_tst_ack) {
-        config.FLOW_CONTROL = 0;
-    }
     if(_ch_tst_min_handlers) {
-        config.FLOW_CONTROL = 0;
         config.MAX_HANDLERS = 1;
     }
     ch_loop_init(&loop);

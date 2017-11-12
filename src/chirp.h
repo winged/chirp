@@ -30,16 +30,6 @@
 //     * Which shows that chirp is highly optimized, but still if the network
 //       delay is bigger star-topology is the way to go.
 //
-// Planned features
-// ----------------
-//
-// * Flow control
-//
-//   * Chirp won't overload peers out-of-the box, if you work with long
-//     requests >2.5s adjust the timeout
-//   * Peer-load is reported so you can implement load-balancing easily
-//
-//
 // .. code-block:: cpp
 //
 // Structures
@@ -230,8 +220,7 @@ ch_chirp_finish_message(
         ch_chirp_t* chirp,
         ch_connection_t* conn,
         ch_message_t* msg,
-        int status,
-        float load
+        int status
 );
 //
 //    Call the user callback and then check the message queue for further
@@ -242,7 +231,6 @@ ch_chirp_finish_message(
 //    :param ch_connection_t* conn: Pointer to connection
 //    :param ch_message_t* msg: Pointer to the message
 //    :param int status: Error code
-//    :param float load: The load of the remote peer
 //
 
 #endif //ch_chirp_h

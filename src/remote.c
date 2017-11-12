@@ -70,7 +70,6 @@ _ch_rm_init(
 {
     memset(remote, 0, sizeof(*remote));
     ch_rm_node_init(remote);
-    remote->load  = -1;
     remote->chirp = chirp;
     ch_random_ints_as_bytes((uint8_t*) &remote->serial, sizeof(remote->serial));
 }

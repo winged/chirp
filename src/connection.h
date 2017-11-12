@@ -408,11 +408,6 @@ typedef struct ch_resume_state_s {
 //       connection and TLS handshakes. This is used within the protocol, see
 //       :c:func:`_ch_pr_do_handshake`.
 //
-//    .. c:member:: float load
-//
-//       The load of the remote peer. This is used when a protocol error or an
-//       timeout happens when writing. See :c:member:`ch_send_cb_t.load`.
-//
 //    .. c:member:: ch_reader_t reader
 //
 //       Handle to a chirp reader, handles handshakes and reads (buffers) on a
@@ -478,7 +473,6 @@ struct ch_connection_s {
     BIO*               bio_ssl;
     BIO*               bio_app;
     int                tls_handshake_state;
-    float              load;
     ch_reader_t        reader;
     ch_writer_t        writer;
     ch_connection_t*   next;

@@ -62,10 +62,6 @@
 //
 //       The current serial number for this remote
 //
-//    .. c:member:: float load
-//
-//       Last reported load of the remote
-//
 //    .. c:member:: char color
 //
 //       rbtree member
@@ -94,7 +90,6 @@ struct ch_remote_s {
     ch_message_t*    wait_ack_message;
     ch_chirp_t*      chirp;
     uint32_t         serial;
-    float            load;
     char             color;
     ch_remote_t*     parent;
     ch_remote_t*     left;

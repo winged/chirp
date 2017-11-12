@@ -86,21 +86,12 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 //       Error code: CH_SUCCESS, CH_TIMEOUT, CH_CANNOT_CONNECT TODO update
 //
-//    .. c:member:: float load
-//
-//       The load of the remote peer. Range 0.0 - 1.0. 1.0 means all remote
-//       handlers are blocked. Use this for load balancing between multiple
-//       nodes. If flow control is not active or the remote node is completely
-//       blocked, you are likely to see timeouts on high load. If no load was
-//       reported yet, the callback return -1.
-//
 // .. code-block:: cpp
 //
 typedef void (*ch_send_cb_t)(
         ch_chirp_t* chirp,
         ch_message_t* msg,
-        int status,
-        float load
+        int status
 );
 
 // .. c:type:: ch_recv_cb_t

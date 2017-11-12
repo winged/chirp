@@ -48,10 +48,9 @@ _ch_tst_close_cb(uv_timer_t* handle)
 
 static
 void
-ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
+ch_tst_sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 {
     (void)(status);
-    (void)(load);
     (void)(msg);
     _ch_tst_sent += 1;
     if(_ch_tst_sent < _ch_tst_msg_count) {

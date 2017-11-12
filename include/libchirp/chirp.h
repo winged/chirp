@@ -46,21 +46,13 @@
 //    .. c:member:: uint8_t MAX_HANDLERS
 //
 //       Count of handlers used. Allowed values are values between 1 and 32.
-//       The default value is 16. If FLOW_CONTROL is on, it must be >= 16.
+//       The default is 0: Use 16 handlers of ACKNOWLEDGE=0 and 1 handler if
+//       ACKNOWLEDGE=1.
 //
 //    .. c:member:: char ACKNOWLEDGE
 //
-//       Acknowledge messages. Is needed for flow-control and robustness.
-//       Disabling acknowledge can improve performance on long delay
-//       connections, but at the risk of loosing messages or overloading the
-//       remote and the local machine. Flow-control needs acknowledge, so as
-//       long as flow-control is on, your can't turn acknowledge off, or chirp
-//       won't accept the config.
-//
-//    .. c:member:: char FLOW_CONTROL
-//
-//       Flow control prevents overloading of a node in a chain for workers.
-//       Default: 1. (Currently not implemented, defined for ABI compatibility)
+//       Acknowledge messages. Default 1. Makes chirp connection-synchronous.
+//       See :ref:`modes-of-operation`
 //
 //    .. c:member:: char DISABLE_SIGNALS
 //
@@ -106,7 +98,6 @@ struct ch_config_s {
     uint8_t         BACKLOG;
     uint8_t         MAX_HANDLERS;
     char            ACKNOWLEDGE;
-    char            FLOW_CONTROL;
     char            DISABLE_SIGNALS;
     uint32_t        BUFFER_SIZE;
     uint8_t         BIND_V6[CH_IP_ADDR_SIZE];

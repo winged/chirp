@@ -49,13 +49,11 @@ void
 _ch_tst_sent_cb(
         ch_chirp_t* chirp,
         ch_message_t* msg,
-        int status,
-        float load
+        int status
 )
 {
     (void)(chirp);
     (void)(status);
-    (void)(load);
     ch_chirp_check_m(chirp);
     L(chirp, "Release message ch_message_t:%p", msg);
     ch_chirp_release_message(msg);

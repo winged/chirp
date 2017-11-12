@@ -580,7 +580,6 @@ ch_cn_init(ch_chirp_t* chirp, ch_connection_t* conn, uint8_t flags)
     int tmp_err;
 
     ch_chirp_int_t* ichirp  = chirp->_;
-    conn->load            = -1;
     conn->chirp           = chirp;
     conn->flags          |= flags;
     conn->write_req.data  = conn;
@@ -785,8 +784,7 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
             chirp,
             conn,
             msg,
-            reason,
-            conn->load
+            reason
         );
     }
     if(conn->flags & CH_CN_ENCRYPTED && conn->flags & CH_CN_INIT_ENCRYPTION) {

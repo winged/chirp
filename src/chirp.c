@@ -51,7 +51,6 @@ static ch_config_t _ch_config_defaults = {
     .PORT               = 2998,
     .BACKLOG            = 100,
     .MAX_HANDLERS       = 0,
-    .FLOW_CONTROL       = 1,
     .ACKNOWLEDGE        = 1,
     .DISABLE_SIGNALS    = 0,
     .BUFFER_SIZE        = 0,
@@ -818,8 +817,7 @@ ch_chirp_finish_message(
         ch_chirp_t* chirp,
         ch_connection_t* conn,
         ch_message_t* msg,
-        int status,
-        float load
+        int status
 )
 //    :noindex:
 //
@@ -877,7 +875,7 @@ ch_chirp_finish_message(
             /* The user may free the message in the cb */
             ch_send_cb_t cb = msg->_send_cb;
             msg->_send_cb = NULL;
-            cb(chirp, msg, status, load);
+            cb(chirp, msg, status);
         }
     }
     ch_wr_process_queues(conn->remote);

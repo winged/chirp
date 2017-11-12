@@ -33,23 +33,7 @@ Features
     * Which shows that chirp is highly optimized, but still if the network delay
       is bigger star-topology is the way to go.
 
-Planned features
-================
-
-* Flow control
-
-  * Chirp won't overload peers out-of-the box, if you work with long requests
-    >2.5s adjust the timeout
-  * Peer-load is reported so you can implement load-balancing easily
-
-Consequences
-------------
-
-* Missing flow-control means you should not overload your peer. Let the peer
-  send a completed-message and wait for it. If you overload your peer you will
-  get timeout errors. It also means that chirp is not yet routing friendly.
-
-* Load is not reported
+.. _modes-of-operation:
 
 Modes of operation
 ==================
@@ -117,7 +101,7 @@ echo-message is sent.
 
    static
    void
-   sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load);
+   sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status);
 
    int
    main(int argc, char *argv[])
@@ -197,7 +181,7 @@ send. :c:func:`ch_chirp_release_message`
 
    static
    void
-   sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status, float load)
+   sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
    {
        ch_chirp_release_message(msg);
    }

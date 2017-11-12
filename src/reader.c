@@ -441,8 +441,7 @@ _ch_rd_read_step(
                     chirp,
                     conn,
                     wam,
-                    CH_SUCCESS,
-                    conn->load
+                    CH_SUCCESS
                 );
             } else {
                 EC(
