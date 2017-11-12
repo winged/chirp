@@ -51,7 +51,7 @@
 //
 // .. code-block:: cpp
 
-#define CH_BF_PREALLOC_DATA 512
+#define CH_BF_PREALLOC_DATA 1024
 
 // TCP keep-alive time
 //
