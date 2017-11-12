@@ -75,14 +75,12 @@ etests: all  ## Run binary tests
 			--no-ack \
 			--always-encrypt \
 			--slow \
-			--message-count 150 \
 			--min-handlers \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--always-encrypt \
 			--slow \
-			--message-count 150 \
 			--min-handlers \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
