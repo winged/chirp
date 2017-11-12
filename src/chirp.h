@@ -30,8 +30,8 @@
 //     * Which shows that chirp is highly optimized, but still if the network
 //       delay is bigger star-topology is the way to go.
 //
-//  Planned features
-//  ----------------
+// Planned features
+// ----------------
 //
 // * Flow control
 //

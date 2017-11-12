@@ -104,6 +104,8 @@ _ch_bf_available(ch_buffer_pool_t* pool)
 //
 //    :rtype: boolean
 //
+// .. code-block:: cpp
+//
 {
     return pool->used_buffers < pool->max_buffers;
 }
@@ -126,6 +128,7 @@ ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers);
 //    :param ch_buffer_pool_t* pool: The buffer pool object
 //    :param ch_connection_t* conn: Connection that owns the pool
 //    :param uint8_t max_buffers: Buffers to allocate
+//
 
 // .. c:function::
 ch_bf_handler_t*
@@ -136,9 +139,9 @@ ch_bf_acquire(ch_buffer_pool_t* pool);
 //
 //    :param ch_buffer_pool_t* pool: The buffer pool structure which the
 //                                   reservation shall be made from.
-//   :return: a pointer to a reserved handler buffer from the given buffer
+//    :return: a pointer to a reserved handler buffer from the given buffer
 //            pool. See :c:type:`ch_bf_handler_t`
-//   :rtype:  ch_bf_handler_t
+//    :rtype:  ch_bf_handler_t
 //
 
 // .. c:function::
