@@ -50,7 +50,7 @@ static ch_config_t _ch_config_defaults = {
     .TIMEOUT            = 5.0,
     .PORT               = 2998,
     .BACKLOG            = 100,
-    .MAX_HANDLERS       = 16,
+    .MAX_HANDLERS       = 0,
     .FLOW_CONTROL       = 1,
     .ACKNOWLEDGE        = 1,
     .DISABLE_SIGNALS    = 0,
@@ -517,33 +517,18 @@ _ch_chirp_verify_cfg(ch_chirp_t* chirp)
         conf->TIMEOUT,
         conf->REUSE_TIME
     );
-    if(conf->FLOW_CONTROL) {
+    if(conf->ACKNOWLEDGE == 1) {
         V(
             chirp,
-            conf->MAX_HANDLERS >= 16,
-            "Config: if flow control is on max_handlers must be >= 16.",
-            CH_NO_ARG
-        );
-    } else {
-        V(
-            chirp,
-            conf->MAX_HANDLERS >= 1,
-            "Config: max_handlers must be >= 1.",
-            CH_NO_ARG
-        );
-    }
-    if(conf->ACKNOWLEDGE == 0) {
-        V(
-            chirp,
-            conf->FLOW_CONTROL == 0,
-            "Config: if acknowledge is disabled flow-control has to be 0.",
+            conf->MAX_HANDLERS == 1,
+            "Config: if acknowledge is enabled max handlers must be 1.",
             CH_NO_ARG
         );
     }
     V(
         chirp,
         conf->MAX_HANDLERS <= 32,
-        "Config: max_handlers must be <= 1.",
+        "Config: max handlers must be <= 1.",
         CH_NO_ARG
     );
     V(
@@ -735,6 +720,14 @@ ch_chirp_init(
         *ichirp->identity = *tmp_conf->IDENTITY;
     }
 
+    if(tmp_conf->MAX_HANDLERS == 0) {
+        if(tmp_conf->ACKNOWLEDGE) {
+            tmp_conf->MAX_HANDLERS = 1;
+        } else {
+            tmp_conf->MAX_HANDLERS = 16;
+        }
+    }
+
     tmp_err = _ch_chirp_verify_cfg(chirp);
     if(tmp_err != CH_SUCCESS) {
         chirp->_init = 0;
@@ -784,7 +777,7 @@ ch_chirp_init(
         uv_mutex_unlock(&_ch_chirp_init_lock);
         return tmp_err;
     }
-    if(!ichirp->config.DISABLE_ENCRYPTION) {
+    if(!tmp_conf->DISABLE_ENCRYPTION) {
         ch_en_init(chirp, enc);
         tmp_err = ch_en_start(enc);
         if(tmp_err != CH_SUCCESS) {
