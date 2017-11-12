@@ -12,8 +12,7 @@ RULES
 
 * Do not use static functions in headers.
 * Log and assert a lot
-* Use C style comments for stuff that stays. C++-style for temporary stuff and
-  NCONV and #else
+* Use C style comments. // is reserved for restructured text.
 * The following are our given abstractions:
 
   - libuv
@@ -21,17 +20,6 @@ RULES
   - openssl
   - sds (for tests only)
   - We try not do add our own abstractions, to keep complexity low
-
-    - For example we use a async-semaphore pattern to await multiple callbacks,
-      it would be possible to build a abstraction (API) from this, but it would
-      increase complexity. So unless we need this async-semaphore in 20+ places we
-      just repeat the pattern, which keeps flexibility high and complexity low.
-
-* Long functions are more readable
-
-  - But long functions with complex control-flow or deeply nested ones are not
-  - Of course its always: reuse over long functions
-  - And when a short function is better for reasons, a short function is better
 
 * We use defined length integers ie. uint8_t for file-formates, wire-protocols
   and when plain int is really really wasteful
@@ -79,34 +67,22 @@ RULES
 
 .. code-block:: cpp
 
-   #ifdef _WIN32
-   #   if defined(_MSC_VER) && _MSC_VER < 1600
-   #       include <stdint-msvc2008.h>
-   #       define ch_inline __inline
-   #   else // _MSC_VER
-   #       include <stdint.h>
-   #       define ch_inline inline
-   #   endif // _MSC_VER
-   #endif //_WIN32
+   #ifdef LIBRESSL_VERSION_NUMBER
+   #   define CH_OPENSSL_10_API
+   #   define CH_LIBRESSL
+   #else
+   #   define CH_OPENSSL
+   #   if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
+   #       define CH_OPENSSL_10_API
+   #   endif
+   #endif
 
 * Always unpack handles in functions and callbacks till you can verify the chirp magic
 * Embeddable: allocate memory via user callback
-* Every function returns ch_error_t
-* Use pointers sparsely
-
-  - Copy small structs 
-  - Use pointers for large structs
-  - Use pointer if it has to be modified (also out params)
-  - Use pointer where you have to because of forward declarations
-
 * Embrace libuv styles and use it for chirp API
 * Literate programming (kinda)
-* Local messages are sent to scheduler directly
-
-  - Binding will send local messages to scheduler directly (not using chirp)
-
 * Localhost connections bypass TLS
-* Use C99 plus the extension used by libuv
+* Use C99
 * PEP8 style in C is ok
 * Tests don't have to be documented, so people can write tests fast and in flow.
 * Sending messages my not allocate memory
@@ -114,69 +90,7 @@ RULES
   - Only things that happen seldom may allocate
   - Luckily chirp is already designed that way
 
-* The original chirp API may only be slightly changed
-* It must be possible for original chirp to adapt the new wire protocol
-
-  - So we have a pure-python and C implementation
-
-* Provide wheels
 * Provide distro packages
-
-Performance
-===========
-
-* Adding buffering per connection would destroy some of the nice properties of
-  chirp, mainly flow-control, simpleness and robustness.
-
-   - Therefore we do not ever allow to remove the per connection send-lock,
-     which means only one message can be sending and the next message can only
-     be sent after the current message has been acknowledged. The first
-     statement is important for simpleness and robustness and the second
-     statement makes flow-control possible.
-
-   - Since the error condition sent to the user is a timeout on the ack. We
-     can react on all other errors accordingly, but do not have to report back
-     to the user. Which saves extremely complex callback structures. Yey!
-
-* Since chirp is meant for multiprocessing, our performance goals refer to this
-  configuration
-
-   - x should be able to send/receive 300'000+ msg/s to/from a suitable N peers
-
-.. graphviz::
-
-   digraph FAST {
-      concentrate=true;
-      x -> a;
-      x -> b;
-      x -> c;
-      x -> d;
-      x -> e;
-      x -> f;
-      x -> N;
-      a -> x;
-      b -> x;
-      c -> x;
-      d -> x;
-      e -> x;
-      f -> x;
-      N -> x;
-   }
-
-* For this configuration we just have to beat 10'000 msg/s of course the
-  more the better
-
-.. graphviz::
-
-   digraph FAST {
-      concentrate=true;
-      x -> a;
-      a -> x;
-   }
-
-* Of course 300'000 msg/s is our stretch goal, 30'000 msg/s is ok too
-
-  - We reached 50'000 in non star-topology
 
 =========
 Questions
