@@ -51,6 +51,55 @@ Consequences
 
 * Load is not reported
 
+Modes of operation
+==================
+
+Connection-synchronous (config.ACKNOWLEDGE=1)
+---------------------------------------------
+
+* The send callback only returns a success when the remote has called
+  ch_chirp_release_message
+
+* No message can be lost by chirp
+
+* For concurrency the application needs to copy the message and call
+  ch_chirp_release message. Then the application has to take care that the
+  copied message is not lost
+
+* If the application call ch_chirp_release_message after the operation is
+  finished, messages will automatically be throttled. Be aware of the timeout:
+  if the applications operation takes longer either increase the timeout or copy
+  the message (where by you lose the throttling)
+
+* Slower
+
+Connection-asynchronous (config.ACKNOWLEDGE=0)
+----------------------------------------------
+
+* The send callback returns a success when the message is successfully written to
+  the operating system
+
+* Message can be lost by chirp
+
+* Automatic concurrency, by default chirp uses 16 concurrent handlers 
+
+* The application needs a scheduler that periodically checks that operations
+  have completed
+
+* Faster
+
+What should I use?
+------------------
+
+For simple message transmission, for example sending events to a time-series
+database we recommend config.ACKNOWLEDGE=1, since chirp will cover this process
+out of the box.
+
+For more complex application where you have to schedule your operations anyway,
+use config.ACKNOWLEDGE=0, do periodic bookkeeping and resend failed
+operations.
+
+
 Example echo-server
 ===================
 

@@ -288,7 +288,7 @@ CH_EXPORT
 ch_error_t
 ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
-//    Send a message. Messages can be sent in parallel to different nodes.
+//    Send a message. Messages can be sent concurrently to different nodes.
 //    Messages to the same remote node will be queued if you don't wait for the
 //    callback.
 //
@@ -302,16 +302,14 @@ ch_chirp_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //    The send message queue is not bounded, the user has to pause sending.
 //
 //    Sending only one message at the same time while having multiple peers
-//    would prevent parallelism, but since chirp is quite fast, it is a valid
+//    would prevent concurrency, but since chirp is quite fast, it is a valid
 //    solution.
 //
 //    A simple pattern is counting the open :c:type:`ch_send_cb_t` and stop
-//    sending at a certain threshold. We recommend a maximum threshold of 16 *
-//    $peer_count. Of course this depends on the size of the messages and the
-//    peer count.
+//    sending at a certain threshold.
 //
 //    The optimal pattern would be sending a message at the time per remote. A
-//    remote is defined by the (ip_protocol, address, port) tuple.  This is
+//    remote is defined by the (ip_protocol, address, port) tuple. This is
 //    more complex to implement.
 //
 //    :param ch_chirp_t* chirp: Pointer to a chirp object.
@@ -325,7 +323,7 @@ CH_EXPORT
 ch_error_t
 ch_chirp_send_ts(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb);
 //
-//    Send a message. Messages can be sent in parallel to different nodes.
+//    Send a message. Messages can be sent in concurrently to different nodes.
 //    Messages to the same remote node will be queued if you don't wait for the
 //    callback.
 //
