@@ -56,17 +56,21 @@ etests: all  ## Run binary tests
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--always-encrypt \
 			--slow \
-			--message-count 150 \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
+			--slow \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			--no-ack \
+			--always-encrypt \
 			--slow \
 			--message-count 150 \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--no-ack \
-			--always-encrypt \
 			--slow \
 			--message-count 150 \
 			2> message_etest.log || \
@@ -79,15 +83,9 @@ etests: all  ## Run binary tests
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
-			--always-encrypt \
-			--slow \
-			--min-handlers \
-			2> message_etest.log || \
-		(cat message_etest.log; false)
-	$(MEMCHECK) $(BUILD)/src/message_etest \
 			--no-ack \
-			--slow \
-			--message-count 150 \
+			--always-encrypt \
+			--min-handlers \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest \
