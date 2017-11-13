@@ -50,6 +50,11 @@ Features
 Install
 =======
 
+libchirp is distributed as an amalgamation (only needs make and compiler). See
+`DIST-README.rst`_. The information below applies to the git repository.
+
+.. _`DIST-README.rst`: https://github.com/concretecloud/chirp/blob/master/mk/DIST-README.rst
+
 Unix
 ----
 
@@ -61,13 +66,13 @@ Dependencies:
 
 Build dependencies:
 
+* python3 [3]_
+
 * make
 
 * gcc or clang
 
 Documentation build dependencies:
-
-* python3 [3]_
 
 * sphinx
 
