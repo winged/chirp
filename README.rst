@@ -253,6 +253,31 @@ If you use clang complete, we recommend
    let g:clang_snippets        = 1
    let g:clang_snippets_engine = 'clang_complete'
 
+Thanks
+======
+
+For letting me do this:
+
+* `Adfinis SyGroup`_
+
+.. _`Adfinis SyGroup`: https://www.adfinis-sygroup.ch/
+
+For helping me with the architecture:
+
+* David Vogt @winged
+* Sven Osterwalder @sosterwalder
+
+For helping me with the documentation:
+
+* Sven Osterwalder @sosterwalder
+* David Vogt @winged
+
+For reviewing my pull requests:
+
+* Oliver Sauder @sliverc
+* David Vogt @winged
+* Tobias Rueetschi @keachi
+
 License
 =======
 
