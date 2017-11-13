@@ -53,9 +53,13 @@ Install
 Unix
 ----
 
-Build dependencies:
+Dependencies:
 
-* python3 [3]_
+* libuv
+
+* openssl
+
+Build dependencies:
 
 * make
 
@@ -63,16 +67,11 @@ Build dependencies:
 
 Documentation build dependencies:
 
+* python3 [3]_
+
 * sphinx
 
 * graphviz
-
-Dependencies:
-
-* libuv
-
-* openssl
-
 
 Install to prefix /usr/local. (with docs)
 
