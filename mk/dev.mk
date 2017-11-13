@@ -244,7 +244,13 @@ $(DISTR): $(AMALB).c
 	$(V_M)mkdir -p $(DISTD)
 	$(V_M)cp $(AMALB).h $(DISTD)
 	$(V_M)cp $(AMALB).c $(DISTD)
+ifeq ($(NO_UNIFDEF),True)
 	$(V_M)cp $(BUILD)/libchirp-config.h $(DISTD)
+else
+	$(V_E) UNIFDEF libchirp-config.h
+	$(V_M)$(BUILD)/unifdef -x 2 -DCH_REMOVE_DEBUGDEFS \
+		-o $(DISTD)/libchirp-config.h $(BUILD)/libchirp-config.h
+endif
 	$(V_M)cp $(BASE)/LICENSE $(DISTD)
 	$(V_M)cp $(BASE)/src/chirp_etest.c $(DISTD)/chirp_test.c
 	$(V_M)echo 'UNAME_S := $$(shell uname -s)' > $(DISTM)

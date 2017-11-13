@@ -65,6 +65,8 @@
 
 #define CH_MAX_MSG_SIZE 1024 * 1024 * 100 // 100M
 
+#ifndef CH_REMOVE_DEBUGDEFS
+
 // Log available ciphers. Used to debug connections failures.
 //
 // .. code-block:: cpp
@@ -84,5 +86,7 @@
 #define s_malloc malloc
 #define s_realloc realloc
 #define s_free free
+
+#endif //CH_REMOVE_DEBUGDEFS
 
 #endif //ch_global_config_h
