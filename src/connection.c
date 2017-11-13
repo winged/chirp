@@ -759,11 +759,11 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
         EC(chirp, "Shutdown in progress. ", "ch_connection_t:%p", (void*) conn);
         return CH_IN_PRORESS;
     }
+    LC(chirp, "Shutdown connection. ", "ch_connection_t:%p", (void*) conn);
     conn->flags |= CH_CN_SHUTTING_DOWN;
     int tmp_err;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_writer_t* writer = &conn->writer;
-    ch_message_t* msg = writer->msg;
     ch_remote_t* remote = conn->remote;
     /* In early handshake remote can empty, since we allocate resources after
      * successful handshake. */
@@ -771,13 +771,26 @@ ch_cn_shutdown(ch_connection_t* conn, int reason)
         ch_connection_t* out;
         ch_cn_delete(&ichirp->protocol.handshake_conns, conn, &out);
     }
-    if(remote) {
-        remote->conn = NULL;
-    }
-    LC(chirp, "Shutdown connection. ", "ch_connection_t:%p", (void*) conn);
     if(conn->flags & CH_CN_INIT_CLIENT) {
         uv_read_stop((uv_stream_t*) &conn->client);
     }
+    ch_message_t* msg = writer->msg;
+    ch_message_t* wam = NULL;
+    if(remote) {
+        wam = remote->wait_ack_message;
+        remote->conn = NULL;
+    }
+    if(msg == NULL) {
+        msg = wam;
+    }
+#   ifndef NDEBUG
+        else {
+            A(
+                wam == NULL || wam == msg,
+                "Wait ack message should be the same as writer msg"
+            );
+        }
+#   endif
     if(msg != NULL) {
         msg->_flags = CH_MSG_FAILURE;
         ch_chirp_finish_message(
