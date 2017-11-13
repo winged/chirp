@@ -63,6 +63,25 @@
 //       Size of the buffer used for a connection. Defaults to 0, which means
 //       use the size requested by libuv. Should not be set below 1024.
 //
+//    .. c:member:: uint32_t MAX_MSG_SIZE
+//
+//       Max message size accepted by chirp. If you are concerned about memory
+//       usage set config.MAX_HANDLERS=1 and config.MAX_MSG_SIZE to something
+//       small, depending on your use-case. If you do this, a connection will
+//       use about:
+//
+//       conn_buffers_size = config.BUFFER_SIZE +
+//          min(config.BUFFER_SIZE, CH_ENC_BUFFER_SIZE) +
+//          sizeof(ch_connection_t) +
+//          sizeof(ch_message_t) +
+//          $(memory allocated by TLS implementation)
+//
+//       conn_size = conn_buffers_size + config.MAX_MSG_SIZE
+//
+//       With the default config and LibreSSL conn_buffers_size should be about
+//       64k + 16k + 2k + 32k -> 114k. Derived from documentation, no
+//       measurement done.
+//
 //    .. c:member:: uint8_t[16] BIND_V6
 //
 //       Override IPv6 bind address.
@@ -100,6 +119,7 @@ struct ch_config_s {
     char            ACKNOWLEDGE;
     char            DISABLE_SIGNALS;
     uint32_t        BUFFER_SIZE;
+    uint32_t        MAX_MSG_SIZE;
     uint8_t         BIND_V6[CH_IP_ADDR_SIZE];
     uint8_t         BIND_V4[CH_IP4_ADDR_SIZE];
     uint8_t         IDENTITY[CH_ID_SIZE]; // 16

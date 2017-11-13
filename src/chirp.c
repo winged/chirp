@@ -54,6 +54,7 @@ static ch_config_t _ch_config_defaults = {
     .ACKNOWLEDGE        = 1,
     .DISABLE_SIGNALS    = 0,
     .BUFFER_SIZE        = 0,
+    .MAX_MSG_SIZE       = CH_MAX_MSG_SIZE,
     .BIND_V6            = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     .BIND_V4            = {0, 0, 0, 0},
     .IDENTITY           = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},

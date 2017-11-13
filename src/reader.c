@@ -422,7 +422,8 @@ _ch_rd_read_step(
             return bytes_handled;
         }
         ch_sr_buf_to_msg(reader->net_msg, wire_msg);
-        if((wire_msg->header_len + wire_msg->data_len) > CH_MSG_SIZE_HARDLIMIT) {
+        uint32_t total_wire_msg_size = wire_msg->header_len + wire_msg->data_len;
+        if(total_wire_msg_size > ichirp->config.MAX_MSG_SIZE) {
             EC(
                 chirp,
                 "Message size exceeds hardlimit. ",

@@ -63,7 +63,7 @@
 //
 // .. code-block:: cpp
 
-#define CH_MSG_SIZE_HARDLIMIT 1024 * 1024 * 100 // 100M
+#define CH_MAX_MSG_SIZE 1024 * 1024 * 100 // 100M
 
 // Log available ciphers. Used to debug connections failures.
 //
