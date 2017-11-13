@@ -135,7 +135,6 @@ _ch_tst_echo_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
     (void)(status);
     _ch_tst_msg_echo_count += 1;
     A(status == CH_SUCCESS, "Echoing failed");
-    _ch_tst_msg_echo_count += 1;
     int stack_was_null      = _ch_tst_msg_stack == NULL;
     ch_chirp_t* other       = ch_tr_other_chirp(chirp);
     ch_identity_t other_id  = ch_chirp_get_identity(other);
