@@ -451,8 +451,6 @@ _ch_rd_read_step(
                     "ch_connection_t:%p",
                     (void*) conn
                 );
-                /* shutting down because of bad ack is probably
-                 * overreacted, but we keep it for the moment */
                 ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
                 return -1; /* Shutdown */
             }
