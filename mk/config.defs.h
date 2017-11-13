@@ -1,7 +1,7 @@
 #ifndef ch_global_config_h
 #define ch_global_config_h
 
-// Version of chirp
+// Version of chirp.
 //
 // .. code-block:: cpp
 //
@@ -10,14 +10,13 @@
 // Disable SIGINT and SIGTERM to close chirp. Used for compatibility with
 // existing applications: When you use chirp in an existing application that
 // uses SIGINT and SIGTERM signals and the handlers added by chirp somehow
-// conflict. For example the applications wants to cleanup chirp by itself,
-// it isn't ready for code executed after SIGINT or it just wants to die().
+// conflict. Can be overridden in :c:type:`ch_config_t`.
 //
 // .. code-block:: cpp
 //
 ////#define CH_DISABLE_SIGNALS
 //
-// Buffersize when allocating communication buffers, can be overridden in
+// Buffer-size when allocating communication buffers, can be overridden in
 // :c:type:`ch_config_t`.
 //
 // .. code-block:: cpp
@@ -25,7 +24,7 @@
 /* 64k */
 #define CH_BUFFER_SIZE 65536
 
-// Minimal buffersize we require when allocating communication buffers
+// Minimal buffersize we require when allocating communication buffers.
 //
 // .. code-block:: cpp
 
@@ -39,27 +38,27 @@
 /* 16k */
 #define CH_ENC_BUFFER_SIZE 16384
 
-// Preallocated buffer size for header. If the size is to small the buffer gets
-// allocated using ch_alloc().
+// Preallocated buffer size for header. If the header is bigger memory will be
+// allocated.
 //
 // .. code-block:: cpp
 
 #define CH_BF_PREALLOC_HEADER 32
 
-// Preallocated buffer size for data. If the size is to small the buffer gets
-// allocated using ch_alloc().
+// Preallocated buffer size for data. If the data is bigger memory will be
+// allocated.
 //
 // .. code-block:: cpp
 
 #define CH_BF_PREALLOC_DATA 1024
 
-// TCP keep-alive time
+// TCP keep-alive time.
 //
 // .. code-block:: cpp
 
 #define CH_TCP_KEEPALIVE 60
 
-// Hard limit for message size
+// Hard limit for message size.  Can be overridden in :c:type:`ch_config_t`.
 //
 // .. code-block:: cpp
 
