@@ -29,9 +29,11 @@ Example: Packaging (no strip since distributions usually want to control strip)
    make
    make install PREFIX=/usr DEST=./pkgdir
 
-Example: Debug (NDEBUG will still be set so no debug macros active)
+Example: Debug
 
 .. code-block:: bash
 
    CFLAGS=-O0 make
    make install PREFIX=/usr/local
+
+#ifndef NDEBUG is stripped in source distribution, so still no debug code.
