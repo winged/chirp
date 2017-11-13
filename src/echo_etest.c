@@ -12,6 +12,7 @@
 #include "libchirp.h"
 #include "common.h"
 #include "message.h"
+#include "connection.h"
 
 // System includes
 // ===============

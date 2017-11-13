@@ -36,8 +36,9 @@ typedef enum {
     CH_TST_TIMEOUT        = 1003,
     CH_TST_NO_ACK         = 1004,
     CH_TST_MIN_HANDLERS   = 1005,
-    CH_TST_SLOW           = 1006,
-    CH_TST_HELP           = 1007,
+    CH_TST_MAX_MSG_SIZE   = 1006,
+    CH_TST_SLOW           = 1007,
+    CH_TST_HELP           = 1008,
 } ch_tst_args_t;
 
 typedef ch_error_t (*ch_tst_chirp_send_t)(
@@ -101,6 +102,7 @@ static uv_timer_t _ch_tst_sleep_timer;
 static int _ch_tst_ack = 1;
 static int _ch_tst_slow = 0;
 static int _ch_tst_min_handlers = 0;
+static uint32_t _ch_tst_max_msg_size = CH_MAX_MSG_SIZE;
 static ch_tst_msg_stack_t* _ch_tst_msg_stack = NULL;
 
 static
@@ -265,6 +267,7 @@ _ch_tst_run_chirp(void* arg)
     config.CERT_CHAIN_PEM = "./cert.pem";
     config.DH_PARAMS_PEM  = "./dh.pem";
     config.ACKNOWLEDGE    = _ch_tst_ack;
+    config.MAX_MSG_SIZE   = _ch_tst_max_msg_size;
     if(_ch_tst_min_handlers) {
         config.MAX_HANDLERS = 1;
     }
@@ -320,6 +323,7 @@ main(int argc, char *argv[])
         {"message-count",  required_argument, 0, CH_TST_MESSAGE_COUNT },
         {"timeout",        required_argument, 0, CH_TST_TIMEOUT },
         {"buffer-size",    required_argument, 0, CH_TST_BUFFER_SIZE },
+        {"max-msg-size",   required_argument, 0, CH_TST_MAX_MSG_SIZE },
         {"no-ack",         no_argument,       0, CH_TST_NO_ACK },
         {"min-handlers",   no_argument,       0, CH_TST_MIN_HANDLERS },
         {"slow",           no_argument,       0, CH_TST_SLOW },
@@ -357,6 +361,13 @@ main(int argc, char *argv[])
                 _ch_tst_buffer_size = strtol(optarg, NULL, 10);
                 if(errno) {
                     fprintf(stderr, "buffer-size must be integer.\n");
+                    exit(1);
+                }
+                break;
+            case CH_TST_MAX_MSG_SIZE:
+                _ch_tst_max_msg_size = strtol(optarg, NULL, 10);
+                if(errno) {
+                    fprintf(stderr, "max-msg-size must be integer.\n");
                     exit(1);
                 }
                 break;

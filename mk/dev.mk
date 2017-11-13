@@ -36,6 +36,8 @@ etests: all  ## Run binary tests
 	$(BUILD)/src/message_etest \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
+	!$(BUILD)/src/message_etest --max-msg-size 4 \
+			2> message_etest.log || \
 	$(MEMCHECK) $(BUILD)/src/message_etest \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
