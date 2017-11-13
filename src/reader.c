@@ -468,16 +468,14 @@ _ch_rd_read_step(
     {
         ch_message_t* wire_msg = &reader->wire_msg;
         if(reader->handler == NULL) {
-            /* We are out of handlers, inform upper layer to stop */
-            if(!_ch_bf_available(&reader->pool)) {
+            reader->handler = ch_bf_acquire(&reader->pool);
+            if(reader->handler == NULL) {
                 conn->flags |= CH_CN_STOPPED;
                 LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
                 uv_read_stop((uv_stream_t*) &conn->client);
                 *stop = 1;
                 return bytes_handled;
             }
-            reader->handler = ch_bf_acquire(&reader->pool);
-            A(reader->handler, "Acquired more handlers than available");
         }
         handler = reader->handler;
         msg     = &handler->msg;

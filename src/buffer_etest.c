@@ -39,7 +39,6 @@ ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)
         mpack_node_array_at(data, 1)
     );
     switch(func) {
-        int ret;
         ch_bf_handler_t* handler;
         case func_init_e:
             ch_bf_init(&pool, NULL, val);
@@ -47,9 +46,7 @@ ch_tst_test_handler(mpack_node_t data, mpack_writer_t* writer)
             break;
         case func_acquire_e:
             handler = ch_bf_acquire(&pool);
-            ret = !_ch_bf_available(&pool);
-            mpack_start_array(writer, 2);
-            mpack_write_int(writer, ret);
+            mpack_start_array(writer, 1);
             if(handler == NULL) {
                 mpack_write_int(writer, -1);
             } else {

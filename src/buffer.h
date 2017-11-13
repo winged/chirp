@@ -93,24 +93,6 @@ typedef struct ch_buffer_pool_s {
 } ch_buffer_pool_t;
 
 // .. c:function::
-static
-inline
-int
-_ch_bf_available(ch_buffer_pool_t* pool)
-//
-//    Check if there are still buffers avilable.
-//
-//    :param ch_buffer_pool_t* pool: The buffer pool to check
-//
-//    :rtype: boolean
-//
-// .. code-block:: cpp
-//
-{
-    return pool->used_buffers < pool->max_buffers;
-}
-
-// .. c:function::
 void
 ch_bf_free(ch_buffer_pool_t* pool);
 //
