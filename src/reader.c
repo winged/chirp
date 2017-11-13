@@ -483,6 +483,7 @@ _ch_rd_read_step(
         memcpy(msg, wire_msg, ((char*) &wire_msg->header) - ((char*) wire_msg));
         msg->ip_protocol   = conn->ip_protocol;
         msg->port          = conn->port;
+        memcpy(msg->remote_identity, conn->remote_identity, CH_ID_SIZE);
         memcpy(
             msg->address,
             conn->address,
