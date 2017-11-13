@@ -57,7 +57,7 @@ Dependencies:
 
 * libuv
 
-* openssl
+* libressl or openssl
 
 Build dependencies:
 
