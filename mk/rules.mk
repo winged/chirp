@@ -26,6 +26,10 @@ $(BUILD)/%.rst: $(BASE)/%
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<
+	$(V_E) FRMT $<
+	$(V_M)clang-format $< > $@.cf
+	$(V_M)diff $< $@.cf > /dev/null || \
+		(echo $<:1:1: Please clang-format the file; false)
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
 

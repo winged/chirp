@@ -14,9 +14,7 @@
 // ===========
 //
 // .. c:function::
-static
-inline
-int
+static inline int
 ch_msb32(uint32_t x)
 //
 //    Get the most significant bit set of a set of bits.
@@ -29,13 +27,22 @@ ch_msb32(uint32_t x)
 // .. code-block:: cpp
 //
 {
-    static const uint32_t bval[] =
-    {0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4};
+    static const uint32_t bval[] = {
+            0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
 
     uint32_t r = 0;
-    if (x & 0xFFFF0000) { r += 16/1; x >>= 16/1; }
-    if (x & 0x0000FF00) { r += 16/2; x >>= 16/2; }
-    if (x & 0x000000F0) { r += 16/4; x >>= 16/4; }
+    if (x & 0xFFFF0000) {
+        r += 16 / 1;
+        x >>= 16 / 1;
+    }
+    if (x & 0x0000FF00) {
+        r += 16 / 2;
+        x >>= 16 / 2;
+    }
+    if (x & 0x000000F0) {
+        r += 16 / 4;
+        x >>= 16 / 4;
+    }
     return r + bval[x];
 }
 
@@ -70,21 +77,19 @@ ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers)
     pool->used_buffers = 0;
     pool->max_buffers  = max_buffers;
     pool->handlers     = ch_alloc(pool_mem);
-    if(!pool->handlers) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Could not allocate memory fo r buffers. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
+    if (!pool->handlers) {
+        fprintf(stderr,
+                "%s:%d Fatal: Could not allocate memory fo r buffers. "
+                "ch_buffer_pool_t:%p\n",
+                __FILE__,
+                __LINE__,
+                (void*)pool);
         return CH_ENOMEM;
     }
     memset(pool->handlers, 0, pool_mem);
     pool->free_buffers = 0xFFFFFFFFU;
     pool->free_buffers <<= (32 - max_buffers);
-    for(i = 0; i < max_buffers; ++i) {
+    for (i = 0; i < max_buffers; ++i) {
         pool->handlers[i].id   = i;
         pool->handlers[i].used = 0;
     }
@@ -102,7 +107,7 @@ ch_bf_acquire(ch_buffer_pool_t* pool)
 //
 {
     ch_bf_handler_t* handler_buf;
-    if(pool->used_buffers < pool->max_buffers) {
+    if (pool->used_buffers < pool->max_buffers) {
         int free;
         pool->used_buffers += 1;
         free = ch_msb32(pool->free_buffers);
@@ -131,22 +136,20 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
 // .. code-block:: cpp
 //
 {
-    ch_bf_handler_t* handler_buf =  &pool->handlers[id];
+    ch_bf_handler_t* handler_buf = &pool->handlers[id];
     A(handler_buf->used == 1, "Double release of buffer.");
     A(pool->used_buffers > 0, "Buffer pool inconsistent.");
     A(handler_buf->id == id, "Id changed.");
     A(handler_buf->msg._handler == id, "Id changed.");
     int in_pool = pool->free_buffers & (1 << (31 - id));
     A(!in_pool, "Buffer already in pool");
-    if(in_pool) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Double release of handler buffer. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
+    if (in_pool) {
+        fprintf(stderr,
+                "%s:%d Fatal: Double release of handler buffer. "
+                "ch_buffer_pool_t:%p\n",
+                __FILE__,
+                __LINE__,
+                (void*)pool);
         return;
     }
     pool->used_buffers -= 1;

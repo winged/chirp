@@ -1,2 +1,2 @@
 all:
-	$(MAKE) -C build doc_files all
+	$(MAKE) -C build objects doc_files

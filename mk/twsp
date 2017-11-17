@@ -54,22 +54,6 @@ with codecs.open(file_, encoding="UTF-8") as in_:
                 slash_comment = spaces
             else:
                 slash_comment = 0
-        if spaces % 4:
-            if not (
-                    strip_line.startswith("// ") or
-                    strip_line.startswith("/* ") or
-                    strip_line.startswith("* ") or
-                    strip_line.startswith("*/") or
-                    in_comment
-            ):
-                ret = 1
-                print(
-                    "%s:%d:0: error: leading spaces should "
-                    "be multiple for four" % (
-                        file_,
-                        i + 1,
-                    )
-                )
         # Not completely accurate but good enough
         if "/*" in strip_line:
             in_comment = True
