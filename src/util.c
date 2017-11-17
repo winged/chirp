@@ -408,6 +408,29 @@ ch_set_alloc_funcs(
 
 // .. c:function::
 ch_error_t
+ch_text_addr_sockaddr(
+        int af,
+        ch_text_address_t* text,
+        uint16_t port,
+        struct sockaddr_storage* addr
+)
+//    :noindex:
+//
+//    see: :c:func:`ch_text_addr_sockaddr`
+//
+// .. code-block:: cpp
+//
+{
+    if(af == AF_INET6) {
+        return uv_ip6_addr(text->data, port, (struct sockaddr_in6*) addr);
+    } else {
+        A(af, "Unknown IP protocol");
+        return uv_ip4_addr(text->data, port, (struct sockaddr_in*) addr);
+    }
+}
+
+// .. c:function::
+ch_error_t
 ch_uv_error_map(int error)
 //    :noindex:
 //

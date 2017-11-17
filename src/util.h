@@ -98,6 +98,24 @@ ch_realloc(void*  buf, size_t size);
 
 // .. c:function::
 ch_error_t
+ch_text_addr_sockaddr(
+        int af,
+        ch_text_address_t* text,
+        uint16_t port,
+        struct sockaddr_storage* addr
+);
+//
+//    Convert a text address to a struct sockaddr. As an input we want struct
+//    sockaddr_storage, to have enough space for an IPv4 and IPv6 address, but
+//    you can cast it to struct sockaddr afterwards.
+//
+//    :param int af:                  Either AF_INT or AF_INET6
+//    :param ch_text_address_t* text: A text representation of the address
+//    :param uint16_t port:           The port
+//    :param sockaddr_storage* addr:  The socket to set
+
+// .. c:function::
+ch_error_t
 ch_uv_error_map(int error);
 //
 //    Map common libuv errors to chirp errors.

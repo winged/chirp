@@ -41,14 +41,15 @@ ch_msg_get_address(
     if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
         return CH_VALUE_ERROR;
     }
-    if(uv_inet_ntop(
+    int tmp_err = uv_inet_ntop(
             ip_protocol,
             message->address,
             address->data,
             sizeof(address->data)
-    )) {
-        return CH_PROTOCOL_ERROR;
-    }
+    );
+    /* This error is not dynamic, it means ch_text_address_t is too small, so
+     * we do not return it to the user */
+    A(tmp_err == 0, "Cannot convert address to text (not enough space)");
     return CH_SUCCESS;
 }
 

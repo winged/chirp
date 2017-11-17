@@ -622,7 +622,18 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         ch_wr_send_check_error_m("Starting connect timeout failed")
 
         ch_text_address_t taddr;
-        ch_msg_get_address(msg, &taddr);
+        tmp_err = ch_msg_get_address(msg, &taddr);
+        if(tmp_err != CH_SUCCESS) {
+            E(
+                chirp,
+                "Failed to get message address: bad INET protocol",
+                CH_NO_ARG
+            );
+            if(send_cb != NULL) {
+                send_cb(chirp, msg, CH_CANNOT_CONNECT);
+            }
+            return CH_CANNOT_CONNECT;
+        }
         if(!(
                 ichirp->config.DISABLE_ENCRYPTION  ||
                 ch_is_local_addr(&taddr)
@@ -636,32 +647,14 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         );
         uv_tcp_init(ichirp->loop, &conn->client);
         conn->flags |= CH_CN_INIT_CLIENT;
-        if(msg->ip_protocol == AF_INET6) {
-            struct sockaddr_in6 addr;
-            uv_ip6_addr(taddr.data, msg->port, &addr);
-            tmp_err = uv_tcp_connect(
-                &conn->connect,
-                &conn->client,
-                (struct sockaddr*) &addr,
-                _ch_wr_connect_cb
-            );
-        } else {
-            A(msg->ip_protocol == AF_INET, "Unknown IP protocol");
-            struct sockaddr_in addr;
-            uv_ip4_addr(taddr.data, msg->port, &addr);
-            tmp_err = uv_tcp_connect(
-                &conn->connect,
-                &conn->client,
-                (struct sockaddr*) &addr,
-                _ch_wr_connect_cb
-            );
-        }
-        LC(
-            chirp,
-            "Connecting to remote %s:%d. ", "ch_connection_t:%p",
-            taddr.data,
-            msg->port,
-            (void*) conn
+        struct sockaddr_storage addr;
+        /* No error can happen, the address was taken from a binary format */
+        ch_text_addr_sockaddr(msg->ip_protocol, &taddr, msg->port, &addr);
+        tmp_err = uv_tcp_connect(
+            &conn->connect,
+            &conn->client,
+            (struct sockaddr*) &addr,
+            _ch_wr_connect_cb
         );
         if(tmp_err != CH_SUCCESS) {
             E(
@@ -671,7 +664,18 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
                 msg->port,
                 tmp_err
             );
+            if(send_cb != NULL) {
+                send_cb(chirp, msg, CH_CANNOT_CONNECT);
+            }
+            return CH_CANNOT_CONNECT;
         }
+        LC(
+            chirp,
+            "Connecting to remote %s:%d. ", "ch_connection_t:%p",
+            taddr.data,
+            msg->port,
+            (void*) conn
+        );
     } else {
         ch_wr_process_queues(remote);
     }
