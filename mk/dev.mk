@@ -27,7 +27,16 @@ endif
 
 # Binary tests to run
 # ===================
-etests: all  ## Run binary tests
+
+stest: all
+	$(MEMCHECK) $(BUILD)/src/message_etest \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt \
+			2> message_etest.log || \
+		(cat message_etest.log; false)
+
+etests: stest  ## Run binary tests
 	LD_LIBRARY_PATH="$(BUILD)" $(BUILD)/src/chirp_etest
 	$(BUILD)/src/quickcheck_etest
 	$(MEMCHECK) $(BUILD)/src/quickcheck_etest
@@ -38,12 +47,6 @@ etests: all  ## Run binary tests
 		(cat message_etest.log; false)
 	!$(BUILD)/src/message_etest --max-msg-size 4 \
 			2> message_etest.log || \
-	$(MEMCHECK) $(BUILD)/src/message_etest \
-			2> message_etest.log || \
-		(cat message_etest.log; false)
-	$(MEMCHECK) $(BUILD)/src/message_etest --always-encrypt \
-			2> message_etest.log || \
-		(cat message_etest.log; false)
 	$(MEMCHECK) $(BUILD)/src/message_etest --no-ack --always-encrypt \
 			2> message_etest.log || \
 		(cat message_etest.log; false)
