@@ -24,6 +24,7 @@ $(BUILD)/%.rst: $(BASE)/%
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<
+ifeq ($(CI_DISTRO),alpine)
 	$(V_E) FRMT $<
 	$(V_M)clang-format $< > $@.cf
 ifeq ($(CLANG_FORMAT),True)
@@ -31,6 +32,7 @@ ifeq ($(CLANG_FORMAT),True)
 else
 	$(V_M)diff $< $@.cf > /dev/null || \
 		(echo $<:1:1: Please clang-format the file; false)
+endif
 endif
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
