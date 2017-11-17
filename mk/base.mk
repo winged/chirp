@@ -1,4 +1,4 @@
-.PHONY += install uninstall testlibuv testopenssl clean tutorial_files tutorial_code
+.PHONY += install uninstall testlibuv testopenssl clean tutorial_files tutorial_code format
 
 # Verbose mode
 # ============
@@ -96,12 +96,13 @@ check: all  ## Check basic functionality
 
 # Format target
 # =============
-format: CLANG_FORMART=True doc_files  tutorial_files tutorial_code ## Format code
+format:
+	CLANG_FORMAT=True $(MAKE) clean doc_files tutorial_files tutorial_code  ## Format code
 
 # Doc target
 # ==========
 ifeq ($(DOC),True)
-doc: doc_files  tutorial_files tutorial_code ## Generate documentation
+doc: doc_files tutorial_files tutorial_code ## Generate documentation
 	$(V_E) DOC
 	$(V_M)mkdir -p $(BUILD)/doc
 	$(V_M)mkdir -p $(BUILD)/doc/html
