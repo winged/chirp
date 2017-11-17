@@ -16,40 +16,13 @@ ifeq ($(MACRO_DEBUG),True)
 			2> $@.log || \
 		(cat $@.log; false)
 else
-	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $< $(BN).c
 	$(V_E) CC $<
-	$(V_M)$(CC) -c -o $@ $(BN).c $(CFLAGS)
+	$(V_M)$(CC) -c -o $@ $< $(CFLAGS)
 endif
 
-# Preprocess headers
-# ==================
-$(BUILD)/%.h: $(BASE)/%.h
-	@mkdir -p "$(dir $@)"
-	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $< $@
-
 # Make doc (.rst) from source files
 # =================================
 $(BUILD)/%.rst: $(BASE)/%
-	@mkdir -p "$(dir $@)"
-	$(V_E) TWSP $<
-	$(V_M)$(BASE)/mk/twsp $<
-	$(V_E) RST $<
-	$(V_M)$(BASE)/mk/c2rst $< $@
-
-# Make doc (.rst) from source files
-# =================================
-$(BUILD)/%.rst: $(BASE)/%
-	@mkdir -p "$(dir $@)"
-	$(V_E) TWSP $<
-	$(V_M)$(BASE)/mk/twsp $<
-	$(V_E) RST $<
-	$(V_M)$(BASE)/mk/c2rst $< $@
-
-# Make doc (h.rg.rst) from .rg.h files
-# ====================================
-$(BUILD)/%.rg.h.rst: $(BASE)/%.rg.h
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<

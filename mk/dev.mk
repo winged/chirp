@@ -142,14 +142,13 @@ cppcheck: all  ## Static analysis
 		--suppress=unusedFunction \
 		--suppress=*:*mpack_test.* \
 		--suppress=*:*sds_test.* \
-		--config-exclude="$(BUILD)/src/mpack" \
+		--config-exclude="$(BASE)/src/mpack" \
 		--error-exitcode=1 \
 		--std=c99 \
 		--inline-suppr \
 		-I"$(BASE)/include" \
-		-I"$(BUILD)/src" \
 		-DCH_ACCEPT_STRANGE_PLATFORM \
-		"$(BUILD)/src"
+		"$(BASE)/src"
 
 # Unifdef
 # =======
@@ -172,12 +171,10 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 	$(V_M)echo // libchirp $(VERSION_LONG) amalgamation >> $(BUILD)/header.h
 	$(V_M)echo // ================================ >> $(BUILD)/header.h
 	$(V_M)echo >> $(BUILD)/header.h
-	$(V_E) RGC common.h
-	$(V_M)$(BASE)/mk/rgc $(AMALS)/common.h $(BUILD)/common.rg.h
 	$(V_E) AMAL libchirp.c
-	$(V_M)echo '#include "libchirp.h"' >> $(AMALB).rg.c
+	$(V_M)echo '#include "libchirp.h"' >> $(AMALB).def.c
 	$(V_M)cat \
-		$(BUILD)/common.rg.h \
+		$(AMALS)/common.h \
 		$(AMALS)/qs.h \
 		$(AMALS)/rbtree.h \
 		$(AMALS)/message.h \
@@ -193,13 +190,11 @@ $(AMALB).c: $(LIB_CFILES) $(HEADERS) $(BUILD)/unifdef
 		$(AMALS)/chirp.h \
 		$(LIB_CFILES) > $(AMALB).def.c
 ifeq ($(NO_UNIFDEF),True)
-	cp $(AMALB).def.c $(AMALB).rg.c
+	cp $(AMALB).def.c $(AMALB).pre.c
 else
 	$(V_E) UNIFDEF libchirp.c
-	$(V_M)$(BUILD)/unifdef -x 2 -DNDEBUG -o $(AMALB).rg.c $(AMALB).def.c
+	$(V_M)$(BUILD)/unifdef -x 2 -DNDEBUG -o $(AMALB).pre.c $(AMALB).def.c
 endif
-	$(V_E) RGC libchirp.c
-	$(V_M)$(BASE)/mk/rgc $(AMALB).rg.c $(AMALB).pre.c
 	$(V_M)sed -E \
 		's/(#include "[[:alnum:]./-]+.h")/\/* \1 *\//g' \
 		< $(AMALB).pre.c >  $(AMALB).sed.c

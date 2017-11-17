@@ -16,7 +16,6 @@ from os import path
 import re
 import sys
 import shutil
-import stat
 
 _project = "libchirp"
 _version_long = "0.2.0-beta"
@@ -420,20 +419,6 @@ def write_makefile(args):
             "\t\t%s \n\n" % replace_base_build(executables[-1][0][:-2])
         )
         f.write("executables: $(EXECUTABLES)  ## Make all executables\n\n")
-        f.write("HEADERS := \\\n")
-        h_list = set([
-            h for h in h_files if not h.startswith(
-                "%s/include" % _base
-            )
-        ])
-        h_list_var = [
-            "%s.h" % replace_base_build(h)[:-2]
-            for h in h_list
-        ]
-        for file_ in h_list_var[:-1]:
-            f.write("\t\t%s \\\n" % file_)
-        f.write("\t\t%s \n\n" % h_list_var[-1])
-        f.write("headers: $(HEADERS)  ## Make all headers\n\n")
         f.write("OBJECTS := \\\n")
         for file_, _ in depends[:-1]:
             f.write("\t\t%s.o \\\n" % replace_base_build(
@@ -494,10 +479,7 @@ def write_makefile(args):
                 )
                 f.write("%s: \\\n" % bfile)
                 for depend in dep:
-                    if depend in h_list:
-                        f.write("\t\t%s \\\n" % replace_base_build(depend))
-                    else:
-                        f.write("\t\t%s \\\n" % replace_base_base(depend))
+                    f.write("\t\t%s \\\n" % replace_base_base(depend))
                 f.write("\t\t$(BUILD)/libchirp-config.h \\\n")
                 if file_.endswith("_etest.c"):
                     f.write("\t\t$(BUILD)/libchirp.so \\\n")
@@ -517,7 +499,7 @@ def write_makefile(args):
     except Exception:
         pass
     print("Created Makefile. It contains sensible defaults.")
-    return c_files, h_files
+    return c_files
 
 
 def write_ide_files(args):
@@ -548,40 +530,6 @@ def write_ide_files(args):
                 print("failed", e)
 
 
-def write_pfix(c_files, h_files):
-    """Write path fixer for compiler."""
-    # At the moment there is only one replacement rule, extend the replaces
-    # list to add more replacement rules
-    replaces = ["('%s', '%s')," % (_build, _base)]
-    replaces = "\n    ".join(replaces)
-    try:
-        sys.stdout.write("Creating pfix ide helper: ")
-        pfix = path.join(_build, "pfix")
-        with codecs.open(pfix, "w") as f:
-            f.write("""#!/usr/bin/env python3
-
-import sys
-
-_replaces = [
-    %s
-]
-
-for line in sys.stdin.readlines():
-    for replace in _replaces:
-        line = line.replace(*replace)
-    sys.stdout.write(line)
-    sys.stdout.flush()
-""" % replaces)
-        st = os.stat(pfix)
-        os.chmod(
-            pfix,
-            st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-        )
-        print("ok")
-    except Exception as e:
-        print("failed", e)
-
-
 if __name__ == "__main__":
     in_source_attempt = os.path.dirname(__file__) == os.curdir
     if in_source_attempt:
@@ -592,12 +540,11 @@ if __name__ == "__main__":
         os.chdir("build")
     _build = path.realpath(os.curdir)
     args = parse()
-    c_files, h_files = write_makefile(args)
+    c_files = write_makefile(args)
     write_config()
     write_abi_check()
     copy_files(args)
     write_ide_files(args)
-    write_pfix(c_files, h_files)
     test_depends(args)
     print("\nTo build chirp call:\n")
     if in_source_attempt:
