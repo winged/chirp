@@ -649,7 +649,7 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         conn->flags |= CH_CN_INIT_CLIENT;
         struct sockaddr_storage addr;
         /* No error can happen, the address was taken from a binary format */
-        ch_text_addr_sockaddr(msg->ip_protocol, &taddr, msg->port, &addr);
+        ch_textaddr_to_sockaddr(msg->ip_protocol, &taddr, msg->port, &addr);
         tmp_err = uv_tcp_connect(
             &conn->connect,
             &conn->client,

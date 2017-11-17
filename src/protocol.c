@@ -371,7 +371,7 @@ ch_pr_conn_start(
         if(tmp_err != CH_SUCCESS) {
             E(chirp, msg " connection (%d)", tmp_err);
             ch_cn_shutdown(conn, CH_FATAL);
-            return tmp_err;
+            return CH_UV_ERROR;
         }
 #   enddef
 
@@ -629,6 +629,87 @@ _ch_pr_read_data_cb(
     }
 }
 
+
+static
+inline
+ch_error_t
+_ch_pr_start_socket(
+        ch_chirp_t* chirp,
+        int af,
+        uv_tcp_t* server,
+        uint8_t* bind,
+        struct sockaddr* addr,
+        int v6only
+)
+{
+    ch_text_address_t tmp_addr;
+    int tmp_err;
+    ch_chirp_int_t* ichirp = chirp->_;
+    ch_config_t* config = &ichirp->config;
+    uv_tcp_init(ichirp->loop, server);
+    server->data = chirp;
+
+    tmp_err = uv_inet_ntop(
+        af,
+        bind,
+        tmp_addr.data,
+        sizeof(tmp_addr.data)
+    );
+    if(tmp_err != CH_SUCCESS) {
+        return CH_VALUE_ERROR;
+    }
+
+    tmp_err = ch_textaddr_to_sockaddr(
+            af,
+            &tmp_addr,
+            config->PORT,
+            (struct sockaddr_storage *) addr
+    );
+    if(tmp_err != CH_SUCCESS) {
+        return tmp_err;
+    }
+
+    tmp_err = uv_tcp_bind(
+        server,
+        addr,
+        v6only
+    );
+    if(tmp_err != CH_SUCCESS) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot bind port (IPv%d:%d)\n",
+            __FILE__,
+            __LINE__,
+            af == AF_INET6 ? 6 : 4,
+            config->PORT
+        );
+        return ch_uv_error_map(tmp_err);
+    }
+
+    tmp_err = uv_tcp_nodelay(server, 1);
+    if(tmp_err != CH_SUCCESS) {
+        return CH_UV_ERROR;
+    }
+
+    tmp_err = uv_listen(
+            (uv_stream_t*) server,
+            config->BACKLOG,
+            _ch_pr_new_connection_cb
+    );
+    if(tmp_err != CH_SUCCESS) {
+        fprintf(
+            stderr,
+            "%s:%d Fatal: cannot listen port (IPv%d:%d)\n",
+            __FILE__,
+            __LINE__,
+            af == AF_INET6 ? 6 : 4,
+            config->PORT
+        );
+        return CH_EADDRINUSE;
+    }
+    return CH_SUCCESS;
+}
+
 // .. c:function::
 ch_error_t
 ch_pr_start(ch_protocol_t* protocol)
@@ -640,70 +721,31 @@ ch_pr_start(ch_protocol_t* protocol)
 //
 {
     int tmp_err;
-    ch_text_address_t tmp_addr;
     ch_chirp_t* chirp = protocol->chirp;
     ch_chirp_int_t* ichirp = chirp->_;
     ch_config_t* config = &ichirp->config;
-#   begindef ch_pr_log_listen_error_m(ip_version)
-        fprintf(
-            stderr,
-            "%s:%d Fatal: cannot bind port (ipv%d:%d)\n",
-            __FILE__,
-            __LINE__,
-            ip_version,
-            config->PORT
-        );
-#   enddef
-
-#   begindef ch_pr_listen_sock_m(ip_version, af_inet, v6only)
-    {
-        uv_tcp_init(ichirp->loop, &protocol->serverv##ip_version);
-        protocol->serverv##ip_version.data = chirp;
-
-        if(uv_inet_ntop(
-                af_inet,
-                config->BIND_V##ip_version,
-                tmp_addr.data,
-                sizeof(tmp_addr.data)
-        ) < 0) {
-            return CH_VALUE_ERROR;
-        }
-
-        if(uv_ip##ip_version##_addr(
-                tmp_addr.data,
-                config->PORT,
-                &protocol->addrv##ip_version
-        ) < 0) {
-            return CH_VALUE_ERROR;
-        }
-
-        tmp_err = ch_uv_error_map(uv_tcp_bind(
-            &protocol->serverv##ip_version,
-            (const struct sockaddr*)&protocol->addrv##ip_version,
-            v6only
-        ));
-        if(tmp_err != CH_SUCCESS) {
-            ch_pr_log_listen_error_m(ip_version)
-            return tmp_err;
-        }
-
-        if(uv_tcp_nodelay(&protocol->serverv##ip_version, 1) < 0) {
-            return CH_UV_ERROR;
-        }
-
-        if(uv_listen(
-                (uv_stream_t*) &protocol->serverv##ip_version,
-                config->BACKLOG,
-                _ch_pr_new_connection_cb
-        ) < 0) {
-            ch_pr_log_listen_error_m(ip_version)
-            return CH_EADDRINUSE;
-        }
+    tmp_err = _ch_pr_start_socket(
+        chirp,
+        AF_INET,
+        &protocol->serverv4,
+        config->BIND_V4,
+        (struct sockaddr*) &protocol->addrv4,
+        0
+    );
+    if(tmp_err != CH_SUCCESS) {
+        return tmp_err;
     }
-#   enddef
-
-    ch_pr_listen_sock_m(4, AF_INET, 0);
-    ch_pr_listen_sock_m(6, AF_INET6, UV_TCP_IPV6ONLY);
+    tmp_err = _ch_pr_start_socket(
+        chirp,
+        AF_INET6,
+        &protocol->serverv6,
+        config->BIND_V6,
+        (struct sockaddr*) &protocol->addrv6,
+        UV_TCP_IPV6ONLY
+    );
+    if(tmp_err != CH_SUCCESS) {
+        return tmp_err;
+    }
 
     ch_rm_tree_init(&protocol->remotes);
     protocol->old_connections = NULL;

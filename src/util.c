@@ -408,7 +408,7 @@ ch_set_alloc_funcs(
 
 // .. c:function::
 ch_error_t
-ch_text_addr_sockaddr(
+ch_textaddr_to_sockaddr(
         int af,
         ch_text_address_t* text,
         uint16_t port,
@@ -416,7 +416,7 @@ ch_text_addr_sockaddr(
 )
 //    :noindex:
 //
-//    see: :c:func:`ch_text_addr_sockaddr`
+//    see: :c:func:`ch_textaddr_to_sockaddr`
 //
 // .. code-block:: cpp
 //

@@ -98,7 +98,7 @@ ch_realloc(void*  buf, size_t size);
 
 // .. c:function::
 ch_error_t
-ch_text_addr_sockaddr(
+ch_textaddr_to_sockaddr(
         int af,
         ch_text_address_t* text,
         uint16_t port,
