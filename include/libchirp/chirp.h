@@ -14,10 +14,10 @@
 //
 // .. code-block:: cpp
 //
-#include "common.h"
 #include "callbacks.h"
-#include "wrappers.h"
+#include "common.h"
 #include "message.h"
+#include "wrappers.h"
 
 // Declarations
 // ============
@@ -111,21 +111,21 @@
 // .. code-block:: cpp
 //
 struct ch_config_s {
-    float           REUSE_TIME;
-    float           TIMEOUT;
-    uint16_t        PORT;
-    uint8_t         BACKLOG;
-    uint8_t         MAX_HANDLERS;
-    char            ACKNOWLEDGE;
-    char            DISABLE_SIGNALS;
-    uint32_t        BUFFER_SIZE;
-    uint32_t        MAX_MSG_SIZE;
-    uint8_t         BIND_V6[CH_IP_ADDR_SIZE];
-    uint8_t         BIND_V4[CH_IP4_ADDR_SIZE];
-    uint8_t         IDENTITY[CH_ID_SIZE]; // 16
-    char*           CERT_CHAIN_PEM;
-    char*           DH_PARAMS_PEM;
-    char            DISABLE_ENCRYPTION;
+    float    REUSE_TIME;
+    float    TIMEOUT;
+    uint16_t PORT;
+    uint8_t  BACKLOG;
+    uint8_t  MAX_HANDLERS;
+    char     ACKNOWLEDGE;
+    char     DISABLE_SIGNALS;
+    uint32_t BUFFER_SIZE;
+    uint32_t MAX_MSG_SIZE;
+    uint8_t  BIND_V6[CH_IP_ADDR_SIZE];
+    uint8_t  BIND_V4[CH_IP4_ADDR_SIZE];
+    uint8_t  IDENTITY[CH_ID_SIZE]; // 16
+    char*    CERT_CHAIN_PEM;
+    char*    DH_PARAMS_PEM;
+    char     DISABLE_ENCRYPTION;
 };
 
 // .. c:type:: ch_chirp_int_t
@@ -215,16 +215,16 @@ ch_chirp_get_loop(ch_chirp_t* chirp);
 CH_EXPORT
 ch_error_t
 ch_chirp_init(
-        ch_chirp_t* chirp,
+        ch_chirp_t*        chirp,
         const ch_config_t* config,
-        uv_loop_t* loop,
-        ch_recv_cb_t recv_cb,
-        ch_start_cb_t start_cb,
-        ch_done_cb_t done_cb,
-        ch_log_cb_t log_cb
-);
+        uv_loop_t*         loop,
+        ch_recv_cb_t       recv_cb,
+        ch_start_cb_t      start_cb,
+        ch_done_cb_t       done_cb,
+        ch_log_cb_t        log_cb);
 //
-//    Initialiaze a chirp object. Memory is provided by the caller. You must call
+//    Initialiaze a chirp object. Memory is provided by the caller. You must
+//    call
 //    :c:func:`ch_chirp_close` to cleanup the chirp object.
 //
 //    You can free **chirp**, **config** and **loop** either after the **done**
@@ -264,12 +264,11 @@ CH_EXPORT
 ch_error_t
 ch_chirp_run(
         const ch_config_t* config,
-        ch_chirp_t** chirp,
-        ch_recv_cb_t recv_cb,
-        ch_start_cb_t start_cb,
-        ch_done_cb_t done_cb,
-        ch_log_cb_t log_cb
-);
+        ch_chirp_t**       chirp,
+        ch_recv_cb_t       recv_cb,
+        ch_start_cb_t      start_cb,
+        ch_done_cb_t       done_cb,
+        ch_log_cb_t        log_cb);
 //
 //    Initializes, runs and cleans everything. Everything being:
 //
@@ -411,4 +410,4 @@ ch_chirp_set_recv_callback(ch_chirp_t* chirp, ch_recv_cb_t recv_cb);
 //
 //    .. code-block:: cpp
 
-#endif //ch_libchirp_chirp_h
+#endif // ch_libchirp_chirp_h

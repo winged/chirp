@@ -49,8 +49,6 @@ Test code
    src/message_test.c.rst
    src/quickcheck_test.h.rst
    src/quickcheck_test.c.rst
-   src/sds_test.h.rst
-   src/sds_test.c.rst
    src/test_test.h.rst
    src/test_test.c.rst
 

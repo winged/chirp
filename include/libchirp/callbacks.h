@@ -2,6 +2,10 @@
 // Chirp Callbacks
 // ===============
 //
+// .. code-block:: cpp
+//
+/* clang-format off */
+
 // If you are on an embedded platform you have to set the memory functions of
 // chirp, libuv and openssl.
 //
@@ -13,6 +17,8 @@
 // .. _CRYPTO_set_mem_functions: https://www.openssl.org/docs/man1.1.0/crypto/OPENSSL_malloc.html
 //
 // .. code-block:: cpp
+//
+/* clang-format on */
 
 #ifndef ch_libchirp_callbacks_h
 #define ch_libchirp_callbacks_h
@@ -88,11 +94,7 @@ typedef void (*ch_log_cb_t)(char msg[], char error);
 //
 // .. code-block:: cpp
 //
-typedef void (*ch_send_cb_t)(
-        ch_chirp_t* chirp,
-        ch_message_t* msg,
-        int status
-);
+typedef void (*ch_send_cb_t)(ch_chirp_t* chirp, ch_message_t* msg, int status);
 
 // .. c:type:: ch_recv_cb_t
 //
@@ -139,4 +141,4 @@ typedef void (*ch_start_cb_t)(ch_chirp_t* chirp);
 //
 typedef void* (*ch_realloc_cb_t)(void* buf, size_t new_size);
 
-#endif //ch_libchirp_callbacks_h
+#endif // ch_libchirp_callbacks_h

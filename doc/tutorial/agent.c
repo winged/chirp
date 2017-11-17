@@ -20,7 +20,6 @@
 #include "common.h"
 #include "libchirp.h"
 
-
 // A few global data structures
 // ============================
 //
@@ -38,7 +37,7 @@ static ch_chirp_t* _chirp_instance;
 //
 // .. code-block:: cpp
 
-static int           shutting_down;
+static int shutting_down;
 
 // Declaring our functions
 // =======================
@@ -52,12 +51,16 @@ static int           shutting_down;
 //
 // .. code-block:: cpp
 
-static void notify_status(int svc_status, int agent_status);
-static void sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status);
-static void connection_timeout_cb(uv_timer_t* timer);
-static void poll_connected_cb(uv_connect_t* conn, int status);
-static void socket_close_cb(uv_handle_t* handle);
-
+static void
+notify_status(int svc_status, int agent_status);
+static void
+sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status);
+static void
+connection_timeout_cb(uv_timer_t* timer);
+static void
+poll_connected_cb(uv_connect_t* conn, int status);
+static void
+socket_close_cb(uv_handle_t* handle);
 
 // Monitoring the service
 // ======================
@@ -79,23 +82,22 @@ static int   service_port;
 //
 // .. code-block:: cpp
 
-static int           poll_interval;
-static uv_timer_t    poll_timer;
-static uv_timer_t    poll_timeout_timer;
-static uv_tcp_t      poll_socket;
-static uv_connect_t  poll_connect;
+static int          poll_interval;
+static uv_timer_t   poll_timer;
+static uv_timer_t   poll_timeout_timer;
+static uv_tcp_t     poll_socket;
+static uv_connect_t poll_connect;
 
 // Poll the service, report it's status
 // ------------------------------------
 //
 // In this function, we try to connect to our betrusted service, and setup a
-// timer so we can react if it takes too long to connect. This function is called
-// repeatedly via a ``libuv`` timer.
+// timer so we can react if it takes too long to connect. This function is
+// called repeatedly via a ``libuv`` timer.
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 do_poll_cb(uv_timer_t* timer)
 {
     uv_tcp_init(ch_chirp_get_loop(_chirp_instance), &poll_socket);
@@ -104,19 +106,17 @@ do_poll_cb(uv_timer_t* timer)
 
     uv_ip4_addr(service_host, service_port, &dest);
     uv_tcp_connect(
-        &poll_connect, &poll_socket,
-        (const struct sockaddr*)&dest,
-        poll_connected_cb
-    );
+            &poll_connect,
+            &poll_socket,
+            (const struct sockaddr*) &dest,
+            poll_connected_cb);
 
     uv_timer_init(ch_chirp_get_loop(_chirp_instance), &poll_timeout_timer);
     poll_timeout_timer.data = _chirp_instance;
 
     // We wait for two seconds before we assume the service "down".
     uv_timer_start(&poll_timeout_timer, connection_timeout_cb, 2000, 0);
-
 }
-
 
 // Socket shutdown callback
 // ------------------------
@@ -127,11 +127,10 @@ do_poll_cb(uv_timer_t* timer)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 socket_shutdown_cb(uv_shutdown_t* req, int status)
 {
-    uv_close((uv_handle_t*)req->handle, socket_close_cb);
+    uv_close((uv_handle_t*) req->handle, socket_close_cb);
     free(req);
 }
 
@@ -143,13 +142,11 @@ socket_shutdown_cb(uv_shutdown_t* req, int status)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 socket_close_cb(uv_handle_t* handle)
 {
-    (void)handle;
+    (void) handle;
 }
-
 
 // Connection callback
 // -------------------
@@ -159,8 +156,7 @@ socket_close_cb(uv_handle_t* handle)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 poll_connected_cb(uv_connect_t* conn, int status)
 {
     /* Let upstream know if the service is OK: If status == 0, everything is
@@ -171,11 +167,10 @@ poll_connected_cb(uv_connect_t* conn, int status)
     * times out anymore. */
     uv_timer_stop(&poll_timeout_timer);
 
-
     /* We don't really want to talk to the service, so immediately request a
      * shutdown of the socket..  */
     uv_shutdown_t* poll_closer = malloc(sizeof(*poll_closer));
-    uv_shutdown(poll_closer, (uv_stream_t*)conn->handle, socket_shutdown_cb);
+    uv_shutdown(poll_closer, (uv_stream_t*) conn->handle, socket_shutdown_cb);
 }
 
 // Callback when we could not connect to our service after some time
@@ -188,8 +183,7 @@ poll_connected_cb(uv_connect_t* conn, int status)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 connection_timeout_cb(uv_timer_t* timer)
 {
     notify_status(0, 1);
@@ -232,7 +226,7 @@ notify_status(int svc_status, int agent_status)
     }
 
     svc->polling_interval = poll_interval;
-    svc->last_check = time(NULL);
+    svc->last_check       = time(NULL);
 
     ch_msg_init(msg);
     ch_msg_set_address(msg, AF_INET, upstream_host, upstream_port);
@@ -240,9 +234,8 @@ notify_status(int svc_status, int agent_status)
     /* Note: This is very naive, and any self-respecting code should use a
      * proper serializer for this.
      */
-    ch_msg_set_data(msg, (ch_buf*)svc, sizeof(*svc));
+    ch_msg_set_data(msg, (ch_buf*) svc, sizeof(*svc));
     ch_chirp_send(_chirp_instance, msg, sent_cb);
-
 }
 
 // Received callback
@@ -255,13 +248,11 @@ notify_status(int svc_status, int agent_status)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
     ch_chirp_release_message(msg);
 }
-
 
 // Sent callback
 // -------------
@@ -272,11 +263,10 @@ new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 {
-    (void)(status);
+    (void) (status);
 
     // Free the service status object
     free(msg->data);
@@ -301,7 +291,7 @@ sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 //
 // .. code-block:: cpp
 
-static uv_signal_t   sighandler;
+static uv_signal_t sighandler;
 
 // Signal handler for exiting
 // --------------------------
@@ -312,8 +302,7 @@ static uv_signal_t   sighandler;
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 sig_handler_cb(uv_signal_t* handle, int signum)
 {
     shutting_down = 1;
@@ -329,7 +318,6 @@ sig_handler_cb(uv_signal_t* handle, int signum)
     notify_status(0, 0);
 }
 
-
 // Startup and Initialisation
 // ==========================
 
@@ -341,8 +329,7 @@ sig_handler_cb(uv_signal_t* handle, int signum)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 chirp_started_cb(ch_chirp_t* chirp)
 {
     uv_timer_init(ch_chirp_get_loop(chirp), &poll_timer);
@@ -356,7 +343,6 @@ chirp_started_cb(ch_chirp_t* chirp)
     uv_signal_start_oneshot(&sighandler, sig_handler_cb, SIGINT);
 
     uv_timer_start(&poll_timer, do_poll_cb, 1, poll_interval * 1000);
-
 }
 
 // The main program
@@ -377,29 +363,27 @@ chirp_started_cb(ch_chirp_t* chirp)
 // .. code-block:: cpp
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
-    if(argc < 5) {
-        fprintf(
-            stderr,
-            "Usage: %s listen_port "
-            "upstream_host:upstream_port "
-            "service_host:service_port "
-            "interval\n",
-            argv[0]
-        );
+    if (argc < 5) {
+        fprintf(stderr,
+                "Usage: %s listen_port "
+                "upstream_host:upstream_port "
+                "service_host:service_port "
+                "interval\n",
+                argv[0]);
         exit(1);
     }
     int port = strtol(argv[1], NULL, 10);
-    if(errno) {
+    if (errno) {
         fprintf(stderr, "port must be integer.\n");
         exit(1);
     }
-    if(port <= 1024) {
+    if (port <= 1024) {
         fprintf(stderr, "port must be greater than 1024.\n");
         exit(1);
     }
-    if(port > 0xFFFF) {
+    if (port > 0xFFFF) {
         fprintf(stderr, "port must be less than %d.\n", 0xFFFF);
         exit(1);
     }
@@ -412,18 +396,12 @@ main(int argc, char *argv[])
 
     printf("Agent, listening on port %d\n", port);
 
-    printf(
-        "Upstream: host=%s port=%d\n",
-        upstream_host, upstream_port
-    );
+    printf("Upstream: host=%s port=%d\n", upstream_host, upstream_port);
 
-    printf(
-        "Service: host=%s port=%d\n",
-        service_host, service_port
-    );
+    printf("Service: host=%s port=%d\n", service_host, service_port);
 
     poll_interval = strtol(argv[4], NULL, 10);
-    if(poll_interval <= 2) {
+    if (poll_interval <= 2) {
         /* The interval must be over two seconds, as this is the time
          * we allow the service to connect. We're using a repeating timer,
          * so if this would be two seconds or shorter, libuv would topple
@@ -452,13 +430,12 @@ main(int argc, char *argv[])
      * will also set the output parameter ``_chirp_instance``, so we can later
      * access it while the program runs. */
     ch_chirp_run(
-        &config,
-        &_chirp_instance,
-        new_message_cb,
-        chirp_started_cb,
-        NULL,
-        NULL
-    );
+            &config,
+            &_chirp_instance,
+            new_message_cb,
+            chirp_started_cb,
+            NULL,
+            NULL);
 
     // Before we exit, let's do some cleanup of the global data structures.
     ch_libchirp_cleanup();

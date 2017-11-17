@@ -8,24 +8,19 @@
 //
 // .. code-block:: cpp
 //
+#include "reader.h"
 #include "chirp.h"
 #include "connection.h"
-#include "reader.h"
-#include "writer.h"
-#include "util.h"
 #include "remote.h"
+#include "util.h"
+#include "writer.h"
 
 // Declarations
 // ============
 
 // .. c:function::
-static
-void
-_ch_rd_handshake(
-        ch_connection_t* conn,
-        ch_buf* buf,
-        size_t read
-);
+static void
+_ch_rd_handshake(ch_connection_t* conn, ch_buf* buf, size_t read);
 //
 //    Handle a handshake on the given connection.
 //
@@ -60,8 +55,7 @@ _ch_rd_handshake(
 //    :param size_t read:           Count of bytes read
 //
 // .. c:function::
-static
-void
+static void
 _ch_rd_handshake_cb(uv_write_t* req, int status);
 //
 //    Called when handshake is sent.
@@ -72,13 +66,9 @@ _ch_rd_handshake_cb(uv_write_t* req, int status);
 //
 
 // .. c:function::
-static
-void
+static void
 _ch_rd_handle_msg(
-        ch_connection_t* conn,
-        ch_reader_t*     reader,
-        ch_message_t*    msg
-);
+        ch_connection_t* conn, ch_reader_t* reader, ch_message_t* msg);
 //
 //    Send ack and call message-handler
 //
@@ -88,8 +78,7 @@ _ch_rd_handle_msg(
 //
 
 // .. c:function::
-static
-ssize_t
+static ssize_t
 _ch_rd_read_buffer(
         ch_connection_t* conn,
         ch_reader_t*     reader,
@@ -101,8 +90,7 @@ _ch_rd_read_buffer(
         size_t           dest_buf_size,
         uint32_t         expected,
         int              free_flag,
-        ssize_t*         bytes_handled
-);
+        ssize_t*         bytes_handled);
 //
 //    Read data from the read buffer provided by libuv ``src_buf`` to the field
 //    of the message ``assign_buf``. A preallocated buffer will be used if the
@@ -110,17 +98,14 @@ _ch_rd_read_buffer(
 //    function also handles partial reads.
 //
 // .. c:function::
-static
-inline
-ssize_t
+static inline ssize_t
 _ch_rd_read_step(
         ch_connection_t* conn,
-        ch_buf* buf,
-        size_t bytes_read,
-        ssize_t bytes_handled,
-        int *stop,
-        int *cont
-);
+        ch_buf*          buf,
+        size_t           bytes_read,
+        ssize_t          bytes_handled,
+        int*             stop,
+        int*             cont);
 //
 //    One step in the reader state machine.
 //
@@ -131,7 +116,6 @@ _ch_rd_read_step(
 //    :param int* stop:             (Out) Stop the reading process.
 //    :param int* cont:             (Out) Request continuation
 //
-
 
 //
 // Definitions
@@ -144,22 +128,17 @@ _ch_rd_read_step(
 // .. code-block:: cpp
 //
 char* _ch_rd_state_names[] = {
-    "CH_RD_START",
-    "CH_RD_HANDSHAKE",
-    "CH_RD_WAIT",
-    "CH_RD_HANDLER",
-    "CH_RD_HEADER",
-    "CH_RD_DATA",
+        "CH_RD_START",
+        "CH_RD_HANDSHAKE",
+        "CH_RD_WAIT",
+        "CH_RD_HANDLER",
+        "CH_RD_HEADER",
+        "CH_RD_DATA",
 };
 
 // .. c:function::
-static
-void
-_ch_rd_handshake(
-        ch_connection_t* conn,
-        ch_buf* buf,
-        size_t read
-)
+static void
+_ch_rd_handshake(ch_connection_t* conn, ch_buf* buf, size_t read)
 //    :noindex:
 //
 //    see: :c:func:`_ch_rd_handshake`
@@ -167,29 +146,26 @@ _ch_rd_handshake(
 // .. code-block:: cpp
 //
 {
-    ch_remote_t search_remote;
-    ch_connection_t* old_conn = NULL;
-    ch_connection_t* tmp_conn = NULL;
-    ch_chirp_t* chirp         = conn->chirp;
-    ch_remote_t* remote       = NULL;
-    ch_chirp_int_t* ichirp    = chirp->_;
-    ch_protocol_t* protocol   = &ichirp->protocol;
+    ch_remote_t       search_remote;
+    ch_connection_t*  old_conn = NULL;
+    ch_connection_t*  tmp_conn = NULL;
+    ch_chirp_t*       chirp    = conn->chirp;
+    ch_remote_t*      remote   = NULL;
+    ch_chirp_int_t*   ichirp   = chirp->_;
+    ch_protocol_t*    protocol = &ichirp->protocol;
     ch_sr_handshake_t hs_tmp;
     uv_timer_stop(&conn->connect_timeout);
-    conn->flags  |= CH_CN_CONNECTED;
-    if(conn->flags & CH_CN_INCOMING) {
-        A(
-            ch_cn_delete(&protocol->handshake_conns, conn, &tmp_conn) == 0,
-            "Handshake should be tracked"
-        );
+    conn->flags |= CH_CN_CONNECTED;
+    if (conn->flags & CH_CN_INCOMING) {
+        A(ch_cn_delete(&protocol->handshake_conns, conn, &tmp_conn) == 0,
+          "Handshake should be tracked");
         assert(conn == tmp_conn);
     }
-    if(read < CH_SR_HANDSHAKE_SIZE) {
-        EC(
-            chirp,
-            "Illegal handshake size -> shutdown. ", "ch_connection_t:%p",
-            (void*) conn
-        );
+    if (read < CH_SR_HANDSHAKE_SIZE) {
+        EC(chirp,
+           "Illegal handshake size -> shutdown. ",
+           "ch_connection_t:%p",
+           (void*) conn);
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
@@ -197,67 +173,54 @@ _ch_rd_handshake(
     conn->port = hs_tmp.port;
     memcpy(conn->remote_identity, hs_tmp.identity, CH_ID_SIZE);
     ch_rm_init_from_conn(chirp, &search_remote, conn);
-    if(ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
+    if (ch_rm_find(protocol->remotes, &search_remote, &remote) != 0) {
         remote = ch_alloc(sizeof(*remote));
-        if(remote == NULL) {
+        if (remote == NULL) {
             ch_cn_shutdown(conn, CH_ENOMEM);
             return;
         }
-        *remote = search_remote;
+        *remote     = search_remote;
         int tmp_err = ch_rm_insert(&protocol->remotes, remote);
         A(tmp_err == 0, "Inserting remote failed");
     }
     conn->remote = remote;
     /* If there is a network race condition we replace the old connection and
      * leave the old one for garbage collection */
-    old_conn = remote->conn;
+    old_conn     = remote->conn;
     remote->conn = conn;
-    if(old_conn != NULL) {
+    if (old_conn != NULL) {
         /* If we found the current connection everything is ok */
-        if(conn != old_conn) {
-            L(
-                chirp,
-                "ch_connection_t:%p replaced ch_connection_t:%p",
-                (void*) conn,
-                (void*) old_conn
-            );
+        if (conn != old_conn) {
+            L(chirp,
+              "ch_connection_t:%p replaced ch_connection_t:%p",
+              (void*) conn,
+              (void*) old_conn);
             ch_cn_old_push(&protocol->old_connections, old_conn);
         }
     }
-#   ifndef NDEBUG
+#ifndef NDEBUG
     {
         ch_text_address_t addr;
-        uint8_t* identity = conn->remote_identity;
-        char id[CH_ID_SIZE * 2 + 1];
-        uv_inet_ntop(
-            conn->ip_protocol,
-            conn->address,
-            addr.data,
-            sizeof(addr)
-        );
+        uint8_t*          identity = conn->remote_identity;
+        char              id[CH_ID_SIZE * 2 + 1];
+        uv_inet_ntop(conn->ip_protocol, conn->address, addr.data, sizeof(addr));
         ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
-        LC(
-            chirp,
-            "Handshake with remote %s:%d (%s) done. ", "ch_connection_t:%p",
-            addr.data,
-            conn->port,
-            id,
-            (void*) conn
-        );
+        LC(chirp,
+           "Handshake with remote %s:%d (%s) done. ",
+           "ch_connection_t:%p",
+           addr.data,
+           conn->port,
+           id,
+           (void*) conn);
     }
-#   endif
+#endif
     A(conn->remote != NULL, "The remote has to be set");
     ch_wr_process_queues(conn->remote);
 }
 
 // .. c:function::
-static
-void
-_ch_rd_handle_msg(
-        ch_connection_t* conn,
-        ch_reader_t*     reader,
-        ch_message_t*    msg
-)
+static void
+_ch_rd_handle_msg(ch_connection_t* conn, ch_reader_t* reader, ch_message_t* msg)
 //    :noindex:
 //
 //    see: :c:func:`_ch_rd_handle_msg`
@@ -265,42 +228,36 @@ _ch_rd_handle_msg(
 // .. code-block:: cpp
 //
 {
-    ch_chirp_t* chirp = conn->chirp;
+    ch_chirp_t*     chirp  = conn->chirp;
     ch_chirp_int_t* ichirp = chirp->_;
-#   ifndef NDEBUG
+#ifndef NDEBUG
     {
         ch_text_address_t addr;
-        uint8_t* identity = conn->remote_identity;
-        char id[CH_ID_SIZE * 2 + 1];
-        uv_inet_ntop(
-            conn->ip_protocol,
-            conn->address,
-            addr.data,
-            sizeof(addr)
-        );
+        uint8_t*          identity = conn->remote_identity;
+        char              id[CH_ID_SIZE * 2 + 1];
+        uv_inet_ntop(conn->ip_protocol, conn->address, addr.data, sizeof(addr));
         ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
-        LC(
-            chirp,
-            "Read message with id: %s\n"
-            "                             "
-            "serial:%u\n"
-            "                             "
-            "from %s:%d type:%d data_len:%u. ", "ch_connection_t:%p",
-            id,
-            msg->serial,
-            addr.data,
-            conn->port,
-            msg->type,
-            msg->data_len,
-            (void*) conn
-        );
+        LC(chirp,
+           "Read message with id: %s\n"
+           "                             "
+           "serial:%u\n"
+           "                             "
+           "from %s:%d type:%d data_len:%u. ",
+           "ch_connection_t:%p",
+           id,
+           msg->serial,
+           addr.data,
+           conn->port,
+           msg->type,
+           msg->data_len,
+           (void*) conn);
     }
-#   endif
+#endif
 
-    reader->state = CH_RD_WAIT;
+    reader->state   = CH_RD_WAIT;
     reader->handler = NULL;
 
-    if(ichirp->recv_cb != NULL) {
+    if (ichirp->recv_cb != NULL) {
         ichirp->recv_cb(chirp, msg);
     } else {
         E(chirp, "No receiving callback function registered", CH_NO_ARG);
@@ -309,8 +266,7 @@ _ch_rd_handle_msg(
 }
 
 // .. c:function::
-static
-void
+static void
 _ch_rd_handshake_cb(uv_write_t* req, int status)
 //    :noindex:
 //
@@ -319,15 +275,14 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
 // .. code-block:: cpp
 //
 {
-    ch_connection_t* conn = req->data;
-    ch_chirp_t* chirp = conn->chirp;
+    ch_connection_t* conn  = req->data;
+    ch_chirp_t*      chirp = conn->chirp;
     ch_chirp_check_m(chirp);
-    if(status < 0) {
-        LC(
-            chirp,
-            "Sending handshake failed. ", "ch_connection_t:%p",
-            (void*) conn
-        );
+    if (status < 0) {
+        LC(chirp,
+           "Sending handshake failed. ",
+           "ch_connection_t:%p",
+           (void*) conn);
         ch_cn_shutdown(conn, CH_WRITE_ERROR);
         return;
     }
@@ -335,24 +290,21 @@ _ch_rd_handshake_cb(uv_write_t* req, int status)
      * this is here so we have no overlapping ch_cn_write. If the read causes a
      * ack message to be sent and the write of the handshake is not finished,
      * chirp would assert or be in undefined state. */
-    if(conn->flags & CH_CN_ENCRYPTED) {
+    if (conn->flags & CH_CN_ENCRYPTED) {
         int stop;
         ch_pr_decrypt_read(conn, &stop);
     }
 }
 
 // .. c:function::
-static
-inline
-ssize_t
+static inline ssize_t
 _ch_rd_read_step(
         ch_connection_t* conn,
-        ch_buf* buf,
-        size_t bytes_read,
-        ssize_t bytes_handled,
-        int *stop,
-        int* cont
-)
+        ch_buf*          buf,
+        size_t           bytes_read,
+        ssize_t          bytes_handled,
+        int*             stop,
+        int*             cont)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_free`
@@ -360,25 +312,23 @@ _ch_rd_read_step(
 // .. code-block:: cpp
 //
 {
-    ch_message_t* msg;
+    ch_message_t*    msg;
     ch_bf_handler_t* handler;
-    ch_chirp_t* chirp = conn->chirp;
-    ch_chirp_int_t* ichirp = chirp->_;
-    ch_reader_t* reader = &conn->reader;
-    int to_read = bytes_read - bytes_handled;
+    ch_chirp_t*      chirp   = conn->chirp;
+    ch_chirp_int_t*  ichirp  = chirp->_;
+    ch_reader_t*     reader  = &conn->reader;
+    int              to_read = bytes_read - bytes_handled;
 
-    LC(
-        chirp,
-        "Reader state: %s. ", "ch_connection_t:%p",
-        _ch_rd_state_names[reader->state],
-        (void*) conn
-    );
+    LC(chirp,
+       "Reader state: %s. ",
+       "ch_connection_t:%p",
+       _ch_rd_state_names[reader->state],
+       (void*) conn);
 
-    switch(reader->state) {
-    case CH_RD_START:
-    {
+    switch (reader->state) {
+    case CH_RD_START: {
         ch_sr_handshake_t hs_tmp;
-        ch_buf hs_buf[CH_SR_HANDSHAKE_SIZE];
+        ch_buf            hs_buf[CH_SR_HANDSHAKE_SIZE];
         /* This happens seldom, no copy optimization needed */
         hs_tmp.port = ichirp->public_port;
         memcpy(hs_tmp.identity, ichirp->identity, 16);
@@ -387,8 +337,7 @@ _ch_rd_read_step(
         reader->state = CH_RD_HANDSHAKE;
         break;
     }
-    case CH_RD_HANDSHAKE:
-    {
+    case CH_RD_HANDSHAKE: {
         /* We expect that complete handshake arrives at once,
          * check in _ch_rd_handshake */
         _ch_rd_handshake(conn, buf + bytes_handled, to_read);
@@ -396,59 +345,46 @@ _ch_rd_read_step(
         reader->state = CH_RD_WAIT;
         break;
     }
-    case CH_RD_WAIT:
-    {
+    case CH_RD_WAIT: {
         ch_message_t* wire_msg = &reader->wire_msg;
-        if(to_read >= CH_SR_WIRE_MESSAGE_SIZE) {
+        if (to_read >= CH_SR_WIRE_MESSAGE_SIZE) {
             /* We can read everything */
             size_t reading = CH_SR_WIRE_MESSAGE_SIZE - reader->bytes_read;
-            memcpy(
-                reader->net_msg + reader->bytes_read,
-                buf + bytes_handled,
-                reading
-            );
+            memcpy(reader->net_msg + reader->bytes_read,
+                   buf + bytes_handled,
+                   reading);
             reader->bytes_read = 0; /* Reset partial buffer reads */
             bytes_handled += reading;
         } else {
-            memcpy(
-                reader->net_msg + reader->bytes_read,
-                buf + bytes_handled,
-                to_read
-            );
+            memcpy(reader->net_msg + reader->bytes_read,
+                   buf + bytes_handled,
+                   to_read);
             reader->bytes_read += to_read;
             bytes_handled += to_read;
             return bytes_handled;
         }
         ch_sr_buf_to_msg(reader->net_msg, wire_msg);
-        uint32_t total_wire_msg_size = wire_msg->header_len + wire_msg->data_len;
-        if(total_wire_msg_size > ichirp->config.MAX_MSG_SIZE) {
-            EC(
-                chirp,
-                "Message size exceeds hardlimit. ",
-                "ch_connection_t:%p",
-                (void*) conn
-            );
+        uint32_t total_wire_msg_size =
+                wire_msg->header_len + wire_msg->data_len;
+        if (total_wire_msg_size > ichirp->config.MAX_MSG_SIZE) {
+            EC(chirp,
+               "Message size exceeds hardlimit. ",
+               "ch_connection_t:%p",
+               (void*) conn);
             ch_cn_shutdown(conn, CH_ENOMEM);
             return -1; /* Shutdown */
         }
-        if((wire_msg->type & CH_MSG_ACK)) {
+        if ((wire_msg->type & CH_MSG_ACK)) {
             ch_message_t* wam = conn->remote->wait_ack_message;
-            if(memcmp(wam->identity, wire_msg->identity, CH_ID_SIZE) == 0) {
+            if (memcmp(wam->identity, wire_msg->identity, CH_ID_SIZE) == 0) {
                 wam->_flags |= CH_MSG_ACK_RECEIVED;
                 conn->remote->wait_ack_message = NULL;
-                ch_chirp_finish_message(
-                    chirp,
-                    conn,
-                    wam,
-                    CH_SUCCESS
-                );
+                ch_chirp_finish_message(chirp, conn, wam, CH_SUCCESS);
             } else {
-                EC(
-                    chirp,
-                    "Received bad ack -> shutdown. ",
-                    "ch_connection_t:%p",
-                    (void*) conn
-                );
+                EC(chirp,
+                   "Received bad ack -> shutdown. ",
+                   "ch_connection_t:%p",
+                   (void*) conn);
                 ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
                 return -1; /* Shutdown */
             }
@@ -462,12 +398,11 @@ _ch_rd_read_step(
         *cont = 1;
         break;
     }
-    case CH_RD_HANDLER:
-    {
+    case CH_RD_HANDLER: {
         ch_message_t* wire_msg = &reader->wire_msg;
-        if(reader->handler == NULL) {
+        if (reader->handler == NULL) {
             reader->handler = ch_bf_acquire(&reader->pool);
-            if(reader->handler == NULL) {
+            if (reader->handler == NULL) {
                 conn->flags |= CH_CN_STOPPED;
                 LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
                 uv_read_stop((uv_stream_t*) &conn->client);
@@ -479,70 +414,63 @@ _ch_rd_read_step(
         msg     = &handler->msg;
         /* Copy the wire message */
         memcpy(msg, wire_msg, ((char*) &wire_msg->header) - ((char*) wire_msg));
-        msg->ip_protocol   = conn->ip_protocol;
-        msg->port          = conn->port;
+        msg->ip_protocol = conn->ip_protocol;
+        msg->port        = conn->port;
         memcpy(msg->remote_identity, conn->remote_identity, CH_ID_SIZE);
-        memcpy(
-            msg->address,
-            conn->address,
-            (
-                msg->ip_protocol == AF_INET6
-            ) ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
-        );
+        memcpy(msg->address,
+               conn->address,
+               (msg->ip_protocol == AF_INET6) ? CH_IP_ADDR_SIZE
+                                              : CH_IP4_ADDR_SIZE);
         /* Direct jump to next read state */
-        if(msg->header_len > 0) {
+        if (msg->header_len > 0) {
             reader->state = CH_RD_HEADER;
-        } else if(msg->data_len > 0) {
+        } else if (msg->data_len > 0) {
             reader->state = CH_RD_DATA;
         } else {
             _ch_rd_handle_msg(conn, reader, msg);
         }
         break;
     }
-    case CH_RD_HEADER:
-    {
+    case CH_RD_HEADER: {
         handler = reader->handler;
         msg     = &handler->msg;
-        if(_ch_rd_read_buffer(
-                conn,
-                reader,
-                msg,
-                buf + bytes_handled,
-                to_read,
-                &msg->header,
-                handler->header,
-                CH_BF_PREALLOC_HEADER,
-                msg->header_len,
-                CH_MSG_FREE_HEADER,
-                &bytes_handled
-        ) != CH_SUCCESS) {
+        if (_ch_rd_read_buffer(
+                    conn,
+                    reader,
+                    msg,
+                    buf + bytes_handled,
+                    to_read,
+                    &msg->header,
+                    handler->header,
+                    CH_BF_PREALLOC_HEADER,
+                    msg->header_len,
+                    CH_MSG_FREE_HEADER,
+                    &bytes_handled) != CH_SUCCESS) {
             return -1; /* Shutdown */
         }
         /* Direct jump to next read state */
-        if(msg->data_len > 0) {
+        if (msg->data_len > 0) {
             reader->state = CH_RD_DATA;
         } else {
             _ch_rd_handle_msg(conn, reader, msg);
         }
         break;
     }
-    case CH_RD_DATA:
-    {
+    case CH_RD_DATA: {
         handler = reader->handler;
         msg     = &handler->msg;
-        if(_ch_rd_read_buffer(
-                conn,
-                reader,
-                msg,
-                buf + bytes_handled,
-                to_read,
-                &msg->data,
-                handler->data,
-                CH_BF_PREALLOC_DATA,
-                msg->data_len,
-                CH_MSG_FREE_DATA,
-                &bytes_handled
-        ) != CH_SUCCESS) {
+        if (_ch_rd_read_buffer(
+                    conn,
+                    reader,
+                    msg,
+                    buf + bytes_handled,
+                    to_read,
+                    &msg->data,
+                    handler->data,
+                    CH_BF_PREALLOC_DATA,
+                    msg->data_len,
+                    CH_MSG_FREE_DATA,
+                    &bytes_handled) != CH_SUCCESS) {
             return -1; /* Shutdown */
         }
         _ch_rd_handle_msg(conn, reader, msg);
@@ -584,7 +512,7 @@ ch_rd_init(ch_reader_t* reader, ch_connection_t* conn, ch_chirp_int_t* ichirp)
 
 // .. c:function::
 ssize_t
-ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
+ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int* stop)
 //    :noindex:
 //
 //    see: :c:func:`ch_rd_read`
@@ -598,22 +526,16 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buf, size_t bytes_read, int *stop)
      * single read and the reader switches between various states as for
      * example CH_RD_HANDSHAKE, CH_RD_WAIT or CH_RD_HEADER. */
     ssize_t bytes_handled = 0;
-    int cont;
+    int     cont;
 
     do {
-        cont = 0;
+        cont          = 0;
         bytes_handled = _ch_rd_read_step(
-            conn,
-            buf,
-            bytes_read,
-            bytes_handled,
-            stop,
-            &cont
-        );
-        if(*stop || bytes_handled == -1) {
+                conn, buf, bytes_read, bytes_handled, stop, &cont);
+        if (*stop || bytes_handled == -1) {
             return bytes_handled;
         }
-    } while(bytes_handled < (ssize_t) bytes_read || cont);
+    } while (bytes_handled < (ssize_t) bytes_read || cont);
     return bytes_handled;
 }
 
@@ -627,22 +549,20 @@ ch_chirp_release_message(ch_message_t* msg)
 // .. code-block:: cpp
 //
 {
-    ch_buffer_pool_t* pool = msg->_pool;
-    ch_connection_t* conn  = pool->conn;
-    ch_reader_t* reader    = &conn->reader;
-    ch_chirp_t* chirp      = conn->chirp;
-    if(!(msg->_flags & CH_MSG_IS_HANDLER)) {
-        fprintf(
-            stderr,
-            "%s:%d Fatal: Release of non handler message. "
-            "ch_buffer_pool_t:%p\n",
-            __FILE__,
-            __LINE__,
-            (void*) pool
-        );
+    ch_buffer_pool_t* pool   = msg->_pool;
+    ch_connection_t*  conn   = pool->conn;
+    ch_reader_t*      reader = &conn->reader;
+    ch_chirp_t*       chirp  = conn->chirp;
+    if (!(msg->_flags & CH_MSG_IS_HANDLER)) {
+        fprintf(stderr,
+                "%s:%d Fatal: Release of non handler message. "
+                "ch_buffer_pool_t:%p\n",
+                __FILE__,
+                __LINE__,
+                (void*) pool);
         return;
     }
-    if(msg->type & CH_MSG_REQ_ACK) {
+    if (msg->type & CH_MSG_REQ_ACK) {
         /* Send the ack to the connection, in case the user changed the message
          * for his need, which is absolutely ok, and valid use case. */
         ch_message_t* ack_msg = &reader->ack_msg;
@@ -656,18 +576,17 @@ ch_chirp_release_message(ch_message_t* msg)
         ack_msg->port        = conn->port;
         ch_wr_send(chirp, ack_msg, NULL);
     }
-    if(msg->_flags & CH_MSG_FREE_DATA) {
+    if (msg->_flags & CH_MSG_FREE_DATA) {
         ch_free(msg->data);
     }
-    if(msg->_flags & CH_MSG_FREE_HEADER) {
+    if (msg->_flags & CH_MSG_FREE_HEADER) {
         ch_free(msg->header);
     }
     ch_bf_release(pool, msg->_handler);
     ch_pr_restart_stream(pool->conn);
 }
 
-static
-ssize_t
+static ssize_t
 _ch_rd_read_buffer(
         ch_connection_t* conn,
         ch_reader_t*     reader,
@@ -679,8 +598,7 @@ _ch_rd_read_buffer(
         size_t           dest_buf_size,
         uint32_t         expected,
         int              free_flag,
-        ssize_t*         bytes_handled
-)
+        ssize_t*         bytes_handled)
 //    :noindex:
 //
 //    see: :c:func:`_ch_rd_read_buffer`
@@ -688,28 +606,26 @@ _ch_rd_read_buffer(
 // .. code-block:: cpp
 //
 {
-    if(reader->bytes_read == 0) {
-        if(expected <= dest_buf_size) {
+    if (reader->bytes_read == 0) {
+        if (expected <= dest_buf_size) {
             /* Preallocated buf is large enough */
             *assign_buf = dest_buf;
         } else {
             *assign_buf = ch_alloc(expected);
-            if(*assign_buf == NULL) {
-                EC(
-                    conn->chirp,
-                    "Could not allocate memory for message. ",
-                    "ch_connection_t:%p",
-                    (void*) conn
-                );
+            if (*assign_buf == NULL) {
+                EC(conn->chirp,
+                   "Could not allocate memory for message. ",
+                   "ch_connection_t:%p",
+                   (void*) conn);
                 ch_cn_shutdown(conn, CH_ENOMEM);
                 return CH_ENOMEM;
             }
             msg->_flags |= free_flag;
         }
     }
-    if((to_read + reader->bytes_read) >= expected) {
+    if ((to_read + reader->bytes_read) >= expected) {
         /* We can read everything */
-        size_t reading =  expected - reader->bytes_read;
+        size_t reading = expected - reader->bytes_read;
         memcpy(*assign_buf + reader->bytes_read, src_buf, reading);
         *bytes_handled += reading;
         reader->bytes_read = 0; /* Reset partial buffer reads */

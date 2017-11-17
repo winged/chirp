@@ -15,9 +15,9 @@
 // .. code-block:: cpp
 //
 #include "common.h"
-#include "serializer.h"
 #include "libchirp/callbacks.h"
 #include "libchirp/message.h"
+#include "serializer.h"
 
 // Declarations
 // ============
@@ -51,9 +51,9 @@
 // .. code-block:: cpp
 //
 typedef struct ch_writer_s {
-    uv_timer_t         send_timeout;
-    ch_message_t*      msg;
-    ch_buf             net_msg[CH_SR_WIRE_MESSAGE_SIZE];
+    uv_timer_t    send_timeout;
+    ch_message_t* msg;
+    ch_buf        net_msg[CH_SR_WIRE_MESSAGE_SIZE];
 } ch_writer_t;
 
 // .. c:function::
@@ -64,7 +64,6 @@ _ch_wr_send_ts_cb(uv_async_t* handle);
 //
 //    :param uv_async_t* handle: Async handler used to trigger sending message
 //                               queue.
-
 
 // .. c:function::
 void
@@ -120,6 +119,4 @@ ch_wr_write(ch_connection_t* conn, ch_message_t* msg);
 //                                   message must stay valid until the callback
 //                                   is called.
 
-
-
-#endif //ch_writer_h
+#endif // ch_writer_h

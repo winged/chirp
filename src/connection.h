@@ -30,7 +30,8 @@
 //    Dequeue a message and send it, or go to idle if there is no message.
 //
 // bufs = create buffers
-//    Create all the data-structures and buffers needed for running a connection.
+//    Create all the data-structures and buffers needed for running a
+//    connection.
 //
 // chck = check
 //    Check if a connection has been idle for RESUE_TIME seconds, since the
@@ -133,6 +134,8 @@
 //
 #include "libchirp/chirp.h"
 #include "message.h"
+#include "qs.h"
+#include "rbtree.h"
 #include "reader.h"
 #include "writer.h"
 
@@ -143,8 +146,6 @@
 //
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
-#include "qs.h"
-#include "rbtree.h"
 
 // Declarations
 // ============
@@ -213,16 +214,16 @@
 // .. code-block:: cpp
 
 typedef enum {
-    CH_CN_SHUTTING_DOWN         = 1 <<  0,
-    CH_CN_CONNECTED             = 1 <<  1,
-    CH_CN_WRITE_PENDING         = 1 <<  2,
-    CH_CN_TLS_HANDSHAKE         = 1 <<  3,
-    CH_CN_ENCRYPTED             = 1 <<  4,
-    CH_CN_BUF_WTLS_USED         = 1 <<  5,
-    CH_CN_BUF_RTLS_USED         = 1 <<  6,
-    CH_CN_BUF_UV_USED           = 1 <<  7,
-    CH_CN_DO_CLOSE_ACCOUTING    = 1 <<  8,
-    CH_CN_STOPPED               = 1 <<  9,
+    CH_CN_SHUTTING_DOWN         = 1 << 0,
+    CH_CN_CONNECTED             = 1 << 1,
+    CH_CN_WRITE_PENDING         = 1 << 2,
+    CH_CN_TLS_HANDSHAKE         = 1 << 3,
+    CH_CN_ENCRYPTED             = 1 << 4,
+    CH_CN_BUF_WTLS_USED         = 1 << 5,
+    CH_CN_BUF_RTLS_USED         = 1 << 6,
+    CH_CN_BUF_UV_USED           = 1 << 7,
+    CH_CN_DO_CLOSE_ACCOUTING    = 1 << 8,
+    CH_CN_STOPPED               = 1 << 9,
     CH_CN_INCOMING              = 1 << 10,
     CH_CN_INIT_CLIENT           = 1 << 11,
     CH_CN_INIT_READER_WRITER    = 1 << 12,
@@ -230,13 +231,10 @@ typedef enum {
     CH_CN_INIT_CONNECT_TIMEOUT  = 1 << 14,
     CH_CN_INIT_ENCRYPTION       = 1 << 15,
     CH_CN_INIT_BUFFERS          = 1 << 16,
-    CH_CN_INIT                  = (
-        CH_CN_INIT_CLIENT |
-        CH_CN_INIT_READER_WRITER |
-        CH_CN_INIT_SHUTDOWN_TIMEOUT |
-        CH_CN_INIT_ENCRYPTION |
-        CH_CN_INIT_BUFFERS
-    )
+    CH_CN_INIT =
+            (CH_CN_INIT_CLIENT | CH_CN_INIT_READER_WRITER |
+             CH_CN_INIT_SHUTDOWN_TIMEOUT | CH_CN_INIT_ENCRYPTION |
+             CH_CN_INIT_BUFFERS)
 } ch_cn_flags_t;
 
 // .. c:type:: ch_resume_state_t
@@ -255,8 +253,8 @@ typedef enum {
 // .. code-block:: cpp
 //
 typedef struct ch_resume_state_s {
-    void*            rest_of_buffer;
-    size_t           bytes_to_read;
+    void*  rest_of_buffer;
+    size_t bytes_to_read;
 } ch_resume_state_t;
 
 // .. c:type:: ch_connection_t
@@ -440,46 +438,46 @@ typedef struct ch_resume_state_s {
 // .. code-block:: cpp
 //
 struct ch_connection_s {
-    uint8_t            ip_protocol;
-    uint8_t            address[CH_IP_ADDR_SIZE];
-    int32_t            port;
-    uint8_t            remote_identity[CH_ID_SIZE];
-    ch_chirp_t*        chirp;
-    ch_remote_t*       remote;
-    uv_tcp_t           client;
-    uv_connect_t       connect;
-    ch_message_t*      connect_msg;
-    ch_buf*            buffer_uv;
-    ch_buf*            buffer_wtls;
-    ch_buf*            buffer_rtls;
-    uv_buf_t           buffer_uv_uv;
-    uv_buf_t           buffer_wtls_uv;
-    uv_buf_t           buffer_any_uv;
-    size_t             buffer_size;
-    size_t             buffer_rtls_size;
-    uv_write_cb        write_callback;
-    size_t             write_written;
-    size_t             write_size;
-    ch_buf*            write_buffer;
-    ch_resume_state_t  read_resume;
-    ch_resume_state_t  tls_resume;
-    uv_shutdown_t      shutdown_req;
-    uv_write_t         write_req;
-    uv_timer_t         connect_timeout;
-    uv_timer_t         shutdown_timeout;
-    int8_t             shutdown_tasks;
-    uint32_t           flags;
-    SSL*               ssl;
-    BIO*               bio_ssl;
-    BIO*               bio_app;
-    int                tls_handshake_state;
-    ch_reader_t        reader;
-    ch_writer_t        writer;
-    ch_connection_t*   next;
-    char               color;
-    ch_connection_t*   parent;
-    ch_connection_t*   left;
-    ch_connection_t*   right;
+    uint8_t           ip_protocol;
+    uint8_t           address[CH_IP_ADDR_SIZE];
+    int32_t           port;
+    uint8_t           remote_identity[CH_ID_SIZE];
+    ch_chirp_t*       chirp;
+    ch_remote_t*      remote;
+    uv_tcp_t          client;
+    uv_connect_t      connect;
+    ch_message_t*     connect_msg;
+    ch_buf*           buffer_uv;
+    ch_buf*           buffer_wtls;
+    ch_buf*           buffer_rtls;
+    uv_buf_t          buffer_uv_uv;
+    uv_buf_t          buffer_wtls_uv;
+    uv_buf_t          buffer_any_uv;
+    size_t            buffer_size;
+    size_t            buffer_rtls_size;
+    uv_write_cb       write_callback;
+    size_t            write_written;
+    size_t            write_size;
+    ch_buf*           write_buffer;
+    ch_resume_state_t read_resume;
+    ch_resume_state_t tls_resume;
+    uv_shutdown_t     shutdown_req;
+    uv_write_t        write_req;
+    uv_timer_t        connect_timeout;
+    uv_timer_t        shutdown_timeout;
+    int8_t            shutdown_tasks;
+    uint32_t          flags;
+    SSL*              ssl;
+    BIO*              bio_ssl;
+    BIO*              bio_app;
+    int               tls_handshake_state;
+    ch_reader_t       reader;
+    ch_writer_t       writer;
+    ch_connection_t*  next;
+    char              color;
+    ch_connection_t*  parent;
+    ch_connection_t*  left;
+    ch_connection_t*  right;
 };
 
 // TODO: Timestamp has to be in ch_connection_t because of old connections
@@ -492,11 +490,10 @@ struct ch_connection_s {
 qs_stack_bind_decl_m(ch_cn_old, ch_connection_t)
 
 #define ch_cn_cmp_m(x, y) rb_pointer_cmp_m(x, y)
-rb_bind_decl_m(ch_cn, ch_connection_t)
+        rb_bind_decl_m(ch_cn, ch_connection_t)
 
-// .. c:function::
-void
-ch_cn_close_cb(uv_handle_t* handle);
+        // .. c:function::
+        void ch_cn_close_cb(uv_handle_t* handle);
 //
 //    Called by libuv after closing a connection handle.
 //
@@ -570,7 +567,8 @@ ch_cn_send_if_pending(ch_connection_t* conn);
 //
 // .. c:function::
 void
-ch_cn_write(ch_connection_t* conn, void* buf, size_t size, uv_write_cb callback);
+ch_cn_write(
+        ch_connection_t* conn, void* buf, size_t size, uv_write_cb callback);
 //
 //    Send data to remote
 //
@@ -583,4 +581,4 @@ ch_cn_write(ch_connection_t* conn, void* buf, size_t size, uv_write_cb callback)
 //
 // .. code-block:: cpp
 
-#endif //ch_connection_h
+#endif // ch_connection_h

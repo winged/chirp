@@ -15,9 +15,9 @@
 //
 // .. code-block:: cpp
 //
+#include "buffer.h"
 #include "common.h"
 #include "message.h"
-#include "buffer.h"
 #include "serializer.h"
 
 // Declarations
@@ -128,7 +128,7 @@ ch_rd_init(ch_reader_t* reader, ch_connection_t* conn, ch_chirp_int_t* ichirp);
 
 // .. c:function::
 ssize_t
-ch_rd_read(ch_connection_t* conn, ch_buf* buffer, size_t bytes_read, int *stop);
+ch_rd_read(ch_connection_t* conn, ch_buf* buffer, size_t bytes_read, int* stop);
 //
 //    Implements the wire protocol reader part. Returns bytes handled.
 //
@@ -139,4 +139,4 @@ ch_rd_read(ch_connection_t* conn, ch_buf* buffer, size_t bytes_read, int *stop);
 //
 // .. code-block:: cpp
 
-#endif //ch_reader_h
+#endif // ch_reader_h

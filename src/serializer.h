@@ -51,28 +51,28 @@ typedef struct ch_sr_handshake_s {
 #define CH_SR_WIRE_MESSAGE_SIZE 27
 
 #ifndef NDEBUG
-#   define CH_SR_WIRE_MESSAGE_CHECK \
-        pos += 4; \
-        A(pos == CH_SR_WIRE_MESSAGE_SIZE, "Bad message serialization size");
+#define CH_SR_WIRE_MESSAGE_CHECK                                               \
+    pos += 4;                                                                  \
+    A(pos == CH_SR_WIRE_MESSAGE_SIZE, "Bad message serialization size");
 #else
-#   define CH_SR_WIRE_MESSAGE_CHECK
+#define CH_SR_WIRE_MESSAGE_CHECK
 #endif
 
-#define CH_SR_WIRE_MESSAGE_LAYOUT \
-    size_t pos = 0; \
-    uint8_t* identity    = (void*) &buf[pos]; \
-    pos += CH_ID_SIZE; \
-    \
-    uint32_t* serial     = (void*) &buf[pos]; \
-    pos += 4; \
-    \
-    uint8_t* type        = (void*) &buf[pos]; \
-    pos += 1; \
-    \
-    uint16_t* header_len = (void*) &buf[pos]; \
-    pos += 2; \
-    \
-    uint32_t* data_len   = (void*) &buf[pos]; \
+#define CH_SR_WIRE_MESSAGE_LAYOUT                                              \
+    size_t   pos      = 0;                                                     \
+    uint8_t* identity = (void*) &buf[pos];                                     \
+    pos += CH_ID_SIZE;                                                         \
+                                                                               \
+    uint32_t* serial = (void*) &buf[pos];                                      \
+    pos += 4;                                                                  \
+                                                                               \
+    uint8_t* type = (void*) &buf[pos];                                         \
+    pos += 1;                                                                  \
+                                                                               \
+    uint16_t* header_len = (void*) &buf[pos];                                  \
+    pos += 2;                                                                  \
+                                                                               \
+    uint32_t* data_len = (void*) &buf[pos];                                    \
     CH_SR_WIRE_MESSAGE_CHECK
 
 // .. c:function::
@@ -102,19 +102,19 @@ ch_sr_msg_to_buf(ch_message_t* msg, ch_buf* buf);
 #define CH_SR_HANDSHAKE_SIZE 18
 
 #ifndef NDEBUG
-#   define CH_SR_HANDSHAKE_CHECK \
-        pos += CH_ID_SIZE; \
-        A(pos == CH_SR_HANDSHAKE_SIZE, "Bad handshake serialization size");
+#define CH_SR_HANDSHAKE_CHECK                                                  \
+    pos += CH_ID_SIZE;                                                         \
+    A(pos == CH_SR_HANDSHAKE_SIZE, "Bad handshake serialization size");
 #else
-#   define CH_SR_HANDSHAKE_CHECK
+#define CH_SR_HANDSHAKE_CHECK
 #endif
 
-#define CH_SR_HANDSHAKE_LAYOUT \
-    size_t pos = 0; \
-    uint16_t* port    = (void*) &buf[pos]; \
-    pos += 2; \
-    \
-    uint8_t* identity = (void*) &buf[pos]; \
+#define CH_SR_HANDSHAKE_LAYOUT                                                 \
+    size_t    pos  = 0;                                                        \
+    uint16_t* port = (void*) &buf[pos];                                        \
+    pos += 2;                                                                  \
+                                                                               \
+    uint8_t* identity = (void*) &buf[pos];                                     \
     CH_SR_HANDSHAKE_CHECK
 
 // .. c:function::
@@ -141,4 +141,4 @@ ch_sr_hs_to_buf(ch_sr_handshake_t* hs, ch_buf* buf);
 //
 // .. code-block:: cpp
 //
-#endif //ch_serializer_h
+#endif // ch_serializer_h

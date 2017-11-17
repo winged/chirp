@@ -100,8 +100,8 @@ _ch_en_locking_function(int mode, int n, const char* file, int line)
 // .. code-block:: cpp
 //
 {
-    (void)(file);
-    (void)(line);
+    (void) (file);
+    (void) (line);
     if (mode & CRYPTO_LOCK) {
         if (!(mode & CRYPTO_READ)) { /* The user requested write */
             uv_rwlock_wrlock(&_ch_en_lock_list[n]);
@@ -401,6 +401,6 @@ _ch_en_thread_id_function(void)
 //
 {
     uv_thread_t self = uv_thread_self();
-    return (unsigned long)self;
+    return (unsigned long) self;
 }
 #endif // CH_OPENSSL_10_API

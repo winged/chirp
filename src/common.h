@@ -14,8 +14,8 @@
 //
 // .. code-block:: cpp
 //
-#include "libchirp/common.h"
 #include "libchirp-config.h"
+#include "libchirp/common.h"
 #include "util.h"
 
 // System includes
@@ -26,10 +26,10 @@
 
 #include <assert.h>
 #include <limits.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Forward declarations
 // =====================
@@ -94,10 +94,9 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 //
-#define EC(chirp, message, clear, ...) \
+#define EC(chirp, message, clear, ...)                                         \
     ch_write_log(chirp, __FILE__, __LINE__, message, clear, 1, __VA_ARGS__);
-#define E(chirp, message, ...) EC(chirp, message, "",  __VA_ARGS__)
-
+#define E(chirp, message, ...) EC(chirp, message, "", __VA_ARGS__)
 
 // .. c:macro:: V
 //
@@ -118,11 +117,11 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 //
-#define V(chirp, condition, message, ...) \
-    if(!(condition)) { \
-        ch_write_log(chirp, __FILE__, __LINE__, message, "", 0, __VA_ARGS__); \
-        assert(0); \
-        return CH_VALUE_ERROR; \
+#define V(chirp, condition, message, ...)                                      \
+    if (!(condition)) {                                                        \
+        ch_write_log(chirp, __FILE__, __LINE__, message, "", 0, __VA_ARGS__);  \
+        assert(0);                                                             \
+        return CH_VALUE_ERROR;                                                 \
     }
 
 #ifndef NDEBUG
@@ -146,10 +145,9 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 //
-#define LC(chirp, message, clear, ...) \
+#define LC(chirp, message, clear, ...)                                         \
     CH_WRITE_LOGC(chirp, message, clear, __VA_ARGS__)
-#define L(chirp, message, ...)  \
-    CH_WRITE_LOG(chirp, message, __VA_ARGS__)
+#define L(chirp, message, ...) CH_WRITE_LOG(chirp, message, __VA_ARGS__)
 // .. c:macro:: A
 //
 //    Validates the given condition and reports arbitrary arguments when the
@@ -165,11 +163,11 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 //
-#define A(condition, ...) \
-    if(!(condition)) { \
-        fprintf(stderr, __VA_ARGS__); \
-        fprintf(stderr, "\n"); \
-        assert(0); \
+#define A(condition, ...)                                                      \
+    if (!(condition)) {                                                        \
+        fprintf(stderr, __VA_ARGS__);                                          \
+        fprintf(stderr, "\n");                                                 \
+        assert(0);                                                             \
     }
 
 // .. c:macro:: ch_chirp_check_m()
@@ -179,27 +177,28 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 
-#define ch_chirp_check_m(chirp) \
-    { \
-        A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*"); \
-        uv_thread_t __ch_chirp_check_self_ = uv_thread_self(); \
-        A( \
-            uv_thread_equal(&__ch_chirp_check_self_, &chirp->_thread) != 0, \
-            "Call on the wrong thread" \
-        ); \
+#define ch_chirp_check_m(chirp)                                                \
+    {                                                                          \
+        A(chirp->_init == CH_CHIRP_MAGIC, "Not a ch_chirp_t*");                \
+        uv_thread_t __ch_chirp_check_self_ = uv_thread_self();                 \
+        A(uv_thread_equal(&__ch_chirp_check_self_, &chirp->_thread) != 0,      \
+          "Call on the wrong thread");                                         \
     }
 
-#else //NDEBUG
+#else // NDEBUG
 
 // .. c:macro:: L
 //
 //    See :c:macro:`L`. Does nothing in release-mode.
 // .. code-block:: cpp
 //
-#   define L(chirp, message, ...) \
-        (void)(chirp); (void)(message)
-#   define LC(chirp, message, clear, ...) \
-        (void)(chirp); (void)(message); (void)(clear)
+#define L(chirp, message, ...)                                                 \
+    (void) (chirp);                                                            \
+    (void) (message)
+#define LC(chirp, message, clear, ...)                                         \
+    (void) (chirp);                                                            \
+    (void) (message);                                                          \
+    (void) (clear)
 
 //.. c:macro:: A
 //
@@ -209,45 +208,38 @@ typedef struct ch_protocol_s ch_protocol_t;
 //
 // .. code-block:: cpp
 //
-#   define A(condition, ...) (void)(condition)
-#   define ch_chirp_check_m(chirp) (void)(chirp)
+#define A(condition, ...) (void) (condition)
+#define ch_chirp_check_m(chirp) (void) (chirp)
 
 #endif
 
 #ifndef A
-#   error Assert macro not defined
+#error Assert macro not defined
 #endif
 #ifndef ch_chirp_check_m
-#   error ch_chirp_check_m macro not defined
+#error ch_chirp_check_m macro not defined
 #endif
 #ifndef L
-#   error Log macro L not defined
+#error Log macro L not defined
 #endif
 #ifndef LC
-#   error Log macro LC not defined
+#error Log macro LC not defined
 #endif
 #ifndef V
-#   error Validate macro not defined
+#error Validate macro not defined
 #endif
 
 #define CH_CHIRP_MAGIC 42429
+/* Used cheat clang format */
+#define CH_ALLOW_NL static void _ch_noop_func__(void)
 
 // Generic functions
 // =================
 //
 // .. code-block:: text
 //
-#define MINMAX_FUNCS(type) \
-    static \
-    type \
-    ch_max_##type(type a, type b) { \
-        return (a > b) ? a : b; \
-    } \
-\
-    static \
-    type \
-    ch_min_##type(type a, type b) { \
-        return (a < b) ? a : b; \
-    }
+#define MINMAX_FUNCS(type)                                                     \
+    static type ch_max_##type(type a, type b) { return (a > b) ? a : b; }      \
+    static type ch_min_##type(type a, type b) { return (a < b) ? a : b; }
 
-#endif //ch_common_h
+#endif // ch_common_h

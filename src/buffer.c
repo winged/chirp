@@ -83,7 +83,7 @@ ch_bf_init(ch_buffer_pool_t* pool, ch_connection_t* conn, uint8_t max_buffers)
                 "ch_buffer_pool_t:%p\n",
                 __FILE__,
                 __LINE__,
-                (void*)pool);
+                (void*) pool);
         return CH_ENOMEM;
     }
     memset(pool->handlers, 0, pool_mem);
@@ -149,7 +149,7 @@ ch_bf_release(ch_buffer_pool_t* pool, int id)
                 "ch_buffer_pool_t:%p\n",
                 __FILE__,
                 __LINE__,
-                (void*)pool);
+                (void*) pool);
         return;
     }
     pool->used_buffers -= 1;

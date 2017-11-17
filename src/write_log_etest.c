@@ -10,12 +10,12 @@
 //
 // .. code-block:: cpp
 //
-#include "util.h"
 #include "chirp.h"
 #include "libchirp.h"
+#include "util.h"
 
-static
-char* const ch_tst_too_long =
+/* clang-format off */
+static char* const ch_tst_too_long =
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc "
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc "
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc "
@@ -31,6 +31,7 @@ char* const ch_tst_too_long =
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc "
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc "
 "abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc %d";
+/* clang-format on */
 
 // Runner
 // ======
@@ -41,7 +42,7 @@ char* const ch_tst_too_long =
 void
 ch_tst_log_callback(char msg[], char error)
 {
-    if(error) {
+    if (error) {
         fprintf(stderr, "is error");
     }
     fprintf(stderr, "%s", msg);
@@ -52,58 +53,39 @@ void
 ch_tst_write_logs(ch_chirp_t* chirp)
 {
     ch_write_log(
-        chirp,
-        "bla/blala/write_log_etest.c",
-        48,
-        "message without args",
-        "clear part",
-        0
-    );
+            chirp,
+            "bla/blala/write_log_etest.c",
+            48,
+            "message without args",
+            "clear part",
+            0);
     ch_write_log(
-        chirp,
-        "bla/blala/error.c",
-        48,
-        "message without args",
-        "clear part",
-        1
-    );
+            chirp,
+            "bla/blala/error.c",
+            48,
+            "message without args",
+            "clear part",
+            1);
     ch_write_log(
-        chirp,
-        "bla/blala/write_log_etest.c",
-        48,
-        "args %d",
-        "clear part",
-        0,
-        4
-    );
+            chirp,
+            "bla/blala/write_log_etest.c",
+            48,
+            "args %d",
+            "clear part",
+            0,
+            4);
     ch_write_log(
-        chirp,
-        "bla/blala/error.c",
-        48,
-        "message",
-        "clear arg: %d",
-        0,
-        43
-    );
+            chirp, "bla/blala/error.c", 48, "message", "clear arg: %d", 0, 43);
     ch_write_log(
-        chirp,
-        "bla/blala/error.c",
-        48,
-        "arg: %d",
-        "clear arg: %d",
-        0,
-        42,
-        43
-    );
-    ch_write_log(
-        chirp,
-        "bla/blala/error.c",
-        48,
-        ch_tst_too_long,
-        "",
-        0,
-        42
-    );
+            chirp,
+            "bla/blala/error.c",
+            48,
+            "arg: %d",
+            "clear arg: %d",
+            0,
+            42,
+            43);
+    ch_write_log(chirp, "bla/blala/error.c", 48, ch_tst_too_long, "", 0, 42);
 }
 
 int

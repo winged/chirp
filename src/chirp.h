@@ -68,9 +68,9 @@
 //
 // .. code-block:: cpp
 //
+#include "encryption.h"
 #include "libchirp.h"
 #include "protocol.h"
-#include "encryption.h"
 
 // Declarations
 // ============
@@ -95,9 +95,9 @@
 // .. code-block:: cpp
 //
 typedef enum {
-    CH_CHIRP_AUTO_STOP   = 1 << 0,
-    CH_CHIRP_CLOSED      = 1 << 1,
-    CH_CHIRP_CLOSING     = 1 << 2,
+    CH_CHIRP_AUTO_STOP = 1 << 0,
+    CH_CHIRP_CLOSED    = 1 << 1,
+    CH_CHIRP_CLOSING   = 1 << 2,
 } ch_chirp_flags_t;
 
 // .. c:type:: ch_chirp_int_t
@@ -184,25 +184,25 @@ typedef enum {
 // .. code-block:: cpp
 //
 struct ch_chirp_int_s {
-    ch_config_t         config;
-    int                 closing_tasks;
-    uint8_t             flags;
-    uv_async_t          close;
-    uv_async_t          start;
-    ch_start_cb_t       start_cb;
-    uv_signal_t         signals[2];
-    uv_prepare_t        close_check;
-    ch_protocol_t       protocol;
-    ch_encryption_t     encryption;
-    uv_loop_t*          loop;
-    uint8_t             identity[CH_ID_SIZE];
-    uint16_t            public_port;
-    ch_message_t*       send_ts_queue;
-    uv_async_t          send_ts;
-    uv_mutex_t          send_ts_queue_lock;
-    ch_recv_cb_t        recv_cb;
-    uv_async_t          done;
-    ch_done_cb_t        done_cb;
+    ch_config_t     config;
+    int             closing_tasks;
+    uint8_t         flags;
+    uv_async_t      close;
+    uv_async_t      start;
+    ch_start_cb_t   start_cb;
+    uv_signal_t     signals[2];
+    uv_prepare_t    close_check;
+    ch_protocol_t   protocol;
+    ch_encryption_t encryption;
+    uv_loop_t*      loop;
+    uint8_t         identity[CH_ID_SIZE];
+    uint16_t        public_port;
+    ch_message_t*   send_ts_queue;
+    uv_async_t      send_ts;
+    uv_mutex_t      send_ts_queue_lock;
+    ch_recv_cb_t    recv_cb;
+    uv_async_t      done;
+    ch_done_cb_t    done_cb;
 };
 
 // .. c:function::
@@ -217,11 +217,10 @@ ch_chirp_close_cb(uv_handle_t* handle);
 // .. c:function::
 void
 ch_chirp_finish_message(
-        ch_chirp_t* chirp,
+        ch_chirp_t*      chirp,
         ch_connection_t* conn,
-        ch_message_t* msg,
-        int status
-);
+        ch_message_t*    msg,
+        int              status);
 //
 //    Call the user callback and then check the message queue for further
 //    messages and send them. It will finish once the writer is done and the
@@ -233,4 +232,4 @@ ch_chirp_finish_message(
 //    :param int status: Error code
 //
 
-#endif //ch_chirp_h
+#endif // ch_chirp_h

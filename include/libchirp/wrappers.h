@@ -62,4 +62,4 @@ ch_run(uv_loop_t* loop);
 //
 // .. code-block:: cpp
 
-#endif //ch_libchirp_wrappers_h
+#endif // ch_libchirp_wrappers_h

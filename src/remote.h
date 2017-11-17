@@ -101,15 +101,15 @@ struct ch_remote_s {
 //
 // .. code-block:: cpp
 //
-#define ch_rm_cmp_m(x,y) ch_remote_cmp(x, y)
+#define ch_rm_cmp_m(x, y) ch_remote_cmp(x, y)
 
 // .. code-block:: cpp
 //
 rb_bind_decl_m(ch_rm, ch_remote_t)
 
-// .. c:function::
-void
-ch_rm_init_from_msg(ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg);
+        // .. c:function::
+        void ch_rm_init_from_msg(
+                ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg);
 //
 //    Initialize the remote data-structure from a message.
 //
@@ -119,10 +119,7 @@ ch_rm_init_from_msg(ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg);
 // .. c:function::
 void
 ch_rm_init_from_conn(
-        ch_chirp_t* chirp,
-        ch_remote_t* remote,
-        ch_connection_t* conn
-);
+        ch_chirp_t* chirp, ch_remote_t* remote, ch_connection_t* conn);
 //
 //    Initialize the remote data-structure from a connection.
 //

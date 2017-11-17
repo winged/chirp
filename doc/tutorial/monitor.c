@@ -23,7 +23,6 @@
 #include "common.h"
 #include "libchirp.h"
 
-
 // Some global variables
 // =====================
 //
@@ -59,12 +58,16 @@ static int port;
 //
 // .. code-block:: cpp
 
-static mon_service_t* service_get(mon_service_t* msg_svc);
-static char* service_status_str(int status);
-static void clear_screen();
-static void sig_handler_cb(uv_signal_t* handle, int signum);
-int main(int argc, char *argv[]);
-
+static mon_service_t*
+service_get(mon_service_t* msg_svc);
+static char*
+service_status_str(int status);
+static void
+clear_screen();
+static void
+sig_handler_cb(uv_signal_t* handle, int signum);
+int
+main(int argc, char* argv[]);
 
 // State management
 // ================
@@ -96,8 +99,7 @@ static size_t         _services_size = 0;
 //
 // .. code-block:: cpp
 
-static
-mon_service_t*
+static mon_service_t*
 service_create()
 {
     /* Make room for one more, then return the new (uninitialized) service.
@@ -105,7 +107,7 @@ service_create()
     _services_size++;
     _services = realloc(_services, sizeof(*_services) * _services_size);
 
-    return &_services[_services_size-1];
+    return &_services[_services_size - 1];
 }
 
 // Find a service
@@ -115,12 +117,12 @@ service_create()
 // "database". To do this, we must be able to find the corresponding entry, if
 // it exists.
 //
-// We return NULL if it doesn't, so the calling code can create an entry instead.
+// We return NULL if it doesn't, so the calling code can create an entry
+// instead.
 //
 // .. code-block:: cpp
 
-static
-mon_service_t*
+static mon_service_t*
 service_get(mon_service_t* msg_svc)
 {
     // Try to find the service in our list of services
@@ -148,8 +150,7 @@ service_get(mon_service_t* msg_svc)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 service_remove_if_exists(mon_service_t* msg_svc)
 {
 
@@ -164,10 +165,9 @@ service_remove_if_exists(mon_service_t* msg_svc)
     if (_services_size <= 1) {
         /* Copy last service over the current one, before freeing the
          * last one. */
-        memcpy(
-            internal_svc, &_services[_services_size-1],
-            sizeof(*internal_svc)
-        );
+        memcpy(internal_svc,
+               &_services[_services_size - 1],
+               sizeof(*internal_svc));
     }
 
     // Resize storage
@@ -186,8 +186,7 @@ service_remove_if_exists(mon_service_t* msg_svc)
 //
 // .. code-block:: cpp
 
-static
-mon_service_t*
+static mon_service_t*
 service_update(mon_service_t* msg_svc)
 {
     mon_service_t* internal_svc = service_get(msg_svc);
@@ -201,7 +200,6 @@ service_update(mon_service_t* msg_svc)
     return internal_svc;
 }
 
-
 // Received callback
 // -----------------
 //
@@ -214,8 +212,7 @@ service_update(mon_service_t* msg_svc)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
     /* Note: This makes some very naive assumptions regarding the peer.  Any
@@ -225,8 +222,7 @@ new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 
     if (svc->status & SERVICE_STATUS_AGENT_ALIVE) {
         service_update(svc);
-    }
-    else {
+    } else {
         // Agent is exiting - remove service if exists
         service_remove_if_exists(svc);
     }
@@ -249,14 +245,13 @@ new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 //
 // .. code-block:: cpp
 
-static
-void
-show_service_status(mon_service_t *svc, int show_header)
+static void
+show_service_status(mon_service_t* svc, int show_header)
 {
     char* format = "%-32s %22s %10s %-15s\n";
 
-    char interval_buf[30];
-    char lastcheck_buf[30];
+    char      interval_buf[30];
+    char      lastcheck_buf[30];
     struct tm lastcheck;
 
     if (show_header) {
@@ -264,8 +259,8 @@ show_service_status(mon_service_t *svc, int show_header)
     }
 
     if (svc != NULL) {
-        char interval_buf[30];
-        char lastcheck_buf[30];
+        char      interval_buf[30];
+        char      lastcheck_buf[30];
         struct tm lastcheck;
         // Parse polling interval into a number of seconds
         snprintf(interval_buf, 30, "%ds", svc->polling_interval);
@@ -275,11 +270,10 @@ show_service_status(mon_service_t *svc, int show_header)
         strftime(lastcheck_buf, 30, "%Y-%m-%d %H:%M:%S", &lastcheck);
 
         printf(format,
-                svc->name,
-                lastcheck_buf,
-                interval_buf,
-                service_status_str(svc->status)
-        );
+               svc->name,
+               lastcheck_buf,
+               interval_buf,
+               service_status_str(svc->status));
     }
 }
 
@@ -292,23 +286,22 @@ show_service_status(mon_service_t *svc, int show_header)
 //
 // .. code-block:: cpp
 
-static
-char*
+static char*
 service_status_str(int status)
 {
-    switch(status & (SERVICE_STATUS_AGENT_ALIVE | SERVICE_STATUS_ALIVE)) {
-        case SERVICE_STATUS_AGENT_ALIVE | SERVICE_STATUS_ALIVE:
-            return "Service OK";
-            break;
-        case SERVICE_STATUS_AGENT_ALIVE:
-            return "Service DOWN";
-            break;
-        case SERVICE_STATUS_ALIVE:
-            return "Agent DOWN";
-            break;
-        default:
-            // This is when the service should actually be removed..
-            return "UNKNOWN";
+    switch (status & (SERVICE_STATUS_AGENT_ALIVE | SERVICE_STATUS_ALIVE)) {
+    case SERVICE_STATUS_AGENT_ALIVE | SERVICE_STATUS_ALIVE:
+        return "Service OK";
+        break;
+    case SERVICE_STATUS_AGENT_ALIVE:
+        return "Service DOWN";
+        break;
+    case SERVICE_STATUS_ALIVE:
+        return "Agent DOWN";
+        break;
+    default:
+        // This is when the service should actually be removed..
+        return "UNKNOWN";
     };
 }
 
@@ -322,9 +315,9 @@ service_status_str(int status)
 //
 // .. code-block:: cpp
 
-static
-void
-clear_screen() {
+static void
+clear_screen()
+{
     char* clear_seq = "\033[3\033[H\033[2J";
     printf("%s", clear_seq);
 }
@@ -337,8 +330,7 @@ clear_screen() {
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 show_services()
 {
     clear_screen();
@@ -368,7 +360,7 @@ show_services()
 //
 // .. code-block:: cpp
 
-static uv_timer_t    poll_timer;
+static uv_timer_t poll_timer;
 
 // Poll and print callback
 // -----------------------
@@ -378,8 +370,7 @@ static uv_timer_t    poll_timer;
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 poll_and_print_status_cb(uv_timer_t* timer)
 {
 
@@ -407,8 +398,7 @@ poll_and_print_status_cb(uv_timer_t* timer)
 //
 // .. code-block:: cpp
 
-static uv_signal_t   sighandler;
-
+static uv_signal_t sighandler;
 
 // Signal handler for exiting
 // --------------------------
@@ -419,8 +409,7 @@ static uv_signal_t   sighandler;
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 sig_handler_cb(uv_signal_t* handle, int signum)
 {
     /* First, we stop the sanity check timer. It's not needed anymore */
@@ -430,7 +419,6 @@ sig_handler_cb(uv_signal_t* handle, int signum)
     free(_services);
     _services_size = 0;
     ch_chirp_close_ts(_chirp_instance);
-
 }
 
 // Startup and Initialisation
@@ -445,8 +433,7 @@ sig_handler_cb(uv_signal_t* handle, int signum)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 chirp_started_cb(ch_chirp_t* chirp)
 {
     // Setup the sanity poll timer, every two seconds
@@ -472,25 +459,25 @@ chirp_started_cb(ch_chirp_t* chirp)
 // .. code-block:: cpp
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
     /* Parse the commandline arguments. The monitor is the simplest of all,
      * just accepting a single port number to listen on.
      */
-    if(argc < 2) {
+    if (argc < 2) {
         fprintf(stderr, "%s listen_port\n", argv[0]);
         exit(1);
     }
     port = strtol(argv[1], NULL, 10);
-    if(errno) {
+    if (errno) {
         fprintf(stderr, "port must be integer.\n");
         exit(1);
     }
-    if(port <= 1024) {
+    if (port <= 1024) {
         fprintf(stderr, "port must be greater than 1024.\n");
         exit(1);
     }
-    if(port > 0xFFFF) {
+    if (port > 0xFFFF) {
         fprintf(stderr, "port must be less than %d.\n", 0xFFFF);
         exit(1);
     }
@@ -512,13 +499,12 @@ main(int argc, char *argv[])
      * will also set the output parameter ``_chirp_instance``, so we can later
      * access it while the program runs. */
     ch_chirp_run(
-        &config,
-        &_chirp_instance,
-        new_message_cb,
-        chirp_started_cb,
-        NULL,
-        NULL
-    );
+            &config,
+            &_chirp_instance,
+            new_message_cb,
+            chirp_started_cb,
+            NULL,
+            NULL);
 
     // Before we exit, let's do some cleanup of the global data structures.
     ch_libchirp_cleanup();

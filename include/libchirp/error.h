@@ -130,4 +130,4 @@ typedef enum {
     CH_WRITE_ERROR    = 18,
 } ch_error_t;
 
-#endif //ch_libchirp_error_h
+#endif // ch_libchirp_error_h

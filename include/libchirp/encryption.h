@@ -81,4 +81,4 @@ ch_en_set_manual_tls_init(void);
 //    libressl or openssl.
 //
 
-#endif //ch_libchirp_encryption_h
+#endif // ch_libchirp_encryption_h

@@ -15,8 +15,8 @@
 // .. code-block:: cpp
 //
 #include "libchirp/common.h"
-#include "mpipe_test.h"
 #include "mpack_test.h"
+#include "mpipe_test.h"
 
 // .. c:function::
 void

@@ -24,8 +24,8 @@
 //
 // .. code-block:: cpp
 
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // Declarations
 // ============
@@ -57,10 +57,10 @@
 // .. code-block:: cpp
 //
 typedef struct ch_qc_mem_track_s {
-    ch_buf* data;
-    size_t size;
-    unsigned char count;
-    struct ch_qc_mem_track_s *next;
+    ch_buf*                   data;
+    size_t                    size;
+    unsigned char             count;
+    struct ch_qc_mem_track_s* next;
 } ch_qc_mem_track_t;
 
 // rbtree prototypes
@@ -68,41 +68,33 @@ typedef struct ch_qc_mem_track_s {
 //
 // .. code-block:: cpp
 
-qs_stack_bind_decl_m(
-    ch_qc,
-    ch_qc_mem_track_t
-)
+qs_stack_bind_decl_m(ch_qc, ch_qc_mem_track_t) CH_ALLOW_NL;
 
 // Macros
 // ------
 //
 // .. code-block:: cpp
 
-#define ch_qc_tgen_array_m(item, typed, gen_function) \
-{ \
-    size_t __ch_qc_tgen_len_ = (rand() % 99) + 1; \
-    \
-    typed = ch_alloc( \
-        (size_t) __ch_qc_tgen_len_ * sizeof(*typed) \
-    ); \
-    item = ch_alloc( \
-        sizeof(ch_qc_mem_track_t) \
-    ); \
-    (item)->data = (ch_buf*) typed; \
-    (item)->count = __ch_qc_tgen_len_; \
-    (item)->size = sizeof(*typed); \
-    (item)->next = NULL; \
-    ch_qc_push(&_ch_qc_mem_track, item); \
-    \
-    size_t __ch_qc_tgen_i_; \
-    \
-    for( \
-            __ch_qc_tgen_i_ = 0; \
-            __ch_qc_tgen_i_ < (size_t) __ch_qc_tgen_len_; \
-            __ch_qc_tgen_i_++) { \
-        (typed)[__ch_qc_tgen_i_] = gen_function(); \
-    } \
-}
+#define ch_qc_tgen_array_m(item, typed, gen_function)                          \
+    {                                                                          \
+        size_t __ch_qc_tgen_len_ = (rand() % 99) + 1;                          \
+                                                                               \
+        typed         = ch_alloc((size_t) __ch_qc_tgen_len_ * sizeof(*typed)); \
+        item          = ch_alloc(sizeof(ch_qc_mem_track_t));                   \
+        (item)->data  = (ch_buf*) typed;                                       \
+        (item)->count = __ch_qc_tgen_len_;                                     \
+        (item)->size  = sizeof(*typed);                                        \
+        (item)->next  = NULL;                                                  \
+        ch_qc_push(&_ch_qc_mem_track, item);                                   \
+                                                                               \
+        size_t __ch_qc_tgen_i_;                                                \
+                                                                               \
+        for (__ch_qc_tgen_i_ = 0;                                              \
+             __ch_qc_tgen_i_ < (size_t) __ch_qc_tgen_len_;                     \
+             __ch_qc_tgen_i_++) {                                              \
+            (typed)[__ch_qc_tgen_i_] = gen_function();                         \
+        }                                                                      \
+    }
 
 // Functions
 // ---------
@@ -234,4 +226,4 @@ ch_qc_pgen_uint32_t(void);
 
 // .. code-block:: cpp
 
-#endif //ch_quickcheck_test_h
+#endif // ch_quickcheck_test_h

@@ -7,10 +7,8 @@ BN = $(basename $(@))
 $(BUILD)/%.o: $(BASE)/%.c
 	@mkdir -p "$(dir $@)"
 ifeq ($(MACRO_DEBUG),True)
-	$(V_E) RGC $<
-	$(V_M)$(BASE)/mk/rgc $< $(BN).c
 	$(V_E) MDCC $<
-	$(V_M)$(CC) $(CFLAGS) -E -P $(BN).c | clang-format > $(BN).f.c
+	$(V_M)$(CC) $(CFLAGS) -E -P $< | clang-format > $(BN).f.c
 	$(V_M)mv $(BN).f.c $(BN).c
 	$(V_M)$(CC) -c -o $@ $(BN).c $(NWCFLAGS) \
 			2> $@.log || \
@@ -28,8 +26,12 @@ $(BUILD)/%.rst: $(BASE)/%
 	$(V_M)$(BASE)/mk/twsp $<
 	$(V_E) FRMT $<
 	$(V_M)clang-format $< > $@.cf
+ifeq ($(CLANG_FORMAT),True)
+	$(V_M)mv $@.cf $<
+else
 	$(V_M)diff $< $@.cf > /dev/null || \
 		(echo $<:1:1: Please clang-format the file; false)
+endif
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
 

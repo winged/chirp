@@ -27,6 +27,14 @@ $(BUILD)/src/rbtree.h.rst: $(BASE)/src/rbtree.h
 	@mkdir -p "$(dir $@)"
 	$(V_E) RST $<
 	$(V_M)$(BASE)/mk/c2rst $< $@
+$(BUILD)/src/mpipe_test.h.rst: $(BASE)/src/mpipe_test.h
+	@mkdir -p "$(dir $@)"
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
+$(BUILD)/src/qs.h.rst: $(BASE)/src/qs.h
+	@mkdir -p "$(dir $@)"
+	$(V_E) RST $<
+	$(V_M)$(BASE)/mk/c2rst $< $@
 $(BUILD)/src/mpipe_test.c.rst:
 	@true
 $(BUILD)/src/mpack_test.h.rst:
@@ -35,6 +43,11 @@ $(BUILD)/src/mpack_test.c.rst:
 	@true
 $(BUILD)/src/mpack-config.h.rst:
 	@true
+$(BUILD)/src/sds_test.c.rst:
+	@true
+$(BUILD)/src/sds_test.h.rst:
+	@true
+
 
 # Non Werror flags for external modules
 # =====================================
@@ -80,6 +93,10 @@ check: all  ## Check basic functionality
 	$(BUILD)/src/serializer_etest
 	$(BUILD)/src/message_etest --always-encrypt --message-count 3
 	$(BUILD)/src/message_etest --message-count 3
+
+# Format target
+# =============
+format: CLANG_FORMART=True doc_files  tutorial_files tutorial_code ## Format code
 
 # Doc target
 # ==========

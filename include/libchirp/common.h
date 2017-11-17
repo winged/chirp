@@ -21,11 +21,11 @@
 // .. code-block:: cpp
 //
 #ifdef CH_BUILD
-#   if defined __GNUC__ || __clang__
-#       define CH_EXPORT __attribute__ ((visibility ("default")))
-#   endif
+#if defined __GNUC__ || __clang__
+#define CH_EXPORT __attribute__((visibility("default")))
+#endif
 #else // CH_BUILD
-#   define CH_EXPORT
+#define CH_EXPORT
 #endif
 
 // System includes
@@ -33,10 +33,9 @@
 //
 // .. code-block:: cpp
 //
-#include <uv.h>
-#include <stdio.h>
 #include <stdint.h>
-
+#include <stdio.h>
+#include <uv.h>
 
 // Typedefs
 // ========
@@ -104,10 +103,10 @@ typedef struct ch_message_s ch_message_t;
 //
 // .. code-block:: cpp
 //
-#define CH_WRITE_LOGC(chirp, message, clear, ...) \
+#define CH_WRITE_LOGC(chirp, message, clear, ...)                              \
     ch_write_log(chirp, __FILE__, __LINE__, message, clear, 0, __VA_ARGS__);
-#define CH_WRITE_LOG(chirp, message, ...) \
-    CH_WRITE_LOGC(chirp, message, "",  __VA_ARGS__)
+#define CH_WRITE_LOG(chirp, message, ...)                                      \
+    CH_WRITE_LOGC(chirp, message, "", __VA_ARGS__)
 
 #define CH_NO_ARG 1
 
@@ -115,14 +114,13 @@ typedef struct ch_message_s ch_message_t;
 CH_EXPORT
 void
 ch_write_log(
-    ch_chirp_t* chirp,
-    char* file,
-    int   line,
-    char* message,
-    char* clear,
-    int   error,
-    ...
-);
+        ch_chirp_t* chirp,
+        char*       file,
+        int         line,
+        char*       message,
+        char*       clear,
+        int         error,
+        ...);
 //
 //    Write log message, either to logging callback (if defined) or to stderr.
 //
@@ -133,4 +131,4 @@ ch_write_log(
 //    :param int error: message is an error
 //    :param ...: variable args passed to vsnprintf
 
-#endif //ch_libchirp_common_h
+#endif // ch_libchirp_common_h

@@ -21,8 +21,8 @@
 //
 // .. code-block:: cpp
 //
-#include <string.h>
 #include <openssl/ssl.h>
+#include <string.h>
 
 // Determine OpenSSL API
 // =====================
@@ -30,15 +30,14 @@
 // .. code-block:: cpp
 
 #ifdef LIBRESSL_VERSION_NUMBER
-#   define CH_OPENSSL_10_API
-#   define CH_LIBRESSL
+#define CH_OPENSSL_10_API
+#define CH_LIBRESSL
 #else
-#   define CH_OPENSSL
-#   if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
-#       define CH_OPENSSL_10_API
-#   endif
+#define CH_OPENSSL
+#if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
+#define CH_OPENSSL_10_API
 #endif
-
+#endif
 
 // Declarations
 // ============
@@ -66,10 +65,10 @@
 // .. code-block:: cpp
 //
 typedef enum {
-    CH_EN_OP_HANDSHAKE   = 0,
-    CH_EN_OP_READ        = 1,
-    CH_EN_OP_WRITE       = 2,
-    CH_EN_OP_SHUTDOWN    = 3,
+    CH_EN_OP_HANDSHAKE = 0,
+    CH_EN_OP_READ      = 1,
+    CH_EN_OP_WRITE     = 2,
+    CH_EN_OP_SHUTDOWN  = 3,
 } ch_en_tls_ops_t;
 
 // .. c:type:: ch_encryption_t
@@ -123,4 +122,4 @@ ch_en_init(ch_chirp_t* chirp, ch_encryption_t* enc);
 //    :param ch_chirp_t* chirp: Chirp instance
 //    :param ch_encryption_t* enc: Encryption to initialize
 
-#endif //ch_encryption_h
+#endif // ch_encryption_h

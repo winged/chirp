@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 
-
 // Service and status
 // ==================
 //
@@ -26,10 +25,10 @@
 //
 // .. code-block:: cpp
 
-enum service_status {
+typedef enum {
     SERVICE_STATUS_ALIVE       = 1 << 0,
     SERVICE_STATUS_AGENT_ALIVE = 1 << 1,
-};
+} service_status_t;
 
 // The service status is a bitmask that fulfills several purposes. First, it
 // tells the upstream about the service status (alive, or not). Second, it
@@ -49,18 +48,17 @@ enum service_status {
 // .. code-block:: cpp
 
 typedef struct mon_service_s {
-    char       name[32];
-    uint16_t   polling_interval;
-    time_t     last_check;
-    uint8_t    status;
-} mon_service_t ;
+    char     name[32];
+    uint16_t polling_interval;
+    time_t   last_check;
+    uint8_t  status;
+} mon_service_t;
 
 // The service object represents a service with it's status, both on the wire
 // and in memory of the monitor service. Next to the service's name, we tell
 // the upstream the polling interval that's being used, and a timestamp of
 // the last time a check has been done. The last part is the service's status as
 // described above.
-
 
 // A helper for parsing host:port strings
 // ======================================
@@ -71,8 +69,7 @@ typedef struct mon_service_s {
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 parse_hostport_into_port(char* hostport, int* port)
 {
     char* port_str = strstr(hostport, ":");
@@ -87,7 +84,6 @@ parse_hostport_into_port(char* hostport, int* port)
      * that only contains the hostname. This is "safe", as we've checked for
      * the existance of the colon already */
     *strstr(hostport, ":") = '\0';
-
 }
 
 // .. vim: set sw=4 ts=4 et:

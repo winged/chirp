@@ -18,18 +18,14 @@
 // ----------------
 //
 
-qs_queue_bind_impl_cx_m(ch_msg, ch_message_t)
+qs_queue_bind_impl_cx_m(ch_msg, ch_message_t) CH_ALLOW_NL;
 
 // Interface definitions
 // ---------------------
 
 // .. c:function::
-CH_EXPORT
-ch_error_t
-ch_msg_get_address(
-        const ch_message_t* message,
-        ch_text_address_t* address
-)
+CH_EXPORT ch_error_t
+ch_msg_get_address(const ch_message_t* message, ch_text_address_t* address)
 //    :noindex:
 //
 //    see: :c:func:`ch_msg_get_address`
@@ -38,15 +34,14 @@ ch_msg_get_address(
 //
 {
     int ip_protocol = message->ip_protocol;
-    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
+    if (!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
         return CH_VALUE_ERROR;
     }
     int tmp_err = uv_inet_ntop(
             ip_protocol,
             message->address,
             address->data,
-            sizeof(address->data)
-    );
+            sizeof(address->data));
     /* This error is not dynamic, it means ch_text_address_t is too small, so
      * we do not return it to the user */
     A(tmp_err == 0, "Cannot convert address to text (not enough space)");
@@ -119,11 +114,10 @@ ch_msg_init(ch_message_t* message)
 CH_EXPORT
 ch_error_t
 ch_msg_set_address(
-        ch_message_t* message,
+        ch_message_t*    message,
         ch_ip_protocol_t ip_protocol,
-        const char* address,
-        int32_t port
-)
+        const char*      address,
+        int32_t          port)
 //    :noindex:
 //
 //    see: :c:func:`ch_msg_set_address`
@@ -132,10 +126,10 @@ ch_msg_set_address(
 //
 {
     message->ip_protocol = ip_protocol;
-    if(!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
+    if (!(ip_protocol == AF_INET || ip_protocol == AF_INET6)) {
         return CH_VALUE_ERROR;
     }
-    if(uv_inet_pton(ip_protocol, address, message->address)) {
+    if (uv_inet_pton(ip_protocol, address, message->address)) {
         return CH_VALUE_ERROR;
     }
     message->port = port;
@@ -145,7 +139,7 @@ ch_msg_set_address(
 // .. c:function::
 CH_EXPORT
 void
-ch_msg_set_data(ch_message_t* message,ch_buf* data, uint32_t len)
+ch_msg_set_data(ch_message_t* message, ch_buf* data, uint32_t len)
 //    :noindex:
 //
 //    see: :c:func:`ch_msg_set_data`

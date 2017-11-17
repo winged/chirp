@@ -24,8 +24,8 @@
 //
 // .. code-block:: cpp
 //
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 // Declarations
@@ -47,10 +47,7 @@ static ch_qc_mem_track_t* _ch_qc_mem_track = NULL;
 //
 // .. code-block:: cpp
 //
-qs_stack_bind_impl_m(
-    ch_qc,
-    ch_qc_mem_track_t
-)
+qs_stack_bind_impl_m(ch_qc, ch_qc_mem_track_t) CH_ALLOW_NL;
 
 // Functions
 // ---------
@@ -67,7 +64,7 @@ ch_qc_free_mem(void)
 //
 {
     ch_qc_mem_track_t* item;
-    while(_ch_qc_mem_track != NULL) {
+    while (_ch_qc_mem_track != NULL) {
         ch_qc_pop(&_ch_qc_mem_track, &item);
         ch_free(item->data);
         ch_free(item);
@@ -110,8 +107,8 @@ ch_qc_tgen_byte(void)
 // .. code-block:: cpp
 //
 {
-    return rand();  // No need to mod overflow of unsigned char is
-                    // is well defined.
+    return rand(); /* No need to mod overflow of unsigned char is
+                    * is well defined. */
 }
 
 // .. c:function::
@@ -124,9 +121,8 @@ ch_qc_tgen_char(void)
 // .. code-block:: cpp
 //
 {
-    return (char)((rand() % 127) + 1);
+    return (char) ((rand() % 127) + 1);
 }
-
 
 // .. c:function::
 double
@@ -165,10 +161,10 @@ ch_qc_pgen_uint8_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1) {
+    if (prop < 0.1) {
         return 0;
     }
-    if(prop < 0.2) {
+    if (prop < 0.2) {
         return 0xFF;
     }
     return rand();
@@ -185,10 +181,10 @@ ch_qc_pgen_uint16_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1) {
+    if (prop < 0.1) {
         return 0;
     }
-    if(prop < 0.2) {
+    if (prop < 0.2) {
         return 0xFFFF;
     }
     return rand();
@@ -205,10 +201,10 @@ ch_qc_pgen_uint32_t(void)
 //
 {
     double prop = ch_qc_tgen_double();
-    if(prop < 0.1) {
+    if (prop < 0.1) {
         return 0;
     }
-    if(prop < 0.2) {
+    if (prop < 0.2) {
         return 0xFFFFFFFF;
     }
     return rand();
@@ -257,12 +253,12 @@ ch_qc_track_alloc(size_t size)
 // .. code-block:: cpp
 //
 {
-    ch_buf* arr = ch_alloc(size);
+    ch_buf*            arr  = ch_alloc(size);
     ch_qc_mem_track_t* item = ch_alloc(sizeof(*item));
-    item->data = arr;
-    item->count = size;
-    item->size = 1;
-    item->next = NULL;
+    item->data              = arr;
+    item->count             = size;
+    item->size              = 1;
+    item->next              = NULL;
     ch_qc_push(&_ch_qc_mem_track, item);
 
     return item;

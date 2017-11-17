@@ -14,9 +14,9 @@
 //
 // .. code-block:: cpp
 //
-#include "common.h"
 #include "callbacks.h"
 #include "chirp.h"
+#include "common.h"
 
 // Declarations
 // ============
@@ -95,26 +95,26 @@
 //
 struct ch_message_s {
     // Network data, has to be sent in network order
-    uint8_t        identity[CH_ID_SIZE];
-    uint32_t       serial;
-    uint8_t        type;
-    uint16_t       header_len;
-    uint32_t       data_len;
+    uint8_t  identity[CH_ID_SIZE];
+    uint32_t serial;
+    uint8_t  type;
+    uint16_t header_len;
+    uint32_t data_len;
     // These fields follow the message in this order (see *_len above)
-    ch_buf*        header;
-    ch_buf*        data;
+    ch_buf* header;
+    ch_buf* data;
     // Local       only data
-    uint8_t        ip_protocol;
-    uint8_t        address[CH_IP_ADDR_SIZE];  // 16
-    int32_t        port;
-    uint8_t        remote_identity[CH_ID_SIZE];
-    void*          user_data;
-    uint8_t        _flags;
-    uint8_t        _retries;
-    ch_send_cb_t   _send_cb;
-    uint8_t        _handler;
-    void*          _pool;
-    ch_message_t*  _next;
+    uint8_t       ip_protocol;
+    uint8_t       address[CH_IP_ADDR_SIZE]; // 16
+    int32_t       port;
+    uint8_t       remote_identity[CH_ID_SIZE];
+    void*         user_data;
+    uint8_t       _flags;
+    uint8_t       _retries;
+    ch_send_cb_t  _send_cb;
+    uint8_t       _handler;
+    void*         _pool;
+    ch_message_t* _next;
 };
 
 // Protocol receiver /Pseudo code/
@@ -208,11 +208,10 @@ ch_msg_init(ch_message_t* message);
 CH_EXPORT
 ch_error_t
 ch_msg_set_address(
-        ch_message_t* message,
+        ch_message_t*    message,
         ch_ip_protocol_t ip_protocol,
-        const char* address,
-        int32_t port
-);
+        const char*      address,
+        int32_t          port);
 //
 //    Set the messages' address in terms of IP-address and port.
 //
@@ -243,4 +242,4 @@ ch_msg_set_data(ch_message_t* message, ch_buf* data, uint32_t len);
 
 // .. code-block:: cpp
 //
-#endif //ch_libchirp_message_h
+#endif // ch_libchirp_message_h

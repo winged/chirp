@@ -21,7 +21,6 @@
 #include <arpa/inet.h>
 #endif // _WIN32
 
-
 // Declarations
 // ============
 
@@ -42,10 +41,7 @@
 //
 // .. code-block:: cpp
 //
-typedef enum {
-    _CH_IPV4     = AF_INET,
-    _CH_IPV6     = AF_INET6
-} ch_ip_protocol_t;
+typedef enum { _CH_IPV4 = AF_INET, _CH_IPV6 = AF_INET6 } ch_ip_protocol_t;
 
 // The maximum size of an IP address
 //
@@ -65,4 +61,4 @@ typedef enum {
 //
 #define CH_ID_SIZE 16
 
-#endif //ch_libchirp_const_h
+#endif // ch_libchirp_const_h

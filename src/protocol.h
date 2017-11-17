@@ -14,8 +14,8 @@
 //
 // .. code-block:: cpp
 //
-#include "libchirp/chirp.h"
 #include "connection.h"
+#include "libchirp/chirp.h"
 #include "rbtree.h"
 
 // Declarations
@@ -71,11 +71,7 @@ struct ch_protocol_s {
 // .. c:function::
 ch_error_t
 ch_pr_conn_start(
-        ch_chirp_t* chirp,
-        ch_connection_t* conn,
-        uv_tcp_t* client,
-        int accept
-);
+        ch_chirp_t* chirp, ch_connection_t* conn, uv_tcp_t* client, int accept);
 //
 //    Start the given connection
 //
@@ -138,4 +134,4 @@ ch_pr_init(ch_chirp_t* chirp, ch_protocol_t* protocol);
 //
 // .. code-block:: cpp
 //
-#endif //ch_protocol_h
+#endif // ch_protocol_h

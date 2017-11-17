@@ -28,7 +28,6 @@
 
 static ch_chirp_t* _chirp_instance;
 
-
 // Upstream: Notifying monitor
 // ===========================
 //
@@ -39,7 +38,6 @@ static ch_chirp_t* _chirp_instance;
 // We need to know where to forward our messages.
 //
 // .. code-block:: cpp
-
 
 static char* upstream_host;
 static int   upstream_port;
@@ -52,14 +50,12 @@ static int   upstream_port;
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 {
-    (void)(status);
+    (void) (status);
     ch_chirp_release_message(msg);
 }
-
 
 // Listening for incoming messages
 // ===============================
@@ -75,15 +71,13 @@ sent_cb(ch_chirp_t* chirp, ch_message_t* msg, int status)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 {
     // Set upstream address, send out message
     ch_msg_set_address(msg, AF_INET, upstream_host, upstream_port);
     ch_chirp_send(chirp, msg, sent_cb);
 }
-
 
 // Startup and initialisation
 // ==========================
@@ -98,11 +92,10 @@ new_message_cb(ch_chirp_t* chirp, ch_message_t* msg)
 //
 // .. code-block:: cpp
 
-static
-void
+static void
 chirp_started_cb(ch_chirp_t* chirp)
 {
-    (void)(chirp);
+    (void) (chirp);
 }
 
 // The main program
@@ -120,26 +113,24 @@ chirp_started_cb(ch_chirp_t* chirp)
 // .. code-block:: cpp
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
-    if(argc < 3) {
-        fprintf(
-            stderr,
-            "Usage: %s listen_port upstream_host:upstream_port\n",
-            argv[0]
-        );
+    if (argc < 3) {
+        fprintf(stderr,
+                "Usage: %s listen_port upstream_host:upstream_port\n",
+                argv[0]);
         exit(1);
     }
     int port = strtol(argv[1], NULL, 10);
-    if(errno) {
+    if (errno) {
         fprintf(stderr, "port must be integer.\n");
         exit(1);
     }
-    if(port <= 1024) {
+    if (port <= 1024) {
         fprintf(stderr, "port must be greater than 1024.\n");
         exit(1);
     }
-    if(port > 0xFFFF) {
+    if (port > 0xFFFF) {
         fprintf(stderr, "port must be less than %d.\n", 0xFFFF);
         exit(1);
     }
@@ -149,11 +140,7 @@ main(int argc, char *argv[])
     parse_hostport_into_port(upstream_host, &upstream_port);
 
     printf("Collector, listening on port %d\n", port);
-    printf(
-        "Upstream: host=%s port=%d\n",
-        upstream_host, upstream_port
-    );
-
+    printf("Upstream: host=%s port=%d\n", upstream_host, upstream_port);
 
     /* Initialize chirp. This initializes just the global data structures, and
      * needs to be done once per program run (not for each chirp instance!) */
@@ -171,13 +158,12 @@ main(int argc, char *argv[])
      * will also set the output parameter ``_chirp_instance``, so we can later
      * access it while the program runs. */
     ch_chirp_run(
-        &config,
-        &_chirp_instance,
-        new_message_cb,
-        chirp_started_cb,
-        NULL,
-        NULL
-    );
+            &config,
+            &_chirp_instance,
+            new_message_cb,
+            chirp_started_cb,
+            NULL,
+            NULL);
 
     // Before we exit, let's do some cleanup of the global data structures.
     ch_libchirp_cleanup();

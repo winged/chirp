@@ -14,6 +14,7 @@
 //
 // .. code-block:: cpp
 //
+#include "common.h"
 #include "libchirp/message.h"
 #include "qs.h"
 
@@ -23,8 +24,7 @@
 // .. code-block:: cpp
 //
 #define ch_msg_next_m(x) (x)->_next
-qs_queue_bind_decl_cx_m(ch_msg, ch_message_t)
-
+qs_queue_bind_decl_cx_m(ch_msg, ch_message_t) CH_ALLOW_NL;
 
 // .. c:type:: ch_msg_type_t
 //
@@ -91,4 +91,4 @@ typedef enum {
     CH_MSG_IS_HANDLER   = 1 << 5,
 } ch_msg_flags_t;
 
-#endif //ch_msg_message_h
+#endif // ch_msg_message_h

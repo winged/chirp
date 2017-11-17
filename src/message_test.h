@@ -14,19 +14,16 @@
 //
 // .. code-block:: cpp
 //
+#include "buffer.h"
 #include "common.h"
 #include "message.h"
-#include "buffer.h"
 
 // Declarations
 // ============
 
 // .. c:function::
 int
-ch_tst_check_pattern(
-        ch_buf* data,
-        size_t count
-);
+ch_tst_check_pattern(ch_buf* data, size_t count);
 //
 //    Check if the pattern is correct.
 //
@@ -49,5 +46,4 @@ ch_tst_gen_message(void);
 // Definitions
 // ===========
 
-
-#endif //ch_message_test_h
+#endif // ch_message_test_h

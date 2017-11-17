@@ -15,8 +15,7 @@
 // =================
 //
 // .. c:function::
-static
-int
+static int
 ch_remote_cmp(ch_remote_t* x, ch_remote_t* y)
 //
 //    Compare operator for connections.
@@ -33,15 +32,15 @@ ch_remote_cmp(ch_remote_t* x, ch_remote_t* y)
 // .. code-block:: cpp
 //
 {
-    if(x->ip_protocol != y->ip_protocol) {
+    if (x->ip_protocol != y->ip_protocol) {
         return x->ip_protocol - y->ip_protocol;
     } else {
-        int tmp_cmp = memcmp(
-            x->address,
-            y->address,
-            x->ip_protocol == AF_INET6 ? CH_IP_ADDR_SIZE : CH_IP4_ADDR_SIZE
-        );
-        if(tmp_cmp != 0) {
+        int tmp_cmp =
+                memcmp(x->address,
+                       y->address,
+                       x->ip_protocol == AF_INET6 ? CH_IP_ADDR_SIZE
+                                                  : CH_IP4_ADDR_SIZE);
+        if (tmp_cmp != 0) {
             return tmp_cmp;
         } else {
             return x->port - y->port;
@@ -49,19 +48,15 @@ ch_remote_cmp(ch_remote_t* x, ch_remote_t* y)
     }
 }
 
-rb_bind_impl_m(ch_rm, ch_remote_t)
+rb_bind_impl_m(ch_rm, ch_remote_t) CH_ALLOW_NL;
 
 // Definitions
 // ===========
 //
 // .. code-block:: cpp
 
-static
-void
-_ch_rm_init(
-        ch_chirp_t* chirp,
-        ch_remote_t* remote
-)
+static void
+_ch_rm_init(ch_chirp_t* chirp, ch_remote_t* remote)
 //
 //    Initialize remote
 //
@@ -94,10 +89,7 @@ ch_rm_init_from_msg(ch_chirp_t* chirp, ch_remote_t* remote, ch_message_t* msg)
 // .. c:function::
 void
 ch_rm_init_from_conn(
-        ch_chirp_t* chirp,
-        ch_remote_t* remote,
-        ch_connection_t* conn
-)
+        ch_chirp_t* chirp, ch_remote_t* remote, ch_connection_t* conn)
 //    :noindex:
 //
 //    see: :c:func:`ch_rm_init_from_conn`

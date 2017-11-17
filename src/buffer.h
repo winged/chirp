@@ -15,9 +15,9 @@
 //
 // .. code-block:: cpp
 //
-#include "message.h"
 #include "common.h"
 #include "libchirp-config.h"
+#include "message.h"
 
 // Declarations
 // ============
@@ -85,9 +85,9 @@ typedef struct ch_bf_handler_s {
 // .. code-block:: cpp
 //
 typedef struct ch_buffer_pool_s {
-    uint8_t  max_buffers;
-    uint8_t  used_buffers;
-    uint32_t free_buffers;
+    uint8_t          max_buffers;
+    uint8_t          used_buffers;
+    uint32_t         free_buffers;
     ch_bf_handler_t* handlers;
     ch_connection_t* conn;
 } ch_buffer_pool_t;
@@ -137,4 +137,4 @@ ch_bf_release(ch_buffer_pool_t* pool, int id);
 //
 // .. code-block:: cpp
 //
-#endif //ch_buffer_h
+#endif // ch_buffer_h

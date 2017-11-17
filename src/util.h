@@ -35,14 +35,14 @@ ch_alloc(size_t size);
 
 #ifndef NDEBUG
 // .. c:function::
-    void
-    ch_at_init(void);
+void
+ch_at_init(void);
 //
 //    Initialize alloc tracking for memory leak debugging.
 //
 // .. c:function::
-    void
-    ch_at_cleanup(void);
+void
+ch_at_cleanup(void);
 //
 //    Cleanup and print memory leak summary.
 //
@@ -89,7 +89,7 @@ ch_random_ints_as_bytes(uint8_t* bytes, size_t len);
 
 // .. c:function::
 void*
-ch_realloc(void*  buf, size_t size);
+ch_realloc(void* buf, size_t size);
 //
 //    Resize allocated memory.
 //
@@ -99,11 +99,10 @@ ch_realloc(void*  buf, size_t size);
 // .. c:function::
 ch_error_t
 ch_textaddr_to_sockaddr(
-        int af,
-        ch_text_address_t* text,
-        uint16_t port,
-        struct sockaddr_storage* addr
-);
+        int                      af,
+        ch_text_address_t*       text,
+        uint16_t                 port,
+        struct sockaddr_storage* addr);
 //
 //    Convert a text address to a struct sockaddr. As an input we want struct
 //    sockaddr_storage, to have enough space for an IPv4 and IPv6 address, but

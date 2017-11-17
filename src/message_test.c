@@ -9,8 +9,8 @@
 //
 // .. code-block:: cpp
 
-#include "quickcheck_test.h"
 #include "message.h"
+#include "quickcheck_test.h"
 #include "util.h"
 
 // Definitions
@@ -27,25 +27,25 @@ ch_tst_check_pattern(ch_buf* data, size_t count)
 // .. code-block:: cpp
 //
 {
-    if(count == 0) {
+    if (count == 0) {
         return 1;
     }
     size_t pos = 7;
-    if(memcmp(data, "pattern", pos) != 0) {
+    if (memcmp(data, "pattern", pos) != 0) {
         return 0;
     }
-    for(;;) {
+    for (;;) {
         uint8_t pat_len = data[pos];
-        uint8_t i = 0;
+        uint8_t i       = 0;
         pos += 1;
-        while(i < pat_len  && pos < count) {
-            if(((uint8_t) data[pos]) != i) {
+        while (i < pat_len && pos < count) {
+            if (((uint8_t) data[pos]) != i) {
                 return 0;
             }
             pos += 1;
             i += 1;
         }
-        if(pos >= count) {
+        if (pos >= count) {
             return 1;
         }
     }
@@ -53,14 +53,12 @@ ch_tst_check_pattern(ch_buf* data, size_t count)
 }
 
 // .. c:function::
-static
-size_t
+static size_t
 _ch_tst_gen_data_field(
-        float zero_probability,
-        float max_probability,
-        int max_count,
-        ch_buf** data
-)
+        float    zero_probability,
+        float    max_probability,
+        int      max_count,
+        ch_buf** data)
 //
 //   Allocates memory for one of the data field in a chirp message: header,
 //   data and writes a pattern into it.
@@ -73,36 +71,33 @@ _ch_tst_gen_data_field(
 // .. code-block:: cpp
 //
 {
-    size_t pos = 7;
-    ch_qc_mem_track_t* track;
-    double draw = ch_qc_tgen_double();
+    size_t pos   = 7;
+    double draw  = ch_qc_tgen_double();
     size_t count = 0;
-    if(draw > zero_probability) {
-        if(draw < max_probability) {
+    if (draw > zero_probability) {
+        if (draw < max_probability) {
             count = max_count;
         } else {
             count = ch_qc_tgen_double() * max_count;
         }
     }
-    if(count == 0) {
+    if (count == 0) {
         return count;
     } else {
         count += pos;
     }
-    track = ch_qc_track_alloc(count);
-    *data = track->data;
+    ch_qc_mem_track_t* track = ch_qc_track_alloc(count);
+    *data                    = track->data;
     strncpy(track->data, "pattern", 7);
-    while(pos < count) {
+    while (pos < count) {
         uint8_t i = 0;
         /* The pattern length must always be at least 1, so we scale pat_len to
          * UCHAR_MAX - 1 (254) and add 1. This ensures that there is no string
          * of zeros which might not detect a bug.*/
-        uint8_t pat_len = (uint8_t) (
-            ch_qc_tgen_double() * (UCHAR_MAX - 1)
-        ) + 1;
+        uint8_t pat_len  = (uint8_t)(ch_qc_tgen_double() * (UCHAR_MAX - 1)) + 1;
         track->data[pos] = pat_len;
         pos += 1;
-        while(pos < count && i < pat_len) {
+        while (pos < count && i < pat_len) {
             track->data[pos] = i;
             pos += 1;
             i += 1;
@@ -110,7 +105,6 @@ _ch_tst_gen_data_field(
     }
     return count;
 }
-
 
 // .. c:function::
 ch_message_t*
@@ -122,35 +116,27 @@ ch_tst_gen_message(void)
 // .. code-block:: cpp
 //
 {
-    ch_message_t* message;
     int data_count = 1024;
-    int big = ch_qc_tgen_bool();
-    if(big) {
+    int big        = ch_qc_tgen_bool();
+    if (big) {
         int very = ch_qc_tgen_bool();
-        if(very) {
+        if (very) {
             data_count = 1024 * 1024;
         } else {
             data_count = 1024 * 256;
         }
     }
     ch_qc_mem_track_t* track;
-    track = ch_qc_track_alloc(sizeof(*message));
+    ch_message_t*      message;
+    track   = ch_qc_track_alloc(sizeof(*message));
     message = (ch_message_t*) track->data;
     ch_msg_init(message);
-    message->header_len = _ch_tst_gen_data_field(
-        0.1,
-        0.1,
-        1024,
-        &message->header
-    );
-    message->data_len = _ch_tst_gen_data_field(
-        0.1,
-        0.05,
-        data_count,
-        &message->data
-    );
+    message->header_len =
+            _ch_tst_gen_data_field(0.1, 0.1, 1024, &message->header);
+    message->data_len =
+            _ch_tst_gen_data_field(0.1, 0.05, data_count, &message->data);
     int ipv6 = ch_qc_tgen_bool();
-    if(ipv6) {
+    if (ipv6) {
         ch_msg_set_address(message, AF_INET6, "::1", 59732);
     } else {
         ch_msg_set_address(message, AF_INET, "127.0.0.1", 59732);
