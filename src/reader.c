@@ -152,26 +152,6 @@ char* _ch_rd_state_names[] = {
     "CH_RD_DATA",
 };
 
-// .. c:macro:: ch_rd_log_ip_and_id_to_string_m
-//
-//    Converts an ip and an id to string.
-//
-//    :param identity: The identity to convert
-//
-// .. code-block:: cpp
-
-#begindef ch_rd_log_ip_and_id_to_string_m(identity)
-    ch_text_address_t addr;
-    char id[CH_ID_SIZE * 2 + 1];
-    uv_inet_ntop(
-        conn->ip_protocol,
-        conn->address,
-        addr.data,
-        sizeof(addr)
-    );
-    ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
-#enddef
-
 // .. c:function::
 static
 void
@@ -246,7 +226,16 @@ _ch_rd_handshake(
     }
 #   ifndef NDEBUG
     {
-        ch_rd_log_ip_and_id_to_string_m(conn->remote_identity);
+        ch_text_address_t addr;
+        uint8_t* identity = conn->remote_identity;
+        char id[CH_ID_SIZE * 2 + 1];
+        uv_inet_ntop(
+            conn->ip_protocol,
+            conn->address,
+            addr.data,
+            sizeof(addr)
+        );
+        ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
         LC(
             chirp,
             "Handshake with remote %s:%d (%s) done. ", "ch_connection_t:%p",
@@ -280,7 +269,16 @@ _ch_rd_handle_msg(
     ch_chirp_int_t* ichirp = chirp->_;
 #   ifndef NDEBUG
     {
-        ch_rd_log_ip_and_id_to_string_m(msg->identity);
+        ch_text_address_t addr;
+        uint8_t* identity = conn->remote_identity;
+        char id[CH_ID_SIZE * 2 + 1];
+        uv_inet_ntop(
+            conn->ip_protocol,
+            conn->address,
+            addr.data,
+            sizeof(addr)
+        );
+        ch_bytes_to_hex(identity, sizeof(identity), id, sizeof(id));
         LC(
             chirp,
             "Read message with id: %s\n"

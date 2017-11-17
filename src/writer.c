@@ -570,22 +570,6 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
     }
 
     conn = remote->conn;
-#   begindef ch_wr_send_check_error_m(err_msg)
-        if(tmp_err != CH_SUCCESS) {
-            EC(
-                chirp,
-                err_msg, ": %d. ",
-                "ch_connection_t:%p",
-                tmp_err,
-                (void*) conn
-            );
-            msg->_flags &= ~CH_MSG_USED;
-            if(send_cb != NULL) {
-                send_cb(chirp, msg, CH_FATAL);
-            }
-            return CH_FATAL;
-        }
-#   enddef
     if(conn == NULL) {
         conn = ch_alloc(sizeof(*conn));
         if(!conn) {
@@ -610,7 +594,20 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
         conn->connect_msg  = msg;
         conn->client.data  = conn;
         tmp_err = uv_timer_init(ichirp->loop, &conn->connect_timeout);
-        ch_wr_send_check_error_m("Initializing connect timeout failed")
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                "Initializing connect timeout failed: %d. ",
+                "ch_connection_t:%p",
+                tmp_err,
+                (void*) conn
+            );
+            msg->_flags &= ~CH_MSG_USED;
+            if(send_cb != NULL) {
+                send_cb(chirp, msg, CH_FATAL);
+            }
+            return CH_FATAL;
+        }
         conn->connect_timeout.data = conn;
         conn->flags |= CH_CN_INIT_CONNECT_TIMEOUT;
         int tmp_err = uv_timer_start(
@@ -619,7 +616,20 @@ ch_wr_send(ch_chirp_t* chirp, ch_message_t* msg, ch_send_cb_t send_cb)
             ichirp->config.TIMEOUT * 1000,
             0
         );
-        ch_wr_send_check_error_m("Starting connect timeout failed")
+        if(tmp_err != CH_SUCCESS) {
+            EC(
+                chirp,
+                "Starting connect timeout failed: %d. ",
+                "ch_connection_t:%p",
+                tmp_err,
+                (void*) conn
+            );
+            msg->_flags &= ~CH_MSG_USED;
+            if(send_cb != NULL) {
+                send_cb(chirp, msg, CH_FATAL);
+            }
+            return CH_FATAL;
+        }
 
         ch_text_address_t taddr;
         tmp_err = ch_msg_get_address(msg, &taddr);

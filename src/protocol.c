@@ -263,20 +263,6 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
     uv_tcp_init(server->loop, client);
     conn->flags |= CH_CN_INIT_CLIENT | CH_CN_INCOMING;
 
-#   begindef ch_pr_parse_ip_addr_m(ip_version, inet_version, in_version)
-    {
-        struct sockaddr_##in_version* saddr =
-            (struct sockaddr_##in_version*) &addr;
-        conn->ip_protocol = AF_##inet_version;
-        memcpy(
-            &conn->address,
-            &saddr->s##in_version##_addr,
-            sizeof(saddr->s##in_version##_addr)
-        );
-        uv_ip##ip_version##_name(saddr, taddr.data, sizeof(taddr.data));
-    }
-#   enddef
-
     if (uv_accept(server, (uv_stream_t*) client) == 0) {
         struct sockaddr_storage addr;
         int addr_len = sizeof(addr);
@@ -294,10 +280,15 @@ _ch_pr_new_connection_cb(uv_stream_t* server, int status)
             ch_cn_shutdown(conn, CH_FATAL);
             return;
         };
+        conn->ip_protocol = addr.ss_family;
         if(addr.ss_family == AF_INET6) {
-            ch_pr_parse_ip_addr_m(6, INET6, in6)
+            struct sockaddr_in6* saddr = (struct sockaddr_in6*) &addr;
+            memcpy(&conn->address, &saddr->sin6_addr, sizeof(saddr->sin6_addr));
+            uv_ip6_name(saddr, taddr.data, sizeof(taddr.data));
         } else {
-            ch_pr_parse_ip_addr_m(4, INET, in)
+            struct sockaddr_in* saddr = (struct sockaddr_in*) &addr;
+            memcpy(&conn->address, &saddr->sin_addr, sizeof(saddr->sin_addr));
+            uv_ip4_name(saddr, taddr.data, sizeof(taddr.data));
         }
         if(!(
                 ichirp->config.DISABLE_ENCRYPTION  ||
@@ -367,22 +358,25 @@ ch_pr_conn_start(
 // .. code-block:: cpp
 //
 {
-#   begindef ch_pr_conn_start_handle_error_m(msg)
-        if(tmp_err != CH_SUCCESS) {
-            E(chirp, msg " connection (%d)", tmp_err);
-            ch_cn_shutdown(conn, CH_FATAL);
-            return CH_UV_ERROR;
-        }
-#   enddef
-
     int tmp_err = ch_cn_init(chirp, conn, conn->flags);
-    ch_pr_conn_start_handle_error_m("Could not initialize")
-
+    if(tmp_err != CH_SUCCESS) {
+        E(chirp, "Could not initialize connection (%d)", tmp_err);
+        ch_cn_shutdown(conn, tmp_err);
+        return tmp_err;
+    }
     tmp_err = uv_tcp_nodelay(client, 1);
-    ch_pr_conn_start_handle_error_m("Could not set tcp nodelay on");
+    if(tmp_err != CH_SUCCESS) {
+        E(chirp, "Could not set tcp nodelay on connection (%d)", tmp_err);
+        ch_cn_shutdown(conn, CH_UV_ERROR);
+        return CH_UV_ERROR;
+    }
 
     tmp_err = uv_tcp_keepalive(client, 1, CH_TCP_KEEPALIVE);
-    ch_pr_conn_start_handle_error_m("Could not set tcp keepalive on ");
+    if(tmp_err != CH_SUCCESS) {
+        E(chirp, "Could not set tcp keepalive on connection (%d)", tmp_err);
+        ch_cn_shutdown(conn, CH_UV_ERROR);
+        return CH_UV_ERROR;
+    }
 
     uv_read_start(
         (uv_stream_t*) client,
@@ -599,20 +593,34 @@ _ch_pr_read_data_cb(
         return;
     }
 
-#   begindef ch_pr_log_nread_m(msg)
-        LC(chirp, msg " ", "ch_connection_t:%p", (int) nread, (void*) conn);
-#   enddef
-
     if(nread == 0) {
-        ch_pr_log_nread_m("Unexpected emtpy read (%d) from libuv.");
+        LC(
+            chirp,
+            "Unexpected emtpy read (%d) from libuv. ",
+            "ch_connection_t:%p",
+            (int) nread,
+            (void*) conn
+        );
         return;
     }
     if(nread < 0) {
-        ch_pr_log_nread_m("Reader got error %d -> shutdown.");
+        LC(
+            chirp,
+            "Reader got error %d -> shutdown. ",
+            "ch_connection_t:%p",
+            (int) nread,
+            (void*) conn
+        );
         ch_cn_shutdown(conn, CH_PROTOCOL_ERROR);
         return;
     }
-    ch_pr_log_nread_m("%d available bytes.");
+    LC(
+        chirp,
+        "%d available bytes.",
+        "ch_connection_t:%p",
+        (int) nread,
+        (void*) conn
+    );
     int stop;
     if(conn->flags & CH_CN_ENCRYPTED) {
         bytes_handled = _ch_pr_decrypt_feed(conn, buf->base, nread, &stop);
