@@ -235,6 +235,22 @@ make check
 make test
     Instrumented (dev mode), goal: helping developers to find bugs
 
+Clang-format
+------------
+
+We enforce a specific format using clang-format. To format all the code do:
+
+.. code-block:: bash
+
+   make format
+
+You can use the clang-format vim plugin:
+
+.. code-block:: vim
+
+   Plugin 'rhysd/vim-clang-format'
+   au FileType c ClangFormatAutoEnable
+
 
 Syntastic
 ---------
