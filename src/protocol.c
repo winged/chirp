@@ -376,20 +376,22 @@ _ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t nread, int* stop)
     size_t      bytes_handled = 0;
     *stop                     = 0;
     do {
-        ssize_t tmp_err;
-        tmp_err = BIO_write(
-                conn->bio_app, buf + bytes_handled, nread - bytes_handled);
-        if (tmp_err < 1) {
-            if (!(conn->flags & CH_CN_STOPPED)) {
-                EC(chirp,
-                   "SSL error writing to BIO, shutting down connection. ",
-                   "ch_connection_t:%p",
-                   (void*) conn);
-                ch_cn_shutdown(conn, CH_TLS_ERROR);
-                return -1;
+        ssize_t tmp_err = 0;
+        if (nread > 0) {
+            tmp_err = BIO_write(
+                    conn->bio_app, buf + bytes_handled, nread - bytes_handled);
+            if (tmp_err < 1) {
+                if (!(conn->flags & CH_CN_STOPPED)) {
+                    EC(chirp,
+                       "SSL error writing to BIO, shutting down connection. ",
+                       "ch_connection_t:%p",
+                       (void*) conn);
+                    ch_cn_shutdown(conn, CH_TLS_ERROR);
+                    return -1;
+                }
+            } else {
+                bytes_handled += tmp_err;
             }
-        } else {
-            bytes_handled += tmp_err;
         }
         if (conn->flags & CH_CN_TLS_HANDSHAKE) {
             _ch_pr_do_handshake(conn);
