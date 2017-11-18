@@ -378,7 +378,7 @@ _ch_pr_decrypt_feed(ch_connection_t* conn, ch_buf* buf, size_t nread, int* stop)
     do {
         if (nread > 0) {
             ssize_t tmp_err = 0;
-            tmp_err = BIO_write(
+            tmp_err         = BIO_write(
                     conn->bio_app, buf + bytes_handled, nread - bytes_handled);
             if (tmp_err < 1) {
                 if (!(conn->flags & CH_CN_STOPPED)) {
