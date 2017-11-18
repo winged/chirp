@@ -91,11 +91,13 @@ cheated and downloaded the source files already!).
 How to get libchirp
 -------------------
 
-Either download a release of libchirp or see :ref:`source_dist`.
+Either download a release of libchirp or see README.rst_ in the git repository.
 
 If you want full debug output, you can run the following in build of libchirp,
 which will give you a source distribution, but the full debug logging still in
 place.
+
+.. _README.rst: https://github.com/concretecloud/chirp#how-to-create-a-source-distribution
 
 .. code-block:: bash
 
