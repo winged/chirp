@@ -238,7 +238,8 @@ make test
 Clang-format
 ------------
 
-We enforce a specific format using clang-format. To format all the code do:
+We enforce a specific format using clang-format. To format all the code do in
+the build folder:
 
 .. code-block:: bash
 
@@ -250,6 +251,14 @@ You can use the clang-format vim plugin:
 
    Plugin 'rhysd/vim-clang-format'
    au FileType c ClangFormatAutoEnable
+
+If you have a different version of clang-format than our CI, the result of
+clang-format might differ. To format using the ci do:
+
+.. code-block:: bash
+
+   ci/alpine.sh shell
+   make format
 
 
 Syntastic
