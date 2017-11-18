@@ -24,7 +24,7 @@ $(BUILD)/%.rst: $(BASE)/%
 	@mkdir -p "$(dir $@)"
 	$(V_E) TWSP $<
 	$(V_M)$(BASE)/mk/twsp $<
-ifeq ($(CI_DISTRO),alpine)
+ifneq ($(CI_DISTRO),arch)
 	$(V_E) FRMT $<
 	$(V_M)clang-format $< > $@.cf
 ifeq ($(CLANG_FORMAT),True)
