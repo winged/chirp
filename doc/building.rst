@@ -2,85 +2,52 @@
 Building and installing Chirp
 =============================
 
-Unix
-====
+This relates to the source distribution of libchirp. For building the git
+repository see README.rst_
 
-Build dependencies:
+.. _README.rst: https://github.com/concretecloud/chirp/blob/master/README.rst
 
-* python3 [3]_
+Project home and documentation
+==============================
 
-* make
+`Project home`_
 
-* gcc or clang
+.. _`Project home`: https://github.com/concretecloud/chirp
 
-Documentation build dependencies:
+`Read the docs`_
 
-* sphinx
+.. _`Read the docs`: http://1042.ch/chirp/
 
-* graphviz
+How to build and install
+========================
 
-Dependencies:
+By default it will be installed in /usr/local.
 
-* libuv
-
-* openssl
-
-
-Install to prefix /usr/local. (with docs)
+Example: Install in /usr
 
 .. code-block:: bash
 
-   cd build
-   ../configure --doc
+   make STRIP=True
+   sudo make install PREFIX=/usr
+
+Example: Packaging (no strip since distributions usually want to control strip)
+
+.. code-block:: bash
+
    make
-   make check
-   sudo make install
+   make install PREFIX=/usr DEST=./pkgdir
 
-Install to prefix /usr. (without docs)
-
-.. code-block:: bash
-
-   cd build
-   ../configure --prefix /usr
-   make
-   make check
-   sudo make install
-
-Install to prefix /usr, but copy to package dir. (Package creation)
+Example: Debug
 
 .. code-block:: bash
 
-   cd build
-   ../configure --prefix /usr
-   make
-   make check
-   make install DEST=pkgdir
+   CFLAGS=-O0 make
+   make install PREFIX=/usr/local
 
-.. _source_dist:
-
-How to create a source distribution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Building a source distribution is useful when you need to include libchirp in
-your project, but don't want to use it's build system. A source distribution can
-easily be compiled with just a ``make`` call.
-
-.. code-block:: bash
-
-   cd build
-   ../configure --dest --doc
-   make dist
-   ls dist
-
-.. [3] Script-headers can be patched to work with python2.
+#ifndef NDEBUG is stripped in source distribution, so still no debug code.
 
 Windows
 -------
 
 We want to support Windows, but we are currently not building on Windows. VS
 2013 or newer should support all C99 feature we use.
-
-
-
-.. vim: set spell spelllang=en foldmethod=marker sw=2 ts=2 et tw=76: .. }}}
-
