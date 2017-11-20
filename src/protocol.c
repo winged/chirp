@@ -288,15 +288,14 @@ _ch_pr_read_resume(ch_connection_t* conn, ch_resume_state_t* resume)
     size_t  nread          = resume->bytes_to_read;
     resume->rest_of_buffer = NULL;
     resume->bytes_to_read  = 0;
-    if (buf) {
-        int     stop;
-        ssize_t bytes_handled = ch_rd_read(conn, buf, nread, &stop);
-        if (stop) {
-            _ch_pr_update_resume(resume, buf, nread, bytes_handled);
-        }
-        return !stop;
+    int     stop;
+    ssize_t bytes_handled = ch_rd_read(conn, buf, nread, &stop);
+    A(resume->bytes_to_read ? resume->rest_of_buffer != NULL : 1,
+      "No buffer set");
+    if (stop) {
+        _ch_pr_update_resume(resume, buf, nread, bytes_handled);
     }
-    return 1;
+    return !stop;
 }
 
 // .. c:function::
@@ -468,7 +467,7 @@ ch_pr_restart_stream(ch_connection_t* conn)
 // .. code-block:: cpp
 //
 {
-    if (conn != NULL && (conn->flags & CH_CN_STOPPED)) {
+    if (conn != NULL) {
         LC(conn->chirp, "Resume reading", "ch_connection_t:%p", conn);
         if (_ch_pr_resume(conn)) {
             conn->flags &= ~CH_CN_STOPPED;

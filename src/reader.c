@@ -338,6 +338,8 @@ _ch_rd_read_step(
         break;
     }
     case CH_RD_HANDSHAKE: {
+        if (bytes_read == 0)
+            return -1;
         /* We expect that complete handshake arrives at once,
          * check in _ch_rd_handshake */
         _ch_rd_handshake(conn, buf + bytes_handled, to_read);
@@ -346,6 +348,8 @@ _ch_rd_read_step(
         break;
     }
     case CH_RD_WAIT: {
+        if (bytes_read == 0)
+            return -1;
         ch_message_t* wire_msg = &reader->wire_msg;
         if (to_read >= CH_SR_WIRE_MESSAGE_SIZE) {
             /* We can read everything */
@@ -435,6 +439,8 @@ _ch_rd_read_step(
         break;
     }
     case CH_RD_HEADER: {
+        if (bytes_read == 0)
+            return -1;
         handler = reader->handler;
         msg     = &handler->msg;
         if (_ch_rd_read_buffer(
@@ -460,6 +466,8 @@ _ch_rd_read_step(
         break;
     }
     case CH_RD_DATA: {
+        if (bytes_read == 0)
+            return -1;
         handler = reader->handler;
         msg     = &handler->msg;
         if (_ch_rd_read_buffer(
