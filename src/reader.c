@@ -403,9 +403,12 @@ _ch_rd_read_step(
         if (reader->handler == NULL) {
             reader->handler = ch_bf_acquire(&reader->pool);
             if (reader->handler == NULL) {
+                LC(chirp, "Stop reading", "ch_connection_t:%p", conn);
+                if (!(conn->flags & CH_CN_STOPPED)) {
+                    LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
+                    uv_read_stop((uv_stream_t*) &conn->client);
+                }
                 conn->flags |= CH_CN_STOPPED;
-                LC(chirp, "Stop stream", "ch_connection_t:%p", conn);
-                uv_read_stop((uv_stream_t*) &conn->client);
                 *stop = 1;
                 return bytes_handled;
             }
