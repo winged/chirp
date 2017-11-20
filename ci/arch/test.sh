@@ -9,5 +9,4 @@ if [ "$TESTSHELL" = "True" ]; then
     exec /bin/sh
 else
     make test
-    make doc
 fi

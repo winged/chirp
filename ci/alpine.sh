@@ -29,6 +29,7 @@ sudo docker run -it \
     -e "MODE=$MODE" \
     -e "TESTSHELL=$TESTSHELL" \
     -e "VERBOSE=$VERBOSE" \
+    -e "DOC_FORMAT=$DOC_FORMAT" \
     -v "$(pwd -P)/..":/outside \
     --rm \
     alpine:3.6 \

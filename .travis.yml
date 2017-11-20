@@ -34,6 +34,10 @@ matrix:
       services: docker
       script: ./ci/alpine.sh
     - os: linux
+      env: DOC_FORMAT=True CI_DISTRO=alpine
+      services: docker
+      script: ./ci/alpine.sh
+    - os: linux
       env: CC=gcc CI_DISTRO=arch
       services: docker
       script: ./ci/arch.sh
