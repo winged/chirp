@@ -13,13 +13,14 @@ else
         make clean
         /outside/configure --doc
         make check
-    else
-        make test
-        mkdir -p out
+        make clean
         make install DEST=out
         [ -f out/usr/local/lib/libchirp.so ]
         make uninstall DEST=out
         [ ! -f out/usr/local/lib/libchirp.so ]
+    else
+        make test
+        mkdir -p out
         make dist
         cd /tmp/build/dist
         make check
