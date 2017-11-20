@@ -10,6 +10,9 @@ if [ "$TESTSHELL" = "True" ]; then
 else
     if [ "$DOC_FORMAT" = "True" ]; then
         make doc
+        make clean
+        /outside/configure --doc
+        make check
     else
         make test
         mkdir -p out
@@ -17,12 +20,12 @@ else
         [ -f out/usr/local/lib/libchirp.so ]
         make uninstall DEST=out
         [ ! -f out/usr/local/lib/libchirp.so ]
-        make clean
-        /outside/configure --doc
-        make check
-        /outside/configure --dev
         make dist
-        cd dist
+        cd /tmp/build/dist
+        make check
+        cd /tmp/build
+        make clean
+        /outside/configure
         make check
         make install PREFIX=/usr DEST=out
         [ -f out/usr/lib/libchirp.so ]
