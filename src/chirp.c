@@ -951,7 +951,7 @@ ch_libchirp_cleanup(void)
                 __LINE__);
         return CH_VALUE_ERROR;
     }
-    _ch_libchirp_initialized = 1;
+    _ch_libchirp_initialized = 0;
     uv_mutex_destroy(&_ch_chirp_init_lock);
     ch_error_t ret = ch_en_tls_cleanup();
 #ifndef NDEBUG
