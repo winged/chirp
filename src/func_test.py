@@ -62,12 +62,14 @@ class GenBuffer(GenericStateMachine):
                 finally:
                     mpipe.close(proc)
             finally:
-                close(echo)
-                self.proc = None
-                self.echo = None
-                assert ret == 0
-                assert echo.returncode == 0
-                assert proc.returncode == 0
+                try:
+                    close(echo)
+                finally:
+                    self.proc = None
+                    self.echo = None
+                    assert ret == 0
+                    assert echo.returncode == 0
+                    assert proc.returncode == 0
 
     def steps(self):
         if not self.initialzed:
