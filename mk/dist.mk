@@ -18,8 +18,8 @@ endif
 
 # Checks
 # ======
-chirp_test: libchirp.so
-	$(CC) -o $@ chirp_test.c -L. -lchirp $(LDFLAGS)
+chirp_test: chirp_test.o libchirp.so
+	$(CC) -o $@ $< -L. -lchirp $(LDFLAGS)
 
 check: chirp_test
 	@cat .keys/dh.pem | tr '%' 'a' > dh.pem
