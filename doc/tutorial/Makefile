@@ -82,20 +82,24 @@ all: monitor agent collector
 
 # Binaries
 # ========
-monitor: libchirp.a monitor.c common.h
-	$(CC) -o $@ $@.c $< $(LDFLAGS)
+monitor.o: common.h
+agent.o: common.h
+collector.o: common.h
+
+monitor: monitor.o libchirp.a
+	$(CC) -o $@ $+ $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 
-agent: libchirp.a agent.c common.h
-	$(CC) -o $@ $@.c $< $(LDFLAGS)
+agent: agent.o libchirp.a
+	$(CC) -o $@ $+ $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif
 
-collector: libchirp.a collector.c common.h
-	$(CC) -o $@ $@.c $< $(LDFLAGS)
+collector: collector.o libchirp.a
+	$(CC) -o $@ $+ $(LDFLAGS)
 ifeq ($(STRIP),True)
 	$(STRPCMD) $@
 endif

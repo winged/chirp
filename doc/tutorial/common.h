@@ -14,6 +14,7 @@
 // .. code-block:: cpp
 
 #include <stdint.h>
+#include <time.h>
 
 // Service and status
 // ==================
