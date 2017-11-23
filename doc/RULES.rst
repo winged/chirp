@@ -5,8 +5,8 @@ RULES
 * Mantra
 
   - Make it work
-  - Make it 100% tested
-  - Make it to be used by people
+  - Make it well tested
+  - Make it used by people
   - Make it fast (only if really needed)
   - Make it beautiful
 
@@ -28,7 +28,7 @@ RULES
   - char* for C-strings
   - void* for buffers (in interfaces)
   - ch_buf* for buffer-instances (an alias for char*)
-  - uint8_t for bytes (for example the identity)
+  - uint8_t* for bytes (for example the identity)
 
 * Use one flags member instead of many bools (int)
 * Structs end in _s
@@ -63,29 +63,16 @@ RULES
 
    function symbols (sorted)
 
-* Indent ifdef
-
-.. code-block:: cpp
-
-   #ifdef LIBRESSL_VERSION_NUMBER
-   #   define CH_OPENSSL_10_API
-   #   define CH_LIBRESSL
-   #else
-   #   define CH_OPENSSL
-   #   if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
-   #       define CH_OPENSSL_10_API
-   #   endif
-   #endif
-
-* Always unpack handles in functions and callbacks till you can verify the chirp magic
+* Always unpack handles in callbacks and user called functions till you can
+  verify the chirp magic
 * Embeddable: allocate memory via user callback
 * Embrace libuv styles and use it for chirp API
 * Literate programming (kinda)
 * Localhost connections bypass TLS
 * Use C99
-* PEP8 style in C is ok
+* Use the clang-format defined in chirp/.clang-format
 * Tests don't have to be documented, so people can write tests fast and in flow.
-* Sending messages my not allocate memory
+* Sending small messages may not allocate memory
 
   - Only things that happen seldom may allocate
   - Luckily chirp is already designed that way
